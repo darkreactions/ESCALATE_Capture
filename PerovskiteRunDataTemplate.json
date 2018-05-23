@@ -1,0 +1,259 @@
+{
+	"run": {
+		"meta": {
+			"date": 20180515,  
+			"time_EST": 161616,
+			"lab": "LBNL",
+			"operator": "name",
+			"jobserial": "20180515_161616_LBNL_name"
+		},
+		"refs": {
+			"reagent 1": {
+				"id":"20180515_161616_reagent1",
+				"store": { "where": "ambient" },
+				"discard": false,
+				"lim": {
+					"date": 20180515,
+					"time_EST": 161616,
+					"lab": "LBNL",
+					"operator": "name",
+					"liquidclass": "HighVolume_Serum_DispenseJet_Empty",
+					"chemicals": {
+						"chemical": "GBL",
+						"id": "abcd1234_GBL"
+					},
+					"instructions": {
+						"op": "thermocycle",
+						"object": "reagent1_container_id",
+						"groups": {
+							"cycles": 1,
+							"steps": {"temperature":"60:celcius"}
+						}
+					}
+				} 
+			},	
+			"reagent 2": {
+				"id": "20180515_161616_reagent2",
+				"discard": true,
+				"lim": {
+					"date": 20180515,
+					"time_EST": 161616,
+					"lab": "LBNL",
+					"operator": "name",
+					"liquidclass": "StandardVolume_Serum_DispenseJet_Empty",
+					"chemicals": [{
+						"chemical": "EtNH3I",
+						"id": "abcd1234_EtNH3I",
+						"nominal_amount": "6.1:gram",
+						"actual_amount": "6.105:gram"
+					}, {
+						"chemical": "PbI2",
+						"id": "abcd1234_PbI2",
+						"nominal_amount": "12.1:gram",
+						"actual_amount": "12.105:gram"
+					}, {
+						"chemical": "GBL",
+						"id": "abcd1234_GBL",
+						"nominal_amount": "18.0:milliliter",
+						"actual_amount": "18.0:milliliter"
+					}],
+					"instructions": {
+						"op": "thermocycle",
+						"object": "reagent1_container_id",
+						"groups": {
+							"cycles": 1,
+							"steps": {
+								"temperature": "60:celcius",
+								"stir": "400:rpm",
+								"duration": "30:minute"
+							}
+						}
+					}
+				}
+			},	
+			"reagent 3": {
+				"id": "20180515_161616_reagent3",
+				"discard": true,
+				"lim": {
+					"date": 20180515,
+					"time_EST": 161616,
+					"lab": "LBNL",
+					"operator": "name",
+					"liquidclass": "StandardVolume_Serum_DispenseJet_Empty",
+					"chemicals": [{
+						"chemical": "EtNH3I",
+						"id": "abcd1234_EtNH3I",
+						"nominal_amount": "6.1:gram",
+						"actual_amount": "6.105:gram"
+					}, {
+						"chemical": "PbI2",
+						"id": "abcd1234_PbI2",
+						"nominal_amount": "12.1:gram",
+						"actual_amount": "12.105:gram"
+					}, {
+						"chemical": "GBL",
+						"id": "abcd1234_GBL",
+						"nominal_amount": "18.0:milliliter",
+						"actual_amount": "18.0:milliliter" 
+					}],
+					"instructions": {
+						"op": "thermocycle",
+						"object": "reagent1_container_id",
+						"groups": {
+							"cycles": 1,
+							"steps": {
+								"temperature":"60:celcius",
+								"stir": "400:rpm",
+								"duration": "30:minute"
+							}
+						}
+					}
+				}	
+			},
+			"reagent 4": {
+				"id":"20180515_161616_reagent4",
+				"discard":true,
+				"lim": {
+					"date": 20180515,
+					"time_EST": 161616,
+					"lab": "LBNL",
+					"operator":"name",
+					"liquidclass":"StandardVolume_Serum_DispenseJet_Empty",
+					"chemicals": [{
+						"chemical": "EtNH3I",
+						"id": "abcd1234_EtNH3I",
+						"nominal_amount": "6.1:gram",
+						"actual_amount": "6.105:gram"
+					}, {
+						"chemical": "PbI2",
+						"id": "abcd1234_PbI2",
+						"nominal_amount": "12.1:gram",
+						"actual_amount": "12.105:gram"
+					}, {
+						"chemical": "GBL",
+						"id": "abcd1234_GBL",
+						"nominal_amount": "18.0:milliliter",
+						"actual_amount": "18.0:milliliter"
+					}],
+					"instructions": {
+						"op": "thermocycle",
+						"object": "reagent1_container_id",
+						"groups": {
+							"cycles": 1,
+							"steps": {
+							"temperature":"60:celcius",
+							"stir": "400:rpm",
+							"duration": "30:minute"
+							}
+						}
+					}
+				}	
+			},
+			"reagent 5": {
+				"id":"20180515_161616_reagent5",
+				"discard":false,
+				"store": { "where": "ambient" },
+				"lim": {
+					"date": 20180515,
+					"time_EST": 161616,
+					"lab": "LBNL",
+					"operator":"name",
+					"liquidclass":"HighVolume_Serum_DispenseJet_Empty",
+					"chemicals": {
+						"chemical": "FAH",
+						"id": "abcd1234_FAH"
+					},
+					"instructions": {
+						"op": "thermocycle",
+						"object": "reagent1_container_id",
+						"groups": {
+							"cycles": 1,
+							"steps": {"temperature":"60:celcius"}
+						}
+					}
+				}
+			},
+			"reagent 6": {
+				"id":"20180515_161616_reagent6",
+				"discard":false,
+				"store": { "where": "ambient" },
+				"lim": {
+					"date": 20180515,
+					"time_EST": 161616,
+					"lab": "LBNL",
+					"operator":"name",
+					"liquidclass":"HighVolume_Serum_DispenseJet_Empty",
+					"chemicals": {
+						"chemical": "FAH",
+						"id": "abcd1234_FAH"
+					},
+					"instructions": {
+						"op": "thermocycle",
+						"object": "reagent1_container_id",
+						"groups": {
+							"cycles": 1,
+							"steps": {"temperature":"60:celcius"}
+						}
+					}
+				}
+			}
+		},
+		"instructions": [{
+			"op": "thermocycle",
+			"object": "tray",
+			"groups": {
+				"cycles": 1,
+				"steps": {"temperature":"22:celcius"}
+				}
+			}, {
+			"op": "dispense",
+			"object": "tray",
+			"reagent": "reagent1"
+			}, {
+			"op": "dispense",
+			"object": "tray",
+			"reagent": "reagent2"
+			}, {
+			"op": "dispense",
+			"object": "tray",
+			"reagent": "reagent3"
+			}, {
+			"op": "dispense",
+			"object": "tray",
+			"reagent": "reagent4"
+			}, {
+			"op": "dispense",
+			"object": "tray",
+			"reagent": "reagent5"
+			}, {
+			"op": "shake",
+			"object": "tray",
+			"speed": "900:rpm",
+			"duration": "900:second"
+			}, {
+			"op": "dispense",
+			"object": "tray",
+			"reagent": "reagent6"
+			}, {
+			"op": "shake",
+			"object": "tray",
+			"speed": "900:rpm",
+			"duration": "900:second"
+			}, {
+			"op": "thermocycle",
+			"object": "tray",
+			"groups": {
+				"cycles": 1,
+				"steps": {"temperature":"22:celcius"}
+				}
+			}, {
+			"op": "nop",
+			"duration": "9000:second"
+			}
+		],
+		"notes": {
+			"note1": "primary note without additional information",
+			"note2": "secondary more specific thing"
+		}
+	}
+}

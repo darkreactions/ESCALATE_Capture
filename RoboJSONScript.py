@@ -19,6 +19,7 @@ RunID=date + "_" + lab  ## Agreed Upon format for final run information
 def NewWrkDir(RunID): 
     NewDir=Google_IO.DriveCreateFolder(RunID)
     EntryFormID=Google_IO.DriveAddTemplates(NewDir, RunID)
+    print(Google_IO.ReadSheet())
 
 #    print(EntryFormID, RunID)
 

@@ -1,16 +1,8 @@
 import gspread
+#from oauth2client import file, client, tools
 from oauth2client.service_account import ServiceAccountCredentials
 from pydrive.drive import GoogleDrive
 from pydrive.auth import GoogleAuth
-
-#### Open, read and print some information from the google sheet template ##
-def SheetUI():
-    scope= ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
-    gc =gspread.authorize(credentials)
-    testsheet = gc.open_by_url("https://docs.google.com/spreadsheets/d/1dvLDvf-J56HYPAiU5qJ0YUp_JbgkloYZ3HHHWg1bIXo/edit?usp=sharing").sheet1
-    test=testsheet.col_values(2)
-    print(test)
 
 
 ##Some useful links for later, possibly
@@ -30,10 +22,17 @@ else:
 gauth.SaveCredentialsFile("mycred.txt")
 drive=GoogleDrive(gauth)
 
+#### Open, read and print some information from the google sheet template ##
+def ReadSheet():
+    scope= ['https://spreadsheets.google.com/feeds']
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
+    gc =gspread.authorize(credentials)
+    testsheet = gc.open_by_url("https://docs.google.com/spreadsheets/d/18Xs-T62PJ--COHTTXEZQHWNpBhte9440yTBaqtv1ly8/edit#gid=0").sheet1
+    test=testsheet.col_values(2)
+    return(test)
 
 def DriveCreateFolder(title1):
     tgt_folder_id='13xmOpwh-uCiSeJn8pSktzMlr7BaPDo7B' ##Target Folder remains constant (for now)
-#    print("Target: %s" % tgt_folder_id)
     file_metadata = {
         'title': title1,
         "parents": [{"kind": "drive#fileLink","id": tgt_folder_id}],

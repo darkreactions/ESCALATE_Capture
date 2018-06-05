@@ -35,13 +35,12 @@ VS=18.0 #total intended volume of stock solution
 ############################
 Temp1=22      #First Temperature Setting - Celcius
 #Dispense reagents 1-5
-S1_RPM=900    #First Shake - RPM
+S_RPM=900    #All Shake RPM #Robot limitation
 S1_Time=900   #First Shake Duration - Seconds
 #Dispense reagent 6
-S2_RPM=900    #Second Shake - RPM
 S2_Time=1200  #Second Shake Duration - Seconds
 Temp2=90      #Second Temperature Setting - Celcius
 FH=9000       #Final Hold Duration - Seconds
 
 ############################
-python RoboJSONScript.py $A1 $A2 $A3 $VS $Temp1 $S1_RPM $S1_Time $S2_RPM $S2_Time $Temp2 $FH
+python RoboJSONScript.py $A1 $A2 $A3 $VS $Temp1 $S_RPM $S1_Time $S2_Time $Temp2 $FH

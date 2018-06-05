@@ -4,6 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import Google_IO
 import gspread
 import argparse as ap
+import pandas as pd
 
 ##########################################################
 #  _        ___           _                              #
@@ -21,9 +22,8 @@ parser.add_argument('amine2', metavar='A2', type=str, help='amine used in the se
 parser.add_argument('amine3', metavar='A3', type=str, help='amine used in the third stock solution')
 parser.add_argument('VS', type=float, help='')
 parser.add_argument('Temp1', type=int, help='')
-parser.add_argument('S1RPM', type=int, help='')
+parser.add_argument('SRPM', type=int, help='')
 parser.add_argument('S1Dur', type=int, help='')
-parser.add_argument('S2RPM', type=int, help='')
 parser.add_argument('S2Dur', type=int, help='')
 parser.add_argument('Temp2', type=int, help='')
 parser.add_argument('FinalHold', type=int, help='')
@@ -37,9 +37,8 @@ AMINE2 = args.amine2
 AMINE3 = args.amine3
 VS = args.VS
 Temp1 = args.Temp1
-S1RPM = args.S1RPM
+SRPM = args.SRPM
 S1Dur = args.S1Dur
-S2RPM = args.S2RPM
 S2Dur = args.S2Dur
 Temp2 = args.Temp2
 FinalHold = args.FinalHold
@@ -85,12 +84,18 @@ def PrepareDirectory(RunID):
     sheetobject.update_cell(25,3, AMINE3)
     sheetobject.update_cell(7,2, VS)
     sheetobject.update_cell(2,4, Temp1)
-    sheetobject.update_cell(4,4, S1RPM)
+    sheetobject.update_cell(4,4, SRPM)
     sheetobject.update_cell(4,7, S1Dur)
-    sheetobject.update_cell(6,4, S2RPM)
+    sheetobject.update_cell(6,4, SRPM)
     sheetobject.update_cell(6,7, S2Dur)
     sheetobject.update_cell(7,4, Temp2)
     sheetobject.update_cell(8,7, FinalHold)
     print('done')
 
+def CreateRobotXLS():
+    df=pd.read_excel('RobotInput.xls', sheet_name='NIMBUS_reaction',usecols=(1,2,3,4,5,6))
+    df.to_excel('outtest.xls', sheet_name='Sheet1', index=False)
+
+
 PrepareDirectory(RunID)
+#CreateRobotXLS()

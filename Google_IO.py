@@ -13,6 +13,7 @@
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
+
 ##Authentication for pydrive, designed globally to minimally generate token (a slow process)
 gauth = GoogleAuth()
 gauth.LoadCredentialsFile("mycred.txt")
@@ -26,8 +27,11 @@ gauth.SaveCredentialsFile("mycred.txt")
 drive=GoogleDrive(gauth)
 
 ##Creating template directory for later copying of relevant files
-def DriveCreateFolder(title1):
-    tgt_folder_id='13xmOpwh-uCiSeJn8pSktzMlr7BaPDo7B' #Target Folder remains constant (for now)
+def DriveCreateFolder(title1, Debug):
+    if Debug == 0:
+        tgt_folder_id='13xmOpwh-uCiSeJn8pSktzMlr7BaPDo7B' #Target Folder for actual runs
+    elif Debug == 1:
+        tgt_folder_id='11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe' #Target Folder for debugging
     file_metadata = {
         'title': title1,
         "parents": [{"kind": "drive#fileLink","id": tgt_folder_id}],
@@ -45,8 +49,11 @@ def DriveCreateFolder(title1):
 
 ##Copies all files from template directory into the new directory
 ##Returns a referenced dictionary of files (title, Gdrive ID)
-def DriveAddTemplates(opdir, RunID):
-    template_folder='1OxuxqfumIpg3MPr3rgtRxwcOgCfetkIu'  #Hardcoded as this template doesn't change
+def DriveAddTemplates(opdir, RunID, Debug):
+    if Debug == 0:
+        template_folder='1OxuxqfumIpg3MPr3rgtRxwcOgCfetkIu'  #Target folder for actual runs
+    if Debug == 1:
+        template_folder='1HneaSFzgJgHImDAL-8OgQfSx1ioFJp6S'  #Debugging target folder
     file_template_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % template_folder}).GetList()
     for templatefile in file_template_list:       
             basename=templatefile['title']

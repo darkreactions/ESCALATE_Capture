@@ -16,3 +16,5 @@ pip install pydrive
 4) Follow instructions ins RunSetup.sh
 
 Please email me at ipendleton@haverford.edu for questions
+
+conda install xlwt

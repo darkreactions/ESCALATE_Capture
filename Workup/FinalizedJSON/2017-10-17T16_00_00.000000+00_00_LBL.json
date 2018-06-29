@@ -1,0 +1,172 @@
+{
+    "notes": {
+        "ExperimentalSummary": "Stock solution preparation different than workflow 1 starting in 2018. Grind up PbI2 into a fine powder and dissolve in GBL stirring at 60C for 30 minute. Dissolve amine into GBL and heat until dissolved, combine reagents to form the primary stock solution at the desired ratio. Add amine solution to PbI2 GBL solution and stir for 45 minute then filter stock solution using PTFE 0.45 \u03bcm filter. ",
+        "Workflow": "0",
+        "note1": "Difference in workflow is not captured by this reaction JSON file. Specifically the operational details of preparing the stock solution."
+    },
+    "refs": {
+        "reagent 1": {
+            "lim": {
+                "chemicals": {
+                    "InChIKey": "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+                    "actual_amount": "5.428:gram",
+                    "nominal_amount": "18:milliliter"
+                },
+                "date": "2017-10-17",
+                "instructions": {
+                    "op": "heat",
+                    "temperature": "22:celsius"
+                },
+                "operator": "Liana Alves"
+            }
+        },
+        "reagent 2": {
+            "lim": {
+                "chemicals": [
+                    {
+                        "InChIKey": "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+                        "actual_amount": "18:milliliter",
+                        "nominal_amount": "18:milliliter"
+                    },
+                    {
+                        "InChIKey": "CALQKRVFTWDYDG-UHFFFAOYSA-N",
+                        "actual_amount": "5.428:gram",
+                        "nominal_amount": "5.428:gram"
+                    },
+                    {
+                        "InChIKey": "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+                        "actual_amount": "24.89:gram",
+                        "nominal_amount": "24.89:gram"
+                    }
+                ],
+                "date": "2017-10-17",
+                "instructions": [
+                    {
+                        "duration": "2700:second",
+                        "op": "heatstir",
+                        "stir": "450:rpm",
+                        "temperature": "70:celsius"
+                    },
+                    {
+                        "temperature": "22:celsius"
+                    }
+                ],
+                "operator": "Liana Alves"
+            }
+        },
+        "reagent 3": {
+            "lim": {
+                "chemicals": [
+                    {
+                        "InChIKey": "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+                        "actual_amount": "18:gram",
+                        "nominal_amount": "18:gram"
+                    },
+                    {
+                        "InChIKey": "CALQKRVFTWDYDG-UHFFFAOYSA-N",
+                        "actual_amount": "10.96:gram",
+                        "nominal_amount": "10.96:gram"
+                    },
+                    {
+                        "InChIKey": "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+                        "actual_amount": "12.447:gram",
+                        "nominal_amount": "12.447:gram"
+                    }
+                ],
+                "date": "2017-10-17",
+                "instructions": [
+                    {
+                        "duration": "2700:second",
+                        "op": "heatstir",
+                        "stir": "450:rpm",
+                        "temperature": "70:celsius"
+                    },
+                    {
+                        "temperature": "22:celsius"
+                    }
+                ],
+                "operator": "Liana Alves"
+            }
+        },
+        "reagent 4": {
+            "lim": {
+                "chemicals": [
+                    {
+                        "InChIKey": "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+                        "actual_amount": "18:milliliter",
+                        "nominal_amount": "18:milliliter"
+                    },
+                    {
+                        "InChIKey": "CALQKRVFTWDYDG-UHFFFAOYSA-N",
+                        "actual_amount": "5.428:gram",
+                        "nominal_amount": "5.428:gram"
+                    },
+                    {
+                        "InChIKey": "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+                        "actual_amount": "12.4473:gram",
+                        "nominal_amount": "12.4473:gram"
+                    }
+                ],
+                "date": "2017-10-17",
+                "instructions": [
+                    {
+                        "duration": "2700:second",
+                        "op": "heatstir",
+                        "stir": "450:rpm",
+                        "temperature": "70:celsius"
+                    },
+                    {
+                        "temperature": "22:celsius"
+                    }
+                ],
+                "operator": "null"
+            }
+        },
+        "reagent 5": {
+            "lim": {
+                "chemicals": {
+                    "InChIKey": "BDAGIHXWWSANSR-UHFFFAOYSA-N",
+                    "actual_amount": "12:milliliter",
+                    "nominal_amount": "12:milliliter"
+                },
+                "date": "2017-10-17",
+                "instructions": {
+                    "op": "heat",
+                    "temperature": "22:celsius"
+                },
+                "operator": "LBL"
+            }
+        },
+        "reagent 6": {
+            "lim": {
+                "chemicals": {
+                    "InChIKey": "BDAGIHXWWSANSR-UHFFFAOYSA-N",
+                    "actual_amount": "12:milliliter",
+                    "nominal_amount": "12:milliliter"
+                },
+                "date": "2017-10-17",
+                "instructions": {
+                    "op": "heat",
+                    "temperature": "22:celsius"
+                },
+                "operator": "LBL"
+            }
+        }
+    },
+    "run": {
+        "datecreated": "2017-10-17",
+        "jobserial": "2017-10-17T16_00_00.000000+00_00_LBL",
+        "lab": "LBL",
+        "operator": "Liana Alves",
+        "timecreated_UTC": "16_00_00"
+   
+	},
+	 "well_volumes":
+	 [["A1", 167, 333, 0, 0, 62, 0, "Symyx_96_well_0003"], ["C1", 167, 333, 0, 0, 55, 55, "Symyx_96_well_0003"], ["E1", 167, 333, 0, 0, 39, 39, "Symyx_96_well_0003"], ["G1", 167, 333, 0, 0, 39, 39, "Symyx_96_well_0003"], ["B1", 167, 333, 0, 0, 55, 55, "Symyx_96_well_0003"], ["D1", 167, 333, 0, 0, 47, 47, "Symyx_96_well_0003"], ["F1", 167, 333, 0, 0, 47, 47, "Symyx_96_well_0003"], ["H1", 167, 333, 0, 0, 62, 62, "Symyx_96_well_0003"], ["A2", 167, 333, 0, 0, 62, 0, "Symyx_96_well_0003"], ["C2", 167, 333, 0, 0, 55, 55, "Symyx_96_well_0003"], ["E2", 167, 333, 0, 0, 39, 39, "Symyx_96_well_0003"], ["G2", 167, 333, 0, 0, 39, 39, "Symyx_96_well_0003"], ["B2", 167, 333, 0, 0, 55, 55, "Symyx_96_well_0003"], ["D2", 167, 333, 0, 0, 47, 47, "Symyx_96_well_0003"], ["F2", 167, 333, 0, 0, 47, 47, "Symyx_96_well_0003"], ["H2", 167, 333, 0, 0, 62, 62, "Symyx_96_well_0003"], ["A3", 167, 0, 333, 0, 62, 0, "Symyx_96_well_0003"], ["C3", 167, 0, 333, 0, 55, 55, "Symyx_96_well_0003"], ["E3", 167, 0, 333, 0, 39, 39, "Symyx_96_well_0003"], ["G3", 167, 0, 333, 0, 39, 39, "Symyx_96_well_0003"], ["B3", 167, 0, 333, 0, 55, 55, "Symyx_96_well_0003"], ["D3", 167, 0, 333, 0, 47, 47, "Symyx_96_well_0003"], ["F3", 167, 0, 333, 0, 47, 47, "Symyx_96_well_0003"], ["H3", 167, 0, 333, 0, 62, 62, "Symyx_96_well_0003"], ["A4", 167, 0, 333, 0, 62, 0, "Symyx_96_well_0003"], ["C4", 167, 0, 333, 0, 55, 55, "Symyx_96_well_0003"], ["E4", 167, 0, 333, 0, 39, 39, "Symyx_96_well_0003"], ["G4", 167, 0, 333, 0, 39, 39, "Symyx_96_well_0003"], ["B4", 167, 0, 333, 0, 55, 55, "Symyx_96_well_0003"], ["D4", 167, 0, 333, 0, 47, 47, "Symyx_96_well_0003"], ["F4", 167, 0, 333, 0, 47, 47, "Symyx_96_well_0003"], ["H4", 167, 0, 333, 0, 62, 62, "Symyx_96_well_0003"], ["A5", 167, 0, 0, 333, 62, 0, "Symyx_96_well_0003"], ["C5", 167, 0, 0, 333, 55, 55, "Symyx_96_well_0003"], ["E5", 167, 0, 0, 333, 39, 39, "Symyx_96_well_0003"], ["G5", 167, 0, 0, 333, 39, 39, "Symyx_96_well_0003"], ["B5", 167, 0, 0, 333, 55, 55, "Symyx_96_well_0003"], ["D5", 167, 0, 0, 333, 47, 47, "Symyx_96_well_0003"], ["F5", 167, 0, 0, 333, 47, 47, "Symyx_96_well_0003"], ["H5", 167, 0, 0, 333, 62, 62, "Symyx_96_well_0003"], ["A6", 167, 0, 0, 333, 62, 0, "Symyx_96_well_0003"], ["C6", 167, 0, 0, 333, 55, 55, "Symyx_96_well_0003"], ["E6", 167, 0, 0, 333, 39, 39, "Symyx_96_well_0003"], ["G6", 167, 0, 0, 333, 39, 39, "Symyx_96_well_0003"], ["B6", 167, 0, 0, 333, 55, 55, "Symyx_96_well_0003"], ["D6", 167, 0, 0, 333, 47, 47, "Symyx_96_well_0003"], ["F6", 167, 0, 0, 333, 47, 47, "Symyx_96_well_0003"], ["H6", 167, 0, 0, 333, 62, 62, "Symyx_96_well_0003"], ["A7", 0, 500, 0, 0, 62, 0, "Symyx_96_well_0003"], ["C7", 0, 500, 0, 0, 55, 55, "Symyx_96_well_0003"], ["E7", 0, 500, 0, 0, 39, 39, "Symyx_96_well_0003"], ["G7", 0, 500, 0, 0, 39, 39, "Symyx_96_well_0003"], ["B7", 0, 500, 0, 0, 55, 55, "Symyx_96_well_0003"], ["D7", 0, 500, 0, 0, 47, 47, "Symyx_96_well_0003"], ["F7", 0, 500, 0, 0, 47, 47, "Symyx_96_well_0003"], ["H7", 0, 500, 0, 0, 62, 62, "Symyx_96_well_0003"], ["A8", 0, 500, 0, 0, 62, 0, "Symyx_96_well_0003"], ["C8", 0, 500, 0, 0, 55, 55, "Symyx_96_well_0003"], ["E8", 0, 500, 0, 0, 39, 39, "Symyx_96_well_0003"], ["G8", 0, 500, 0, 0, 39, 39, "Symyx_96_well_0003"], ["B8", 0, 500, 0, 0, 55, 55, "Symyx_96_well_0003"], ["D8", 0, 500, 0, 0, 47, 47, "Symyx_96_well_0003"], ["F8", 0, 500, 0, 0, 47, 47, "Symyx_96_well_0003"], ["H8", 0, 500, 0, 0, 62, 62, "Symyx_96_well_0003"], ["A9", 0, 0, 500, 0, 62, 0, "Symyx_96_well_0003"], ["C9", 0, 0, 500, 0, 55, 55, "Symyx_96_well_0003"], ["E9", 0, 0, 500, 0, 39, 39, "Symyx_96_well_0003"], ["G9", 0, 0, 500, 0, 39, 39, "Symyx_96_well_0003"], ["B9", 0, 0, 500, 0, 55, 55, "Symyx_96_well_0003"], ["D9", 0, 0, 500, 0, 47, 47, "Symyx_96_well_0003"], ["F9", 0, 0, 500, 0, 47, 47, "Symyx_96_well_0003"], ["H9", 0, 0, 500, 0, 62, 62, "Symyx_96_well_0003"], ["A10", 0, 0, 500, 0, 62, 0, "Symyx_96_well_0003"], ["C10", 0, 0, 500, 0, 55, 55, "Symyx_96_well_0003"], ["E10", 0, 0, 500, 0, 39, 39, "Symyx_96_well_0003"], ["G10", 0, 0, 500, 0, 39, 39, "Symyx_96_well_0003"], ["B10", 0, 0, 500, 0, 55, 55, "Symyx_96_well_0003"], ["D10", 0, 0, 500, 0, 47, 47, "Symyx_96_well_0003"], ["F10", 0, 0, 500, 0, 47, 47, "Symyx_96_well_0003"], ["H10", 0, 0, 500, 0, 62, 62, "Symyx_96_well_0003"], ["A11", 0, 0, 0, 500, 62, 0, "Symyx_96_well_0003"], ["C11", 0, 0, 0, 500, 55, 55, "Symyx_96_well_0003"], ["E11", 0, 0, 0, 500, 39, 39, "Symyx_96_well_0003"], ["G11", 0, 0, 0, 500, 39, 39, "Symyx_96_well_0003"], ["B11", 0, 0, 0, 500, 55, 55, "Symyx_96_well_0003"], ["D11", 0, 0, 0, 500, 47, 47, "Symyx_96_well_0003"], ["F11", 0, 0, 0, 500, 47, 47, "Symyx_96_well_0003"], ["H11", 0, 0, 0, 500, 62, 62, "Symyx_96_well_0003"], ["A12", 0, 0, 0, 500, 62, 0, "Symyx_96_well_0003"], ["C12", 0, 0, 0, 500, 55, 55, "Symyx_96_well_0003"], ["E12", 0, 0, 0, 500, 39, 39, "Symyx_96_well_0003"], ["G12", 0, 0, 0, 500, 39, 39, "Symyx_96_well_0003"], ["B12", 0, 0, 0, 500, 55, 55, "Symyx_96_well_0003"], ["D12", 0, 0, 0, 500, 47, 47, "Symyx_96_well_0003"], ["F12", 0, 0, 0, 500, 47, 47, "Symyx_96_well_0003"], ["H12", 0, 0, 0, 500, 62, 62, "Symyx_96_well_0003"]] ,
+	 "tray_environment":
+	 [["Temperature (C):", 0.0], ["Stir Rate (rpm):", 500.0], ["Mixing time1 (s):", 900.0], ["Mixing time2 (s):", 1200.0], ["Reaction time (s):", 0.0]] ,
+	 "robot_reagent_handling":
+	 [["Reagent1", "GBL make 1.0 M", "StandardVolume_Water_DispenseJet_Empty"], ["Reagent2", "n-ButyPbI2 1:2", "HighVolume_Water_DispenseJet_Empty"], ["Reagent3", "n-ButylPbI2 2:1", "HighVolume_Water_DispenseJet_Empty"], ["Reagent4", "n-ButylPbI2 1:1", "HighVolume_Water_DispenseJet_Empty"], ["Reagent5", "FAH", "StandardVolume_Water_DispenseJet_Empty"], ["Reagent6", "FAH", "StandardVolume_Water_DispenseJet_Empty"]] ,
+	 "crys_file_data":
+	 []
+}

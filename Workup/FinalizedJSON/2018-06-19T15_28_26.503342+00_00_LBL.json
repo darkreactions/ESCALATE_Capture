@@ -1,0 +1,172 @@
+{
+    "notes": {
+        "ExperimentalSummary": "No attached image of hull space. No observed crystals in the index",
+        "Workflow": "1",
+        "note1": "Updated and added the Exp Data entry after the experiment (due to development progress)."
+    },
+    "refs": {
+        "reagent 1": {
+            "lim": {
+                "chemicals": {
+                    "InChIKey": "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+                    "actual_amount": "5.67:gram",
+                    "nominal_amount": "5.76:milliliter"
+                },
+                "date": "2018-06-19",
+                "instructions": {
+                    "op": "heat",
+                    "temperature": "45:celsius"
+                },
+                "operator": "Zhi Li"
+            }
+        },
+        "reagent 2": {
+            "lim": {
+                "chemicals": [
+                    {
+                        "InChIKey": "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+                        "actual_amount": "7.54:gram",
+                        "nominal_amount": "7.54:gram"
+                    },
+                    {
+                        "InChIKey": "XFYICZOIWSBQSK-UHFFFAOYSA-N",
+                        "actual_amount": "5.67:gram",
+                        "nominal_amount": "5.66:gram"
+                    },
+                    {
+                        "InChIKey": "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+                        "actual_amount": "10.9:milliliter",
+                        "nominal_amount": "10.91:milliliter"
+                    }
+                ],
+                "date": "2018-06-19",
+                "instructions": [
+                    {
+                        "duration": "3600:second",
+                        "op": "heatstir",
+                        "stir": "450:rpm",
+                        "temperature": "75:celsius"
+                    },
+                    {
+                        "temperature": "45:celsius"
+                    }
+                ],
+                "operator": "Zhi Li"
+            }
+        },
+        "reagent 3": {
+            "lim": {
+                "chemicals": [
+                    {
+                        "InChIKey": "XFYICZOIWSBQSK-UHFFFAOYSA-N",
+                        "actual_amount": "4.5:gram",
+                        "nominal_amount": "4.5:gram"
+                    },
+                    {
+                        "InChIKey": "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+                        "actual_amount": "4.34:milliliter",
+                        "nominal_amount": "4.34:milliliter"
+                    },
+                    {
+                        "InChIKey": "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+                        "actual_amount": ":gram",
+                        "nominal_amount": "null:gram"
+                    }
+                ],
+                "date": "2018-06-19",
+                "instructions": [
+                    {
+                        "duration": "3600:second",
+                        "op": "heatstir",
+                        "stir": "450:rpm",
+                        "temperature": "75:celsius"
+                    },
+                    {
+                        "temperature": "45:celsius"
+                    }
+                ],
+                "operator": "Zhi Li"
+            }
+        },
+        "reagent 4": {
+            "lim": {
+                "chemicals": [
+                    {
+                        "InChIKey": "null",
+                        "actual_amount": ":milliliter",
+                        "nominal_amount": "null:milliliter"
+                    },
+                    {
+                        "InChIKey": "null",
+                        "actual_amount": ":gram",
+                        "nominal_amount": "null:gram"
+                    },
+                    {
+                        "InChIKey": "null",
+                        "actual_amount": ":gram",
+                        "nominal_amount": "null:gram"
+                    }
+                ],
+                "date": "null",
+                "instructions": [
+                    {
+                        "duration": "null:second",
+                        "op": "heatstir",
+                        "stir": "null:rpm",
+                        "temperature": "null:celsius"
+                    },
+                    {
+                        "temperature": "null:celsius"
+                    }
+                ],
+                "operator": "null"
+            }
+        },
+        "reagent 5": {
+            "lim": {
+                "chemicals": {
+                    "InChIKey": "BDAGIHXWWSANSR-UHFFFAOYSA-N",
+                    "actual_amount": "8:milliliter",
+                    "nominal_amount": "8:milliliter"
+                },
+                "date": "2018-06-19",
+                "instructions": {
+                    "op": "heat",
+                    "temperature": "22:celsius"
+                },
+                "operator": "LBL"
+            }
+        },
+        "reagent 6": {
+            "lim": {
+                "chemicals": {
+                    "InChIKey": "BDAGIHXWWSANSR-UHFFFAOYSA-N",
+                    "actual_amount": "8:milliliter",
+                    "nominal_amount": "8:milliliter"
+                },
+                "date": "2018-06-19",
+                "instructions": {
+                    "op": "heat",
+                    "temperature": "22:celsius"
+                },
+                "operator": "LBL"
+            }
+        }
+    },
+    "run": {
+        "datecreated": "2018-06-19",
+        "jobserial": "2018-06-19T15_28_26.503342+00_00",
+        "lab": "LBL",
+        "operator": "Zhi Li",
+        "timecreated_UTC": "15_28_26"
+   
+	},
+	 "well_volumes":
+	 [["A1", 118, 355, 28, 0, 14, 33, "Symyx_96_well_0003"], ["C1", 185, 190, 125, 0, 10, 29, "Symyx_96_well_0003"], ["E1", 213, 200, 87, 0, 41, 60, "Symyx_96_well_0003"], ["G1", 84, 365, 51, 0, 56, 14, "Symyx_96_well_0003"], ["B1", 38, 448, 15, 0, 25, 45, "Symyx_96_well_0003"], ["D1", 159, 283, 58, 0, 18, 6, "Symyx_96_well_0003"], ["F1", 89, 324, 87, 0, 48, 37, "Symyx_96_well_0003"], ["H1", 8, 489, 3, 0, 33, 22, "Symyx_96_well_0003"], ["A2", 82, 406, 11, 0, 2, 53, "Symyx_96_well_0003"], ["C2", 200, 241, 58, 0, 2, 28, "Symyx_96_well_0003"], ["E2", 185, 221, 94, 0, 33, 59, "Symyx_96_well_0003"], ["G2", 64, 386, 50, 0, 48, 13, "Symyx_96_well_0003"], ["B2", 25, 468, 7, 0, 17, 43, "Symyx_96_well_0003"], ["D2", 124, 303, 72, 0, 25, 5, "Symyx_96_well_0003"], ["F2", 153, 262, 85, 0, 56, 36, "Symyx_96_well_0003"], ["H2", 41, 427, 32, 0, 40, 20, "Symyx_96_well_0003"], ["A3", 85, 345, 70, 0, 9, 51, "Symyx_96_well_0003"], ["C3", 255, 180, 65, 0, 13, 9, "Symyx_96_well_0003"], ["E3", 163, 185, 153, 0, 44, 40, "Symyx_96_well_0003"], ["G3", 101, 350, 49, 0, 59, 24, "Symyx_96_well_0003"], ["B3", 50, 432, 18, 0, 29, 55, "Symyx_96_well_0003"], ["D3", 158, 267, 75, 0, 21, 16, "Symyx_96_well_0003"], ["F3", 154, 309, 38, 0, 52, 47, "Symyx_96_well_0003"], ["H3", 21, 474, 5, 0, 36, 1, "Symyx_96_well_0003"]] ,
+	 "tray_environment":
+	 [["Temperature (C):", 105.0], ["Stir Rate (rpm):", 500.0], ["Mixing time1 (s):", 900.0], ["Mixing time2 (s):", 1200.0], ["Reaction time (s):", 12600.0]] ,
+	 "robot_reagent_handling":
+	 [["Reagent1", "Reagent1", "StandardVolume_Water_DispenseJet_Empty", 45.0], ["Reagent2", "Reagent2", "HighVolume_Water_DispenseJet_Empty", 45.0], ["Reagent3", "Reagent3", "StandardVolume_Water_DispenseJet_Empty", 45.0], ["Reagent4", "Reagent4", "LowVolume_Water_DispenseJet_Empty", 45.0], ["Reagent5", "Reagent5", "StandardVolume_Water_DispenseJet_Empty", 45.0], ["Reagent6", "Reagent6", "StandardVolume_Water_DispenseJet_Empty", 45.0]] ,
+	 "crys_file_data":
+	 []
+}

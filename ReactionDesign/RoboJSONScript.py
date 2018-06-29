@@ -4,6 +4,7 @@ import csv
 from oauth2client.service_account import ServiceAccountCredentials
 import Google_IO
 import gspread
+import os
 import argparse as ap
 import pandas as pd
 import numpy as np
@@ -27,15 +28,15 @@ log=open("LogFile.txt", "w")
 
 ##Setup Run ID Information
 lab = 'LBL'
-#readdate_gen=datetime.now(timezone.utc).isoformat()
-#readdate=readdate_gen.replace(':', '_') #Remove problematic characters
-#date=datetime.now(timezone.utc).strftime("%Y-%m-%d")
-#time=datetime.now(timezone.utc).strftime("%H_%M_%S")
-#RunID=readdate + "_" + lab #Agreed Upon format for final run information
-date='2017-10-16'
-time='17_52_59'
-readdate=date+"T"+time+".000000+00_00"
+readdate_gen=datetime.now(timezone.utc).isoformat()
+readdate=readdate_gen.replace(':', '_') #Remove problematic characters
+date=datetime.now(timezone.utc).strftime("%Y-%m-%d")
+time=datetime.now(timezone.utc).strftime("%H_%M_%S")
 RunID=readdate + "_" + lab #Agreed Upon format for final run information
+#date='2017-10-20'
+#time='22_59_29'
+#readdate=date+"T"+time+".000000+00_00"
+#RunID=readdate + "_" + lab #Agreed Upon format for final run information
 print("Run Initiation (iso): ;;", readdate, file=log)  #Agreed Upon format for final run information
 print("Run Initiation (iso):", readdate)  #Agreed Upon format for final run information
 
@@ -51,7 +52,7 @@ pd.set_option('display.max_columns', None)
 print("Plotted (? -- boolean) = ", ploton, " ;;\n", end='\n', file=log)
 
 Temp1 = 80
-SRPM = 500
+SRPM = 750
 S1Dur = 900
 S2Dur = 1200
 Temp2 = 105
@@ -82,16 +83,16 @@ ConcStock=1.5 #Maximum concentration of the stock solutions (A - PbI2 and amine,
 ConcStockAmine=6 #Maximum concentration of the stock solutions (A - PbI2 and amine, B - amine) in wkflow1
 StockAAminePercent=2.00 #Percent concentration of amine in the first stock solution wkflow1
 RTemp=45  # Reagent temperature prior to reaction start (sitting in block)
-DeadVolume=3.0 #Total dead volume in stock solutions
+DeadVolume= 2.0 #Total dead volume in stock solutions
 MaximumStockVolume=500.0 #Maximum volume of GBL, Stock A, and stockB
 MaximumWellVolume=700.0
 
 ##Constraints
 maxEquivAmine=4 #Maximum ratio of amine (value) to lead iodide
-wellcount=24
-molarmin1=0.25 #Lowest number of millimoles (mmol) added of amine or lead iodide to any well
-molarminFA=0.0  #Lowest number of millimoles (mmol) added of formic acid (FAH) to any well
-molarmaxFA=3.3 #Greatest number of millimoles (mmol) added of formic acid (FAH) to any well
+wellcount=96
+molarmin1=0.40 #Lowest number of millimoles (mmol) added of amine or lead iodide to any well
+molarminFA=2.0  #Lowest number of millimoles (mmol) added of formic acid (FAH) to any well
+molarmaxFA=5.0 #Greatest number of millimoles (mmol) added of formic acid (FAH) to any well
 molarmax1=(ConcStock*MaximumStockVolume/1000)  #Greatest number of millimoles (mmol) of lead iodidde added to any well
 print("\n"
 "Chemical Space Constraints -- ", " ;;\n" 
@@ -164,9 +165,9 @@ gc =gspread.authorize(credentials)
 
 ### Directory and file collection handling###
 ##Generates new working directory with updated templates, return working folder ID
-def NewWrkDir(RunID, Debug, robotfile): 
+def NewWrkDir(RunID, Debug, robotfile, logfile): 
     NewDir=Google_IO.DriveCreateFolder(RunID, Debug)
-    Google_IO.GupFile(NewDir, robotfile)
+    Google_IO.GupFile(NewDir, robotfile, logfile)
     file_dict=Google_IO.DriveAddTemplates(NewDir, RunID, Debug)
     return(file_dict) #returns the experimental data sheet google pointer url (GoogleID)
 
@@ -183,8 +184,8 @@ def ChemicalData():
 
 ### File preparation --- Main Code Body ###
 ##Updates all of the run data information and creates the empty template for amine information
-def PrepareDirectory(RunID, robotfile, FinalAmountArray):
-    new_dict=NewWrkDir(RunID, Debug, robotfile) #Calls NewWrkDir Function to get the list of files
+def PrepareDirectory(RunID, robotfile, FinalAmountArray, logfile):
+    new_dict=NewWrkDir(RunID, Debug, robotfile, logfile) #Calls NewWrkDir Function to get the list of files
     for key,val in new_dict.items(): 
         if "ExpDataEntry" in key: #Experimentalsheet = gc.open_bysearches for ExpDataEntry Form to get id
             sheetobject = gc.open_by_key(val).sheet1
@@ -384,9 +385,13 @@ def CreateRobotXLS():
     FinalAmountArray_hold.append((stockBvolume/1000).round(2))
     FinalAmountArray_hold.append((stockFormicAcid5/1000).round(2))
     FinalAmountArray_hold.append((stockFormicAcid6/1000).round(2))
+    log.close()
+    os.rename('LogFile.txt', "%s_LogFile.txt"%RunID)
     outframe.to_excel("%s_RobotInput.xls" %RunID, sheet_name='NIMBUS_reaction', index=False)
     robotfile=("%s_RobotInput.xls" %RunID)
-    PrepareDirectory(RunID, robotfile, FinalAmountArray_hold) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
-    return(rdf)
+    logfile=("%s_LogFile.txt"%RunID)
+
+    PrepareDirectory(RunID, robotfile, FinalAmountArray_hold, logfile) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
+#    return(rdf)
 
 CreateRobotXLS()

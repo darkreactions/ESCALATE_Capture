@@ -65,9 +65,12 @@ def DriveAddTemplates(opdir, RunID, Debug):
         new_dict[file1['title']]=file1['id']
     return(new_dict)
 
-def GupFile(opdir, robotfile_name):
+def GupFile(opdir, robotfile_name, logfile_name):
     robotfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
     robotfile.SetContentFile(robotfile_name)
     robotfile.Upload()
-    print(robotfile_name, "Successfully Uploaded")
+    logfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
+    logfile.SetContentFile(logfile_name)
+    logfile.Upload()
+    print(robotfile_name, "and", logfile_name, "Successfully Uploaded")
     

@@ -16,14 +16,14 @@ from pydrive.drive import GoogleDrive
 
 ##Authentication for pydrive, designed globally to minimally generate token (a slow process)
 gauth = GoogleAuth()
-gauth.LoadCredentialsFile("mycred.txt")
+gauth.LoadCredentialsFile("LocalFileBackup/mycred.txt")
 if gauth.credentials is None:
     gauth.LocalWebserverAuth() #Creates local webserver and auto handles authentication.
 elif gauth.access_token_expired:
     gauth.LocalWebserverAuth() #Creates local webserver and auto handles authentication.
 else:
     gauth.Authorize() #Just run because everything is loaded properly
-gauth.SaveCredentialsFile("mycred.txt")
+gauth.SaveCredentialsFile("LocalFileBackup/mycred.txt")
 drive=GoogleDrive(gauth)
 
 ##Creating template directory for later copying of relevant files
@@ -50,6 +50,7 @@ def DriveCreateFolder(title1, Debug):
 ##Copies all files from template directory into the new directory
 ##Returns a referenced dictionary of files (title, Gdrive ID)
 def DriveAddTemplates(opdir, RunID, Debug):
+    print("Copying files into %s on Google Drive" %RunID, end='')
     if Debug == 0:
         template_folder='1OxuxqfumIpg3MPr3rgtRxwcOgCfetkIu'  #Target folder for actual runs
     if Debug == 1:
@@ -57,7 +58,9 @@ def DriveAddTemplates(opdir, RunID, Debug):
     file_template_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % template_folder}).GetList()
     for templatefile in file_template_list:       
             basename=templatefile['title']
+            print('.', end='')
             drive.auth.service.files().copy(fileId=templatefile['id'], body={"parents": [{"kind": "drive#fileLink", "id": opdir}], 'title': '%s_%s' %(RunID,basename)}).execute(),
+    print("done")
     newdir_list = drive.ListFile({'q': "'%s' in parents and trashed=false" %opdir}).GetList()
     ExpDataFile="%s_ExpDataEntry"%(RunID)
     new_dict={}
@@ -72,5 +75,5 @@ def GupFile(opdir, robotfile_name, logfile_name):
     logfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
     logfile.SetContentFile(logfile_name)
     logfile.Upload()
-    print(robotfile_name, "and", logfile_name, "Successfully Uploaded")
+    print('RobotInput.xls', "and", 'LogFile.txt', "Successfully Uploaded")
     

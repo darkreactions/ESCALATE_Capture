@@ -36,4 +36,5 @@ Debugging=1
 #BeadSize = 4  ### Currently a range from maximum of 6mm to minimum of 2mm (soda lime bead)
 
 ############################
+cd PythonFiles
 python RoboJSONScript.py $Debugging

@@ -11,6 +11,7 @@ import numpy as np
 import optunity
 import random
 import matplotlib.pyplot as plt
+import sys
 
 ##########################################################
 #  _        ___           _                              #
@@ -71,28 +72,21 @@ print("\n"
 AMINE1 = "n-BuNH3I"
 AMINE2 = "n-BuNH3I"
 
-##Building Reagent List
-reagentlist=[]
-reagentlist.append(AMINE1)
-reagentlist.append(AMINE2)
-reagentlist.append('FAH')
-reagentlist.append('PbI2')
-
 ##Key Variables throughout the code
 ConcStock=1.5 #Maximum concentration of the stock solutions (A - PbI2 and amine, B - amine) in wkflow1
-ConcStockAmine=6 #Maximum concentration of the stock solutions (A - PbI2 and amine, B - amine) in wkflow1
-StockAAminePercent=2.00 #Percent concentration of amine in the first stock solution wkflow1
+ConcStockAmine=5 #Maximum concentration of the stock solutions (A - PbI2 and amine, B - amine) in wkflow1
+StockAAminePercent=1.00 #Percent concentration of amine in the first stock solution wkflow1
 RTemp=45  # Reagent temperature prior to reaction start (sitting in block)
 DeadVolume= 2.0 #Total dead volume in stock solutions
 MaximumStockVolume=500.0 #Maximum volume of GBL, Stock A, and stockB
 MaximumWellVolume=700.0
 
 ##Constraints
-maxEquivAmine=4 #Maximum ratio of amine (value) to lead iodide
-wellcount=96
+maxEquivAmine=2.2 #Maximum ratio of amine (value) to lead iodide
+wellcount=48
 molarmin1=0.40 #Lowest number of millimoles (mmol) added of amine or lead iodide to any well
 molarminFA=2.0  #Lowest number of millimoles (mmol) added of formic acid (FAH) to any well
-molarmaxFA=5.0 #Greatest number of millimoles (mmol) added of formic acid (FAH) to any well
+molarmaxFA=7.0 #Greatest number of millimoles (mmol) added of formic acid (FAH) to any well
 molarmax1=(ConcStock*MaximumStockVolume/1000)  #Greatest number of millimoles (mmol) of lead iodidde added to any well
 print("\n"
 "Chemical Space Constraints -- ", " ;;\n" 
@@ -135,6 +129,7 @@ R3Dur=3600
 #R6StirRPM=
 #R6Dur=
 
+PlateLabel='Symyx_96_well_0003'
 StockAAminePercent_Print = StockAAminePercent*100
 print("\n"
 "Stock Solution Variables -- ", " ;;\n" 
@@ -150,6 +145,7 @@ print("\n"
 "Maximum Combined Well Volume of Reagents 1-5 = ", "%s:microliter"%DeadVolume, " ;;\n" 
 "Maximum Total Well Volume = ", "%s:microliter"%DeadVolume, " ;;\n" 
 , end='\n', file=log)
+
 
 #############################################################################################################################
 #############################################################################################################################
@@ -189,6 +185,7 @@ def PrepareDirectory(RunID, robotfile, FinalAmountArray, logfile):
     for key,val in new_dict.items(): 
         if "ExpDataEntry" in key: #Experimentalsheet = gc.open_bysearches for ExpDataEntry Form to get id
             sheetobject = gc.open_by_key(val).sheet1
+            print("Writing to Google Sheet, please wait")
             sheetobject.update_acell('B2', date) #row, column, replacement in experimental data entry form
             sheetobject.update_acell('B3', time)
             sheetobject.update_acell('B4', lab)
@@ -221,6 +218,7 @@ def PrepareDirectory(RunID, robotfile, FinalAmountArray, logfile):
             sheetobject.update_acell('E24', 'null')
             sheetobject.update_acell('E25', 'null')
             sheetobject.update_acell('E26', 'null')
+            print("Writing to Google Sheet Complete")
 
 ##Place holder function.  This can be fit to change the distribution of points at a later time. For now
 ## the method returns only the sobol value unmodified.  The sampling in each input x1, x2, x3 should be evenly distributed
@@ -313,38 +311,27 @@ def SobolReagent(chemdf):
     rdf.insert(3,'Reagent4 (ul)', r4df)
     return(rdf.round())  ##Returns a pandas dataframe with all of the calculated reagent amounts.
 
+#Constructs well array information based on the total number of wells for the run
+#Future versions could do better at controlling the specific location on the tray that reagents are dispensed.  This would be place to start
+# that code overhaul
+def MakeWellList():
+    wellorder=['A', 'C', 'E', 'G', 'B', 'D', 'F', 'H'] #order is set by how the robot draws from the solvent wells
+    VialList=[]
+    welllimit=wellcount/8+1
+    count=1
+    while count<welllimit:
+        for item in wellorder:
+            countstr=str(count)
+            Viallabel=item+countstr
+            VialList.append(Viallabel)
+        count+=1
+    df_VialInfo=pd.DataFrame(VialList)
+    df_VialInfo.columns=['Vial Site']
+    df_VialInfo['Labware ID:']=[PlateLabel]*len(VialList)
+    return(df_VialInfo)
 
-## Prepares directory and relevant files, calls upon code to operate on those files to generate a new experimental run (workflow 1)
-def CreateRobotXLS():
-#    chemdf=pd.read_csv('ChemicalIndex.csv', index_col=1)
-    chemdf=ChemicalData() #Retrieves information regarding chemicals and performs a vlookup on the generated dataframe
-    rdf=SobolReagent(chemdf) #Brings in the datafram containing all of the volumes of solutions
-    #Failsafe check for total volumes
-    maxVolR1R2=(rdf.loc[:,"Reagent2 (ul)"]+rdf.loc[:, "Reagent3 (ul)"]).max()
-#    print(maxVolR1R2)
-    maxVol=(rdf.loc[:,"Reagent1 (ul)"]+rdf.loc[:,"Reagent2 (ul)"]+rdf.loc[:, "Reagent3 (ul)"]+rdf.loc[:, "Reagent4 (ul)"]+rdf.loc[:, "Reagent5 (ul)"]+rdf.loc[:, "Reagent6 (ul)"]).max()
-    while maxVol > MaximumWellVolume:
-        rdf=[]
-        print(maxVol, 'Volume Error')
-        rdf=SobolReagent(chemdf)
-        maxVol=(rdf.loc[:,"Reagent1 (ul)"]+rdf.loc[:,"Reagent2 (ul)"]+rdf.loc[:, "Reagent3 (ul)"]+rdf.loc[:, "Reagent4 (ul)"]+rdf.loc[:, "Reagent5 (ul)"]+rdf.loc[:, "Reagent6 (ul)"]).max()
-    print("\nStock Solution Final Amounts -- ;;", file=log)
-    print(int(maxVol),'(ul) Max Calculated < %i (ul) Max Allowed Well Volume ;;'%MaximumWellVolume, file=log)
-    #Constructing output information for creating the experimental excel input sheet
-    solventvolume=rdf['Reagent1 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
-    print('Solvent: ', (solventvolume/1000).round(2), " mL solvent ;;", sep='', file=log)
-    stockAvolume=rdf['Reagent2 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
-    PbI2mol=(stockAvolume/1000/1000*ConcStock)
-    PbI2mass=(PbI2mol*chemdf.loc["PbI2", "Molecular Weight (g/mol)"])
-    aminemassA=(stockAvolume/1000/1000*ConcStock*StockAAminePercent*chemdf.loc[AMINE1, "Molecular Weight (g/mol)"])
-    print('Stock Solution A: ', (stockAvolume/1000).round(2), " mL solvent, ", PbI2mass.round(2), " g PbI2, ", aminemassA.round(2), " g ", AMINE1, " ;;", sep='',file=log)
-    stockBvolume=rdf['Reagent3 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
-    Aminemol=(stockBvolume/1000/1000*ConcStockAmine)
-    aminemassB=(Aminemol*chemdf.loc[AMINE1, "Molecular Weight (g/mol)"])
-    print('Stock Solution B: ', (stockBvolume/1000).round(2), " mL solvent, ", aminemassB.round(2), " g ", AMINE1, " ;;", sep='', file=log)
-    stockFormicAcid5=rdf['Reagent5 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
-    stockFormicAcid6=rdf['Reagent6 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
-    #assign correct liquid class to the sample handler
+#Defines what type of liquid class sample handler (pipette) will be needed for the run
+def volarray(rdf):
     hv='HighVolume_Water_DispenseJet_Empty'
     sv='StandardVolume_Water_DispenseJet_Empty'
     lv='LowVolume_Water_DispenseJet_Empty'
@@ -360,9 +347,42 @@ def CreateRobotXLS():
             vol_ar.append(sv)
         if name_maxvol < 50:
             vol_ar.append(lv)
-    #Handle and output dataframes
-    df_Tray=pd.read_excel('Template.xls', sheet_name='NIMBUS_reaction',usecols=(0,1))
-    df_Tray=pd.read_excel('Template.xls', sheet_name='NIMBUS_reaction',usecols=(0,1))
+    return(vol_ar)
+
+## Prepares directory and relevant files, calls upon code to operate on those files to generate a new experimental run (workflow 1)
+def CreateRobotXLS():
+#    chemdf=pd.read_csv('ChemicalIndex.csv', index_col=1)
+    chemdf=ChemicalData() #Retrieves information regarding chemicals and performs a vlookup on the generated dataframe
+    rdf=SobolReagent(chemdf) #Brings in the datafram containing all of the volumes of solutions
+    #Failsafe check for total volumes
+    maxVolR1R2=(rdf.loc[:,"Reagent2 (ul)"]+rdf.loc[:, "Reagent3 (ul)"]).max()
+#    print(maxVolR1R2)
+    maxVol=(rdf.loc[:,"Reagent1 (ul)"]+rdf.loc[:,"Reagent2 (ul)"]+rdf.loc[:, "Reagent3 (ul)"]+rdf.loc[:, "Reagent4 (ul)"]+rdf.loc[:, "Reagent5 (ul)"]+rdf.loc[:, "Reagent6 (ul)"]).max()
+    if maxVol > MaximumWellVolume:
+        print("ERROR: An incorrect correct configuration has been entered resulting in %suL which exceeds the maximum of %suL of total well volume" %(maxVol, MaximumWellVolume))
+        print("    Please correct the configuration and attempt this run again")
+        sys.exit()
+    print("\nStock Solution Final Amounts -- ;;", file=log)
+    print(int(maxVol),'(ul) Max Calculated < %i (ul) Max Allowed Well Volume ;;'%MaximumWellVolume, file=log)
+
+    #Constructing output information for creating the experimental excel input sheet
+    solventvolume=rdf['Reagent1 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
+    print('Solvent: ', (solventvolume/1000).round(2), " mL solvent ;;", sep='', file=log)
+    stockAvolume=rdf['Reagent2 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
+    PbI2mol=(stockAvolume/1000/1000*ConcStock)
+    PbI2mass=(PbI2mol*chemdf.loc["PbI2", "Molecular Weight (g/mol)"])
+    aminemassA=(stockAvolume/1000/1000*ConcStock*StockAAminePercent*chemdf.loc[AMINE1, "Molecular Weight (g/mol)"])
+    print('Stock Solution A: ', (stockAvolume/1000).round(2), " mL solvent, ", PbI2mass.round(2), " g PbI2, ", aminemassA.round(2), " g ", AMINE1, " ;;", sep='',file=log)
+    stockBvolume=rdf['Reagent3 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
+    Aminemol=(stockBvolume/1000/1000*ConcStockAmine)
+    aminemassB=(Aminemol*chemdf.loc[AMINE1, "Molecular Weight (g/mol)"])
+    print('Stock Solution B: ', (stockBvolume/1000).round(2), " mL solvent, ", aminemassB.round(2), " g ", AMINE1, " ;;", sep='', file=log)
+    stockFormicAcid5=rdf['Reagent5 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
+    stockFormicAcid6=rdf['Reagent6 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
+
+    #The following section handles and output dataframes to the format required by the robot.xls file.  File type is very picky about white space and formatting.  
+    df_Tray=MakeWellList()
+    vol_ar=volarray(rdf)
     Parameters={
     'Reaction Parameters':['Temperature (C):','Stir Rate (rpm):','Mixing time1 (s):','Mixing time2 (s):', 'Reaction time (s):',""], 
     'Parameter Values':[Temp2, SRPM, S1Dur, S2Dur, FinalHold,''],
@@ -390,8 +410,8 @@ def CreateRobotXLS():
     outframe.to_excel("%s_RobotInput.xls" %RunID, sheet_name='NIMBUS_reaction', index=False)
     robotfile=("%s_RobotInput.xls" %RunID)
     logfile=("%s_LogFile.txt"%RunID)
-
     PrepareDirectory(RunID, robotfile, FinalAmountArray_hold, logfile) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
 #    return(rdf)
 
 CreateRobotXLS()
+MakeWellList()

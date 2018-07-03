@@ -23,9 +23,39 @@ import sys
 ### Command line parsing for taking data from shell script
 parser = ap.ArgumentParser(description='Requires Debug to be manually toggled on')
 parser.add_argument('Debugging', default=1, type=int, help='') #Default, debugging on and real code off == "1"
-args = parser.parse_args()
-log=open("LogFile.txt", "w")
+parser.add_argument('ploton', default=1, type=int, help='') #Default, debugging on and real code off == "1"
+parser.add_argument('Temp1', default=80, type=int, help='') 
+parser.add_argument('SRPM', default=750, type=int, help='') 
+parser.add_argument('S1Dur', default=900, type=int, help='') 
+parser.add_argument('S2Dur', default=1200, type=int, help='') 
+parser.add_argument('Temp2', default=105, type=int, help='') 
+parser.add_argument('FinalHold', default=12600, type=int, help='') 
+parser.add_argument('Amine1', type=str, help='') 
+parser.add_argument('Amine2', type=str, help='') 
+parser.add_argument('ConcStock', default=1.5, type=float, help='') 
+parser.add_argument('ConcStockAmine', default=5, type=int, help='') 
+parser.add_argument('StockAminePercent', default=1.0, type=float, help='') 
+parser.add_argument('RTemp', default=45, type=int, help='') 
+parser.add_argument('DeadVolume', default=2.0, type=float, help='') 
+parser.add_argument('MaximumStockVolume', default=500, type=int, help='') 
+parser.add_argument('MaximumWellVolume', default=700, type=int, help='') 
+parser.add_argument('maxEquivAmine', default=2.2, type=float, help='') 
+parser.add_argument('wellcount', default=96, type=int, help='') 
+parser.add_argument('molarmin1', default=0.40, type=float, help='') 
+parser.add_argument('molarminFA', default=2.0, type=float, help='') 
+parser.add_argument('molarmaxFA', default=5.0, type=float, help='')
 
+parser.add_argument('R2PreTemp', default=75, type=int, help='') 
+parser.add_argument('R2StirRPM', default=450, type=int, help='') 
+parser.add_argument('R2Dur', default=3600, type=int, help='') 
+
+parser.add_argument('R3PreTemp', default=75, type=int, help='') 
+parser.add_argument('R3StirRPM', default=450, type=int, help='') 
+parser.add_argument('R3Dur', default=3600, type=int, help='') 
+
+
+args = parser.parse_args()
+log=open("LocalFileBackup/LogFile.txt", "w")
 
 ##Setup Run ID Information
 lab = 'LBL'
@@ -52,12 +82,12 @@ pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 print("Plotted (? -- boolean) = ", ploton, " ;;\n", end='\n', file=log)
 
-Temp1 = 80
-SRPM = 750
-S1Dur = 900
-S2Dur = 1200
-Temp2 = 105
-FinalHold = 12600
+Temp1 = args.Temp1
+SRPM = args.SRPM
+S1Dur = args.S1Dur
+S2Dur = args.S2Dur
+Temp2 = args.Temp2
+FinalHold = args.FinalHold
 
 print("\n"
 "Run Information -- ", " ;;\n" 
@@ -69,24 +99,24 @@ print("\n"
 , end='\n', file=log)
 
 ### Link to amine list: https://goo.gl/UZSCBj ############
-AMINE1 = "n-BuNH3I"
-AMINE2 = "n-BuNH3I"
+AMINE1 = args.Amine1
+AMINE2 = args.Amine2
 
 ##Key Variables throughout the code
-ConcStock=1.5 #Maximum concentration of the stock solutions (A - PbI2 and amine, B - amine) in wkflow1
-ConcStockAmine=5 #Maximum concentration of the stock solutions (A - PbI2 and amine, B - amine) in wkflow1
-StockAAminePercent=1.00 #Percent concentration of amine in the first stock solution wkflow1
-RTemp=45  # Reagent temperature prior to reaction start (sitting in block)
-DeadVolume= 2.0 #Total dead volume in stock solutions
-MaximumStockVolume=500.0 #Maximum volume of GBL, Stock A, and stockB
-MaximumWellVolume=700.0
+ConcStock=args.ConcStock #Maximum concentration of the stock solutions (A - PbI2 and amine, B - amine) in wkflow1
+ConcStockAmine=args.ConcStockAmine #Maximum concentration of the stock solutions (A - PbI2 and amine, B - amine) in wkflow1
+StockAAminePercent=args.StockAminePercent #Percent concentration of amine in the first stock solution wkflow1
+RTemp=args.RTemp  # Reagent temperature prior to reaction start (sitting in block)
+DeadVolume= args.DeadVolume #Total dead volume in stock solutions
+MaximumStockVolume=args.MaximumStockVolume #Maximum volume of GBL, Stock A, and stockB
+MaximumWellVolume=args.MaximumWellVolume
 
 ##Constraints
-maxEquivAmine=2.2 #Maximum ratio of amine (value) to lead iodide
-wellcount=48
-molarmin1=0.40 #Lowest number of millimoles (mmol) added of amine or lead iodide to any well
-molarminFA=2.0  #Lowest number of millimoles (mmol) added of formic acid (FAH) to any well
-molarmaxFA=7.0 #Greatest number of millimoles (mmol) added of formic acid (FAH) to any well
+maxEquivAmine= args.maxEquivAmine #Maximum ratio of amine (value) to lead iodide
+wellcount=args.wellcount
+molarmin1=args.molarmin1 #Lowest number of millimoles (mmol) added of amine or lead iodide to any well
+molarminFA=args.molarminFA  #Lowest number of millimoles (mmol) added of formic acid (FAH) to any well
+molarmaxFA=args.molarmaxFA #Greatest number of millimoles (mmol) added of formic acid (FAH) to any well
 molarmax1=(ConcStock*MaximumStockVolume/1000)  #Greatest number of millimoles (mmol) of lead iodidde added to any well
 print("\n"
 "Chemical Space Constraints -- ", " ;;\n" 
@@ -105,14 +135,14 @@ print("\n"
 #R1Dur=
 
 #Reagent 2
-R2PreTemp=75
-R2StirRPM=450
-R2Dur=3600
+R2PreTemp=args.R2PreTemp
+R2StirRPM=args.R2StirRPM
+R2Dur=args.R2Dur
 
 #Reagent 3
-R3PreTemp=75
-R3StirRPM=450
-R3Dur=3600
+R3PreTemp=args.R3PreTemp
+R3StirRPM=args.R3StirRPM
+R3Dur=args.R3Dur 
 
 ##Reagent 4
 #R4PreTemp=
@@ -151,11 +181,23 @@ print("\n"
 #############################################################################################################################
 #############################################################################################################################
 
+credsjson={
+  "type": "service_account",
+  "project_id": "sd2perovskitedrp",
+  "private_key_id": "05516a110e2f053145747c432c8124a218118fca",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPI4jqjofDw1VA\n1VE0q9adAt7T9Ad8IafQURae/yFXsakkJjIgpQficUTDq78/3OYbcjKPayeUmBUp\nn9jb2XVTjouKrUAeGeXO3rB2gZ8fEMLuLQgz1ELwoZkuAWpzxlcUySakO06DEMkw\nZD0zN7jUQqxqlim7eE1VST3tHiLWbtygdOxwxI3qD0XdzMqeEsTBO0u4W5q7G0Rg\ndds2Af3BMddvwk7O8kyiqLXez1HxDBEQcNm1ZNV+sVl1+QEnrzOUGkJ3UcP/pNCB\nAZEd+4hoIeDAhR2HiLh/jGS55tigcn781QxbDlqfoE5dz/xeJRlDO1GZDDJaeQ7J\nuGhJ27wTAgMBAAECggEAHeF0aNGyyAyvibC8DCsVxISbfFvhkIiSWry31KvdNXdN\nfQd9h7QG1SWd09Q8vIuzLhZlMMc2aHsf4mdKszxFbo5Llu+zJiR6QENjlVTRjXuv\ngwg//KoMFgZZwIc3wgfEnB0AVASyKLoNK8vqAC9znDsaAC41SvPpw/nS0xfb0q7c\n8PZhM9ER3RsnsCeNWDInVkLMl7rF+yLpeVK+zG64TlytdcID77LaPVemW4mCkh+9\nrnaAjzAKHxm+jaRkQw8m6E51p6HW1Flo64Xv969mcqHmDQoqEziT+ey33Hu3Trw8\n70B0s2oeenxxeKMZbhgvQo6xztwe8JimPLxbawY1QQKBgQDtU2jjbSkiTzEp7yPp\nRV996U6B0+59J4939zfZ3VLm/FLtWKcsO6usxTirAxGzd8hVTi4y2WN4N/Wz7Y2p\n9XBhLGM5BgpmIk7uU+zn99gN+I+xrqh4FLm49yxNFV9B2m4QEnuF4yuyHnuk0Ja0\nK75OBGPXpk/jEhu8IElONAN1MQKBgQDfcA0BbUKOsaPebbuGGUvLoAgBqN7oO/M4\nxdg9sxXAJIocAt2RHg8Po8NzyE1LaCR9eQkAR+yIWrh18g3Qahjb19ZJWGFZeQfB\nOTBLadoXi1gb7UzUT5bANairIj1Kj/sgkGlXI3yTQjAXMLVMtreq8qTiRD5mcUOh\nQqDCeeIEgwKBgQCbCVtC/yPZCvzmFRhTooMwYQJtY8KvtfFOgIzW4XPv+7Q84yZK\niiyrcCeF6DpfEIgp2inqBAOsHHqBcVWTSwiAIpwrO1v9vrnrjZ39J/bXoaJVg/EA\niSGOyMIDFUwmXAh8rWZOX8pC0REa6T0aNF1c4BdNYJNdlo3RxxG8adQ8cQKBgQCY\nlbmb9tRUBAXHOSKtkgrL1M6C66LF72LKq3lfsTOyUoGqXV6X4nIgmRI5uFjonQcG\nVKiL85IZD/MWQKWkZT/yqfPhhKR+aIOeNYLAjVntaDBUafpkprFpM3uq2qgGikrR\n0yzM4CQLoFCdFZtJ9yF4cVmeV0JRzRmFP63vATMTJwKBgEYOSJaRix+iUk8br0ks\nMLHR/1jpkAKpdylZveDNlH7hyDaI/49BhUiBVfgZpvmmsVBaCuT3zs6EYZgxaKMT\nsNQ79RpFZ37iPcSNcowWx1fA7chbWOU/KadGwajRwyXAJUxf5sqRplFK9uss/7vR\n2IoNs8hKcf097zP3W+60/Adp\n-----END PRIVATE KEY-----\n",
+  "client_email": "uploadtogooglesheets@sd2perovskitedrp.iam.gserviceaccount.com",
+  "client_id": "101584110543551066070",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/uploadtogooglesheets%40sd2perovskitedrp.iam.gserviceaccount.com"
+}
 
 ### General Setup Information ###
 ##GSpread Authorization information
 scope= ['https://spreadsheets.google.com/feeds']
-credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
+credentials = ServiceAccountCredentials.from_json_keyfile_dict(credsjson, scope)
 gc =gspread.authorize(credentials)
 
 
@@ -168,57 +210,65 @@ def NewWrkDir(RunID, Debug, robotfile, logfile):
     return(file_dict) #returns the experimental data sheet google pointer url (GoogleID)
 
 def ChemicalData():
+    print('Obtaining chemical information from Google Drive..', end='')
     chemsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
     ChemicalBook = gc.open_by_key(chemsheetid)
     chemicalsheet = ChemicalBook.get_worksheet(0)
-    with open('ChemicalIndex.csv', 'w') as f:
-        writer = csv.writer(f, delimiter=',')
-        for line in chemicalsheet.get_all_values():
-            writer.writerow(line)
-    chemdf=pd.read_csv('ChemicalIndex.csv', index_col=1)
+    chemical_list = chemicalsheet.get_all_values()
+    print('...', end='')
+    chemdf=pd.DataFrame(chemical_list, columns=chemical_list[0])
+    chemdf=chemdf.iloc[1:]
+    chemdf=chemdf.reset_index(drop=True)
+    chemdf=chemdf.set_index(['Chemical Abbreviation'])
+    print('.done')
     return(chemdf)
 
 ### File preparation --- Main Code Body ###
 ##Updates all of the run data information and creates the empty template for amine information
 def PrepareDirectory(RunID, robotfile, FinalAmountArray, logfile):
     new_dict=NewWrkDir(RunID, Debug, robotfile, logfile) #Calls NewWrkDir Function to get the list of files
+    print("Writing to Google Sheet, please wait...", end='')
     for key,val in new_dict.items(): 
         if "ExpDataEntry" in key: #Experimentalsheet = gc.open_bysearches for ExpDataEntry Form to get id
             sheetobject = gc.open_by_key(val).sheet1
-            print("Writing to Google Sheet, please wait")
             sheetobject.update_acell('B2', date) #row, column, replacement in experimental data entry form
             sheetobject.update_acell('B3', time)
             sheetobject.update_acell('B4', lab)
             sheetobject.update_acell('B6', RunID)
             sheetobject.update_acell('B17', AMINE1)
             sheetobject.update_acell('B20', AMINE2)
+            print('.', end='')
 #            sheetobject.update_acell('C2', AMINE3)
             sheetobject.update_acell('D4', R2PreTemp)
             sheetobject.update_acell('E4', R2StirRPM)
             sheetobject.update_acell('F4', R2Dur)
             sheetobject.update_acell('D5', R3PreTemp)
+            print('.', end='')
             sheetobject.update_acell('E5', R3StirRPM)
             sheetobject.update_acell('F5', R3Dur)
             sheetobject.update_acell('C14', FinalAmountArray[0])
             sheetobject.update_acell('C16', FinalAmountArray[1])
             sheetobject.update_acell('C17', FinalAmountArray[2])
             sheetobject.update_acell('C18', FinalAmountArray[3])
+            print('.', end='')
             sheetobject.update_acell('C20', FinalAmountArray[4])
             sheetobject.update_acell('C21', FinalAmountArray[5])
             sheetobject.update_acell('C27', FinalAmountArray[6])
             sheetobject.update_acell('C28', FinalAmountArray[7])
             sheetobject.update_acell('B22', 'null')
+            print('.', end='')
             sheetobject.update_acell('E22', 'null')
             sheetobject.update_acell('B24', 'null')
             sheetobject.update_acell('B25', 'null')
             sheetobject.update_acell('B26', 'null')
             sheetobject.update_acell('C24', 'null')
             sheetobject.update_acell('C25', 'null')
+            print('.', end='')
             sheetobject.update_acell('C26', 'null')
             sheetobject.update_acell('E24', 'null')
             sheetobject.update_acell('E25', 'null')
             sheetobject.update_acell('E26', 'null')
-            print("Writing to Google Sheet Complete")
+            print('done')
 
 ##Place holder function.  This can be fit to change the distribution of points at a later time. For now
 ## the method returns only the sobol value unmodified.  The sampling in each input x1, x2, x3 should be evenly distributed
@@ -264,24 +314,28 @@ def SobolReagent(chemdf):
                 if count < 50:  # Sometimes the range between min and max is too tight and sobol doesn't behave well.  This sets the value of the amine stock to the remainder of the well volume
                     if ReagACheck > 0.48:
                         newMolMinAmineUnpack=(.500-ReagACheck)*ConcStockAmine+mmolLeadI*StockAAminePercent
-                if count > 50: # Should prevent death loop.... but the code hasn't been finished.  For the most part this code shouldn't be needed until UI on DRP is finished
+                # Should prevent death loop.... but the code hasn't been finished.  For the most part this code shouldn't be needed until UI on DRP is finished
+                if count > 50: 
                     print("Amine Ratio Maximum Very High. Strongly Recommend Adjusting")
                     newMolMinAmineUnpack=0
                     print(ReagACheck, newMolMinAmineUnpack)
                     break 
         Reagentmm3.append(newMolMinAmineUnpack) # Append the value for the calculated mmol of amine to the list
-
-    # Create Formic Acid data frames
+    # Create Formic Acid Arrays
     Reagentmm5=info_FA.call_log['args']['x1']
     Reagentmm6=info_FA.call_log['args']['x2']
+    return(Reagentmm2, Reagentmm3, Reagentmm5, Reagentmm6)
+
+def ReagentVolumes(chemdf):
     # create data frames of target mmol of material
+    ReagentmmList=SobolReagent(chemdf)
     rmmdf=pd.DataFrame()  #Construct primary data frames r2df=pd.DataFrame()  r2df means reagent 2 dataframe
     rmmdf2=pd.DataFrame()  #Construct primary data frames r2df=pd.DataFrame()  r2df means reagent 2 dataframe
-    rmmdf.insert(0, "PbI2 mmol", Reagentmm2)
-    rmmdf.insert(1, "Amine mmol 2", Reagentmm3)
-    rmmdf2.insert(0, "FA mmol", Reagentmm5)
-    rmmdf2.insert(1, "FA2 mmol", Reagentmm6)
-    # Debugging - Show concentration graph of pbI2 and amine
+    rmmdf.insert(0, "PbI2 mmol", ReagentmmList[0])
+    rmmdf.insert(1, "Amine mmol 2", ReagentmmList[1])
+    rmmdf2.insert(0, "FA mmol", ReagentmmList[2])
+    rmmdf2.insert(1, "FA2 mmol", ReagentmmList[3])
+    # Debugging - Show concentration graph of pbI2 and amine #### need to change to concentration, total well and stock only
     if ploton == 1:
         fig, ax=plt.subplots()
         ax.scatter(rmmdf.iloc[:,0],rmmdf.iloc[:,1])
@@ -293,14 +347,14 @@ def SobolReagent(chemdf):
     Stock={'Stock A':[ConcStock,StockAAminePercent*ConcStock],'Stock B':[0,ConcStockAmine]} #Stock A is the mixture, B is all amine
     Stockdf=pd.DataFrame(data=Stock)
     rmmdf_trans=rmmdf.transpose()
-    rmmdf.insert(2, "FA mmol", Reagentmm5)
-    rmmdf.insert(3, "FA2 mmol", Reagentmm6)
+    rmmdf.insert(2, "FA mmol", ReagentmmList[2])
+    rmmdf.insert(3, "FA2 mmol", ReagentmmList[3])
     print("moles Array :{ \n", rmmdf, "\n}", file=log)
     # Converting the mmol of the reagents to volumes of the stock solutions in each well
     Stockdf_inverse= pd.DataFrame(np.linalg.pinv(Stockdf.values))
     npVols=np.transpose(np.dot(Stockdf_inverse, rmmdf_trans))  #Unrefined matrix of Volumes of the stock solutions needed for each well in the robotics run
     # Calculating the total volume of formic acid needed for each run 
-    rmmdf3=rmmdf2*chemdf.loc["FAH","Molecular Weight (g/mol)"] / chemdf.loc["FAH","Density            (g/mL)"]
+    rmmdf3=rmmdf2*float(chemdf.loc["FAH","Molecular Weight (g/mol)"]) / float(chemdf.loc["FAH","Density            (g/mL)"])
     rmmdf4=rmmdf3.rename(columns={"FA mmol":"Reagent5 (ul)", "FA2 mmol": "Reagent6 (ul)" })
     npVolsdf=pd.DataFrame({"Reagent2 (ul)": npVols[:,0], "Reagent3 (ul)": npVols[:,1]})*1000
     # Setting up the remaining data frames
@@ -353,7 +407,7 @@ def volarray(rdf):
 def CreateRobotXLS():
 #    chemdf=pd.read_csv('ChemicalIndex.csv', index_col=1)
     chemdf=ChemicalData() #Retrieves information regarding chemicals and performs a vlookup on the generated dataframe
-    rdf=SobolReagent(chemdf) #Brings in the datafram containing all of the volumes of solutions
+    rdf=ReagentVolumes(chemdf) #Brings in the datafram containing all of the volumes of solutions
     #Failsafe check for total volumes
     maxVolR1R2=(rdf.loc[:,"Reagent2 (ul)"]+rdf.loc[:, "Reagent3 (ul)"]).max()
 #    print(maxVolR1R2)
@@ -364,18 +418,17 @@ def CreateRobotXLS():
         sys.exit()
     print("\nStock Solution Final Amounts -- ;;", file=log)
     print(int(maxVol),'(ul) Max Calculated < %i (ul) Max Allowed Well Volume ;;'%MaximumWellVolume, file=log)
-
     #Constructing output information for creating the experimental excel input sheet
     solventvolume=rdf['Reagent1 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
     print('Solvent: ', (solventvolume/1000).round(2), " mL solvent ;;", sep='', file=log)
     stockAvolume=rdf['Reagent2 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
     PbI2mol=(stockAvolume/1000/1000*ConcStock)
-    PbI2mass=(PbI2mol*chemdf.loc["PbI2", "Molecular Weight (g/mol)"])
-    aminemassA=(stockAvolume/1000/1000*ConcStock*StockAAminePercent*chemdf.loc[AMINE1, "Molecular Weight (g/mol)"])
+    PbI2mass=(PbI2mol*float(chemdf.loc["PbI2", "Molecular Weight (g/mol)"]))
+    aminemassA=(stockAvolume/1000/1000*ConcStock*StockAAminePercent*float(chemdf.loc[AMINE1, "Molecular Weight (g/mol)"]))
     print('Stock Solution A: ', (stockAvolume/1000).round(2), " mL solvent, ", PbI2mass.round(2), " g PbI2, ", aminemassA.round(2), " g ", AMINE1, " ;;", sep='',file=log)
     stockBvolume=rdf['Reagent3 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
     Aminemol=(stockBvolume/1000/1000*ConcStockAmine)
-    aminemassB=(Aminemol*chemdf.loc[AMINE1, "Molecular Weight (g/mol)"])
+    aminemassB=(Aminemol*float(chemdf.loc[AMINE1, "Molecular Weight (g/mol)"]))
     print('Stock Solution B: ', (stockBvolume/1000).round(2), " mL solvent, ", aminemassB.round(2), " g ", AMINE1, " ;;", sep='', file=log)
     stockFormicAcid5=rdf['Reagent5 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
     stockFormicAcid6=rdf['Reagent6 (ul)'].sum()+DeadVolume*1000 #Total volume of the stock solution needed for the robot run
@@ -406,12 +459,11 @@ def CreateRobotXLS():
     FinalAmountArray_hold.append((stockFormicAcid5/1000).round(2))
     FinalAmountArray_hold.append((stockFormicAcid6/1000).round(2))
     log.close()
-    os.rename('LogFile.txt', "%s_LogFile.txt"%RunID)
-    outframe.to_excel("%s_RobotInput.xls" %RunID, sheet_name='NIMBUS_reaction', index=False)
-    robotfile=("%s_RobotInput.xls" %RunID)
-    logfile=("%s_LogFile.txt"%RunID)
-    PrepareDirectory(RunID, robotfile, FinalAmountArray_hold, logfile) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
+    os.rename('LocalFileBackup/LogFile.txt', "LocalFileBackup/%s_LogFile.txt"%RunID)
+    outframe.to_excel("LocalFileBackup/%s_RobotInput.xls" %RunID, sheet_name='NIMBUS_reaction', index=False)
+    robotfile=("LocalFileBackup/%s_RobotInput.xls" %RunID)
+    logfile=("LocalFileBackup/%s_LogFile.txt"%RunID)
+#    PrepareDirectory(RunID, robotfile, FinalAmountArray_hold, logfile) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
 #    return(rdf)
 
 CreateRobotXLS()
-MakeWellList()

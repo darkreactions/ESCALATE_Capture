@@ -29,7 +29,7 @@ Lab=LBL #Options are "LBL" or "HC" (Haverford College)
 ### Debugging Options ###
 #########################
 Db=1 #Debugging 0 turns off debugging, REAL RUNS WIH 0
-Pt=1 #Turns on plot display 
+Pt=0 #Turns on plot display 
 
 ############################
 ### Tray/Robot Variables ###

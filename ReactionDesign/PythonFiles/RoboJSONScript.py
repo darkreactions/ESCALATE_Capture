@@ -13,6 +13,7 @@ import random
 import matplotlib.pyplot as plt
 import sys
 
+RoboVersion=1.1 #Workflow version of the robotic JSON generation script (this script)
 ##########################################################
 #  _        ___           _                              #
 # |_)    o   |   _. ._   |_) _  ._   _| |  _ _|_  _  ._  #
@@ -30,20 +31,20 @@ parser.add_argument('S1Dur', default=900, type=int, help='')
 parser.add_argument('S2Dur', default=1200, type=int, help='') 
 parser.add_argument('Temp2', default=105, type=int, help='') 
 parser.add_argument('FinalHold', default=12600, type=int, help='') 
-parser.add_argument('Amine1', type=str, help='') 
-parser.add_argument('Amine2', type=str, help='') 
-parser.add_argument('ConcStock', default=1.5, type=float, help='') 
-parser.add_argument('ConcStockAmine', default=5, type=int, help='') 
-parser.add_argument('StockAminePercent', default=1.0, type=float, help='') 
+parser.add_argument('Amine1', type=str, help='', default=False) 
+parser.add_argument('Amine2', type=str, help='', default=False) 
+parser.add_argument('ConcStock', default=False, type=float, help='') 
+parser.add_argument('ConcStockAmine', default=False, type=float, help='') 
+parser.add_argument('StockAminePercent', default=False, type=float, help='') 
 parser.add_argument('RTemp', default=45, type=int, help='') 
 parser.add_argument('DeadVolume', default=2.0, type=float, help='') 
 parser.add_argument('MaximumStockVolume', default=500, type=int, help='') 
 parser.add_argument('MaximumWellVolume', default=700, type=int, help='') 
-parser.add_argument('maxEquivAmine', default=2.2, type=float, help='') 
+parser.add_argument('maxEquivAmine', default=False, type=float, help='') 
 parser.add_argument('wellcount', default=96, type=int, help='') 
-parser.add_argument('molarmin1', default=0.40, type=float, help='') 
-parser.add_argument('molarminFA', default=2.0, type=float, help='') 
-parser.add_argument('molarmaxFA', default=5.0, type=float, help='')
+parser.add_argument('molarmin1', default=False, type=float, help='') 
+parser.add_argument('molarminFA', default=False, type=float, help='') 
+parser.add_argument('molarmaxFA', default=False, type=float, help='')
 
 parser.add_argument('R2PreTemp', default=75, type=int, help='') 
 parser.add_argument('R2StirRPM', default=450, type=int, help='') 
@@ -53,17 +54,24 @@ parser.add_argument('R3PreTemp', default=75, type=int, help='')
 parser.add_argument('R3StirRPM', default=450, type=int, help='') 
 parser.add_argument('R3Dur', default=3600, type=int, help='') 
 
-
+parser.add_argument('ExpWorkflowVer', type=float, help='') 
+parser.add_argument('Lab', type=str, help='Must select LBL or HC', choices=set(("LBL", "HC")))
+parser.add_argument('--molarmax1', nargs='?', type=float, default=False, help='Manual cutoff for the upper bound of PbI2 concentration')
 args = parser.parse_args()
 log=open("LocalFileBackup/LogFile.txt", "w")
+try:
+    molarmax1=args.molarmax1
+except NameError:
+    molarmax1=args.molarmax1=None
 
 ##Setup Run ID Information
-lab = 'LBL'
+lab = args.Lab
 readdate_gen=datetime.now(timezone.utc).isoformat()
 readdate=readdate_gen.replace(':', '_') #Remove problematic characters
 date=datetime.now(timezone.utc).strftime("%Y-%m-%d")
 time=datetime.now(timezone.utc).strftime("%H_%M_%S")
 RunID=readdate + "_" + lab #Agreed Upon format for final run information
+
 #date='2017-10-20'
 #time='22_59_29'
 #readdate=date+"T"+time+".000000+00_00"
@@ -77,7 +85,7 @@ Debug = args.Debugging #Prevents editing the working directory and provides a de
 print("Debugging on (? - boolean) = ", Debug, end=' ;;\n', file=log)
 
 # plot of chemical space??? ##
-ploton=0
+ploton=args.ploton
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 print("Plotted (? -- boolean) = ", ploton, " ;;\n", end='\n', file=log)
@@ -88,6 +96,7 @@ S1Dur = args.S1Dur
 S2Dur = args.S2Dur
 Temp2 = args.Temp2
 FinalHold = args.FinalHold
+ExpVer = args.ExpWorkflowVer
 
 print("\n"
 "Run Information -- ", " ;;\n" 
@@ -111,13 +120,15 @@ DeadVolume= args.DeadVolume #Total dead volume in stock solutions
 MaximumStockVolume=args.MaximumStockVolume #Maximum volume of GBL, Stock A, and stockB
 MaximumWellVolume=args.MaximumWellVolume
 
+
 ##Constraints
 maxEquivAmine= args.maxEquivAmine #Maximum ratio of amine (value) to lead iodide
 wellcount=args.wellcount
 molarmin1=args.molarmin1 #Lowest number of millimoles (mmol) added of amine or lead iodide to any well
+if molarmax1 is None:
+    molarmax1=(ConcStock*MaximumStockVolume/1000)  #Greatest number of millimoles (mmol) of lead iodidde added to any well
 molarminFA=args.molarminFA  #Lowest number of millimoles (mmol) added of formic acid (FAH) to any well
 molarmaxFA=args.molarmaxFA #Greatest number of millimoles (mmol) added of formic acid (FAH) to any well
-molarmax1=(ConcStock*MaximumStockVolume/1000)  #Greatest number of millimoles (mmol) of lead iodidde added to any well
 print("\n"
 "Chemical Space Constraints -- ", " ;;\n" 
 "Max Equiv Amine =", maxEquivAmine, ' ;;\n'
@@ -205,7 +216,7 @@ gc =gspread.authorize(credentials)
 ##Generates new working directory with updated templates, return working folder ID
 def NewWrkDir(RunID, Debug, robotfile, logfile): 
     NewDir=Google_IO.DriveCreateFolder(RunID, Debug)
-    Google_IO.GupFile(NewDir, robotfile, logfile)
+    Google_IO.GupFile(NewDir, robotfile, logfile, RunID)
     file_dict=Google_IO.DriveAddTemplates(NewDir, RunID, Debug)
     return(file_dict) #returns the experimental data sheet google pointer url (GoogleID)
 
@@ -233,8 +244,16 @@ def PrepareDirectory(RunID, robotfile, FinalAmountArray, logfile):
             sheetobject = gc.open_by_key(val).sheet1
             sheetobject.update_acell('B2', date) #row, column, replacement in experimental data entry form
             sheetobject.update_acell('B3', time)
+            print('.', end='')
             sheetobject.update_acell('B4', lab)
             sheetobject.update_acell('B6', RunID)
+            sheetobject.update_acell('B7', ExpVer)
+            print('.', end='')
+            sheetobject.update_acell('B8', RoboVersion)
+            sheetobject.update_acell('B9', 'null')
+            sheetobject.update_acell('B10', 'null')
+            print('.', end='')
+            sheetobject.update_acell('B11', 'null')
             sheetobject.update_acell('B17', AMINE1)
             sheetobject.update_acell('B20', AMINE2)
             print('.', end='')
@@ -248,6 +267,7 @@ def PrepareDirectory(RunID, robotfile, FinalAmountArray, logfile):
             sheetobject.update_acell('F5', R3Dur)
             sheetobject.update_acell('C14', FinalAmountArray[0])
             sheetobject.update_acell('C16', FinalAmountArray[1])
+            print('.', end='')
             sheetobject.update_acell('C17', FinalAmountArray[2])
             sheetobject.update_acell('C18', FinalAmountArray[3])
             print('.', end='')

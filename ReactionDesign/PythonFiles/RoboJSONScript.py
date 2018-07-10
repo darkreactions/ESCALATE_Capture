@@ -483,7 +483,7 @@ def CreateRobotXLS():
     outframe.to_excel("LocalFileBackup/%s_RobotInput.xls" %RunID, sheet_name='NIMBUS_reaction', index=False)
     robotfile=("LocalFileBackup/%s_RobotInput.xls" %RunID)
     logfile=("LocalFileBackup/%s_LogFile.txt"%RunID)
-#    PrepareDirectory(RunID, robotfile, FinalAmountArray_hold, logfile) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
+    PrepareDirectory(RunID, robotfile, FinalAmountArray_hold, logfile) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
 #    return(rdf)
 
 CreateRobotXLS()

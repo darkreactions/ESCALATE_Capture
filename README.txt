@@ -21,6 +21,7 @@ Overview of the installation and operation:
     5) xlutitls
     6) matplotlib
     7) argparse
+2) Request from admin client_secrets.json key or access it on the SD2 google drive.  Do not distribute this key! (https://goo.gl/NmNBY4)
 
     **Disclaimer** This list is not consolidated and may include packages
     that are not necessary for running this application.  Future versions should include a mac/linux compatible environment.yml 

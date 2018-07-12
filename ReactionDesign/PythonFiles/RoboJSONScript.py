@@ -13,7 +13,7 @@ import random
 import matplotlib.pyplot as plt
 import sys
 
-RoboVersion=1.1 #Workflow version of the robotic JSON generation script (this script)
+RoboVersion=1.2 #Workflow version of the robotic JSON generation script (this script)
 ##########################################################
 #  _        ___           _                              #
 # |_)    o   |   _. ._   |_) _  ._   _| |  _ _|_  _  ._  #
@@ -462,7 +462,7 @@ def CreateRobotXLS():
     }
     Conditions={
     'Reagents':['Reagent1', "Reagent2", "Reagent3", "Reagent4",'Reagent5','Reagent6'],
-    'Reagent identity':['Reagent1', "Reagent2", "Reagent3", "Reagent4",'Reagent5','Reagent6'],
+    'Reagent identity':['1', "2", "3", "4",'5','6'],
     'Liquid Class':vol_ar,
     'Reagent Temperature':[RTemp,RTemp,RTemp,RTemp,RTemp,RTemp]
     }

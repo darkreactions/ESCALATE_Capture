@@ -1,0 +1,64 @@
+Run Initiation (iso): ;; 2018-07-10T13_02_23.166436+00_00
+Debugging on (? - boolean) =  1 ;;
+Plotted (? -- boolean) =  1  ;;
+
+
+Run Information --   ;;
+Pre-reaction Temperature =  80:celsius  ;;
+Tray Shake Rate 1 (After First Addition) =  900:RPM  ;;
+Tray Shake Rate 2 (After FAH addition) =  1200:RPM  ;;
+Reaction Temperature of Tray =  105:celsius  ;;
+Duration held at final temperature =  12600:second  ;;
+
+
+Chemical Space Constraints --   ;;
+Max Equiv Amine = 4.0  ;;
+Reaction Molar maximum = 0.75  ;;
+Reaction Molar minimum = 0.2  ;;
+Reaction Molar maximum FAH = 1.0  ;;
+Reaction Molar minimum FAH = 0.1  ;;
+Total Well Count =  20  ;;
+
+
+Stock Solution Variables --   ;;
+Stock A Amine = EtNH3I  ;;
+Stock A Info =  75:celsius 450:RPM 3600:second  ;;
+Stock B Amine = EtNH3I  ;;
+Stock B Info =  75:celsius 450:RPM 3600:second  ;;
+Stock A Conc =  1.5:Molar  ;;
+Stock A Amine Percent =  100.0:Precent  ;;
+Stock B Conc =  20.0:Molar  ;;
+Stock Temperature Prior to Addition =  45:celsius  ;;
+Dead Volume =  4.0:milliliter  ;;
+Maximum Combined Well Volume of Reagents 1-5 =  4.0:microliter  ;;
+Maximum Total Well Volume =  4.0:microliter  ;;
+
+moles Array :{ 
+     PbI2 mmol  Amine mmol 2   FA mmol  FA2 mmol
+0    0.375565      0.829499  0.344859  0.416016
+1    0.647815      0.924707  0.443859  0.119016
+2    0.511690      1.249041  0.245859  0.317016
+3    0.239440      0.542752  0.295359  0.168516
+4    0.256456      0.655058  0.493359  0.366516
+5    0.528706      0.862172  0.394359  0.267516
+6    0.664831      1.237857  0.196359  0.465516
+7    0.392581      0.670974  0.171609  0.143766
+8    0.460643      1.567255  0.369609  0.341766
+9    0.732893      0.960986  0.468609  0.242766
+10   0.596768      2.122254  0.270609  0.440766
+11   0.324518      1.253027  0.221109  0.292266
+12   0.290487      0.469485  0.419109  0.490266
+13   0.562737      0.857197  0.320109  0.193266
+14   0.698862      1.086362  0.122109  0.391266
+15   0.426612      0.549485  0.115922  0.286078
+16   0.358549      1.422957  0.313922  0.484078
+17   0.630799      1.332771  0.412922  0.187078
+18   0.494674      0.924483  0.214922  0.385078
+19   0.222424      0.591388  0.264422  0.137578 
+}
+
+Stock Solution Final Amounts -- ;;
+534 (ul) Max Calculated < 700 (ul) Max Allowed Well Volume ;;
+Solvent: 7.19 mL solvent ;;
+Stock Solution A: 10.28 mL solvent, 7.11 g PbI2, 2.67 g EtNH3I ;;
+Stock Solution B: 4.53 mL solvent, 15.68 g EtNH3I ;;

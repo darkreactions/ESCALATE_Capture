@@ -41,7 +41,7 @@ S2Dur=1200 #[range > 0] v1.1=1200, Duration of shake after addition of reagent 5
 Temp2=105 #[range 0-90, 105] v1.1=105, Temperature to set the robot, 105 means max temperature = 92 Celsius, 
 FinalHold=12600 #[range > 0] v1.1=12600, Duration of reaction after all reagents and shaking protocols are complete.  Holds at Temp2
 Wellcount=20 #Total number of wells to run on each tray
-molarmin1=0.2 #[range < (ConcStock*MaximumStock)] Lower bound for the mmol of PbI2 in each well ##lower if you get "Box constraints improperly specified: should be [lb, ub] pairs"
+molarmin1=0.15 #[range < (ConcStock*MaximumStock)] Lower bound for the mmol of PbI2 in each well ##lower if you get "Box constraints improperly specified: should be [lb, ub] pairs"
 maxEquivAmine=4.0 #[range >= SAper] Maximum equiv of amine compared with PbI2, cannot be less than the amount in stockA
 
 ################################
@@ -49,7 +49,7 @@ maxEquivAmine=4.0 #[range >= SAper] Maximum equiv of amine compared with PbI2, c
 ################################
 Amine1=EtNH3I #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
 RTemp=45 #[range 0-105] v1.1=45, Temperature of reagents on the robot deck
-DeadVol=4.0 #[range > 0] v1.1=2.0, Dead volume, Volume intentionally left in the bottom of robot reagent trays
+DeadVol=2.0 #[range > 0] v1.1=2.0, Dead volume, Volume intentionally left in the bottom of robot reagent trays
 
 ## Reagent 2 (StockA) Properties ##
 ConcStock=1.5 #[range > 0] v1.1 refers to PbI2 stockA (reagent 2) Molar (M) Concentration 
@@ -59,14 +59,14 @@ R2StirRPM=450 #Stir rate of reagent while mixing
 R2Dur=3600  #Duration of reagent mixing
 
 ## Reagent 3 (StockB) Properties ##
-CSAm=20.0 #[range > 0] v1.1 refers to Molar (M) Concentration of Amine 2 in StockB (reagent 3) 
+CSAm=6.0 #[range > 0] v1.1 refers to Molar (M) Concentration of Amine 2 in StockB (reagent 3) 
 R3PreTemp=75 #Temperature of the reagent while mixing
 R3StirRPM=450 #Stir rate of reagent while mixing
 R3Dur=3600 #Duration of reagent mixing
 
 ## Reagent 5-6 (FAH) Properties ##
 molarminFA=0.10 #[range >=0], v1.1=2.0, Minimum mmol of formic acid (sum reagent 5 and 6)
-molarmaxFA=1.0 #[range < molarminFA], v1.1=5.0, Maximum mmol of FAH (sum reagent 5 and 6) ##Lower if you get high volume errors
+molarmaxFA=5.0 #[range < molarminFA], v1.1=5.0, Maximum mmol of FAH (sum reagent 5 and 6) ##Lower if you get high volume errors
 
 ###################################
 ### Well/Experimental Variables ###

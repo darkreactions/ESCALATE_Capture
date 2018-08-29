@@ -5,7 +5,8 @@
 #     /                                                  #
 ##########################################################
 
-Overview of the installation and operation:
+Installation:
+-------------
 1)Establish the python environment by:
   a) conda install <option>
     1) numpy

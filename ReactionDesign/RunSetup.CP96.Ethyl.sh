@@ -49,7 +49,7 @@ maxEquivAmine=6 #[range >= SAper] Maximum equiv of amine compared with PbI2, can
 ################################
 Amine1=EtNH3I #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
 RTemp=45 #[range 0-105] v1.1=45, Temperature of reagents on the robot deck
-DeadVol=6.0 #[range > 0] v1.1=2.0, Dead volume, Volume intentionally left in the bottom of robot reagent trays
+DeadVol=3.0 #[range > 0] v1.1=2.0, Dead volume, Volume intentionally left in the bottom of robot reagent trays
 
 ## Reagent 2 (StockA) Properties ##
 ConcStock=1.5 #[range > 0] v1.1 refers to PbI2 stockA (reagent 2) Molar (M) Concentration 

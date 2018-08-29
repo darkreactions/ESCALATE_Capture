@@ -40,20 +40,20 @@ S1Dur=900 #[range > 0]  v1.1=900, Duration of shake after addition of first thre
 S2Dur=1200 #[range > 0] v1.1=1200, Duration of shake after addition of reagent 5 (formic acid in 1.1)
 Temp2=105 #[range 0-90, 105] v1.1=105, Temperature to set the robot, 105 means max temperature = 92 Celsius, 
 FinalHold=12600 #[range > 0] v1.1=12600, Duration of reaction after all reagents and shaking protocols are complete.  Holds at Temp2
-Wellcount=96 #Total number of wells to run on each tray
+Wellcount=10000 #Total number of wells to run on each tray
 molarmin1=0.00 #[range < (ConcStock*MaximumStock)] Lower bound for the mmol of PbI2 in each well ##lower if you get "Box constraints improperly specified: should be [lb, ub] pairs"
 maxEquivAmine=6 #[range >= SAper] Maximum equiv of amine compared with PbI2, cannot be less than the amount in stockA
 
 ################################
 ### Stock Solution Variables ###
 ################################
-Amine1=EtNH3I #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
+Amine1=GnNH3I #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
 RTemp=45 #[range 0-105] v1.1=45, Temperature of reagents on the robot deck
-DeadVol=6.0 #[range > 0] v1.1=2.0, Dead volume, Volume intentionally left in the bottom of robot reagent trays
+DeadVol=3.0 #[range > 0] v1.1=2.0, Dead volume, Volume intentionally left in the bottom of robot reagent trays
 
 ## Reagent 2 (StockA) Properties ##
-ConcStock=1.5 #[range > 0] v1.1 refers to PbI2 stockA (reagent 2) Molar (M) Concentration 
-SAper=2.0 #[range > 0] v1.1 refers to percent amine in StockA (Reagent 2) 2=200% , 0.5=50%
+ConcStock=1.8 #[range > 0] v1.1 refers to PbI2 stockA (reagent 2) Molar (M) Concentration 
+SAper=0.5 #[range > 0] v1.1 refers to percent amine in StockA (Reagent 2) 2=200% , 0.5=50%
 R2PreTemp=75 #Temperature of the reagent while mixing
 R2StirRPM=450 #Stir rate of reagent while mixing
 R2Dur=3600  #Duration of reagent mixing

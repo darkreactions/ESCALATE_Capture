@@ -5,6 +5,8 @@
 #     /                                                  #
 ##########################################################
 
+Documentation is currently in need of updating.  See issue#1 for more infomormation
+
 Overview of the installation and operation:
 1)Establish the python environment by:
   a) conda install <option>

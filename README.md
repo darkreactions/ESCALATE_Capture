@@ -1,11 +1,7 @@
-##########################################################
-#  _        ___           _                              #
-# |_)    o   |   _. ._   |_) _  ._   _| |  _ _|_  _  ._  #
-# |_) \/ o  _|_ (_| | |  |  (/_ | | (_| | (/_ |_ (_) | | #
-#     /                                                  #
-##########################################################
+Author: Ian Pendleton
 
-Overview of the installation and operation:
+Installation:
+-------------
 1)Establish the python environment by:
   a) conda install <option>
     1) numpy

@@ -1,7 +1,13 @@
 Author: Ian Pendleton
 
+<<<<<<< HEAD:README.md
 Installation:
 -------------
+=======
+Documentation is currently in need of updating.  See issue#1 for more infomormation
+
+Overview of the installation and operation:
+>>>>>>> fff98259f8966df7c3f799c486116d299324e358:README.txt
 1)Establish the python environment by:
   a) conda install <option>
     1) numpy

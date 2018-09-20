@@ -16,14 +16,14 @@ from pydrive.drive import GoogleDrive
 
 ##Authentication for pydrive, designed globally to minimally generate token (a slow process)
 gauth = GoogleAuth()
-gauth.LoadCredentialsFile("LocalFileBackup/mycred.txt")
+gauth.LoadCredentialsFile("localfiles/mycred.txt")
 if gauth.credentials is None:
     gauth.LocalWebserverAuth() #Creates local webserver and auto handles authentication.
 elif gauth.access_token_expired:
     gauth.LocalWebserverAuth() #Creates local webserver and auto handles authentication.
 else:
     gauth.Authorize() #Just run because everything is loaded properly
-gauth.SaveCredentialsFile("LocalFileBackup/mycred.txt")
+gauth.SaveCredentialsFile("localfiles/mycred.txt")
 drive=GoogleDrive(gauth)
 
 ##Creating template directory for later copying of relevant files

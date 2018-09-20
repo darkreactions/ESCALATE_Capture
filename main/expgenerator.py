@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import json
 import csv
 from oauth2client.service_account import ServiceAccountCredentials
-import Google_IO
+import googleio
 import gspread
 import os
 import argparse as ap
@@ -20,6 +20,9 @@ RoboVersion=1.2 #Workflow version of the robotic JSON generation script (this sc
 # |_) \/ o  _|_ (_| | |  |  (/_ | | (_| | (/_ |_ (_) | | #
 #     /                                                  #
 ##########################################################
+
+if not os.path.exists('data/datafiles'):
+    os.mkdir('data/datafiles')
 
 ### Command line parsing for taking data from shell script
 parser = ap.ArgumentParser(description='Requires Debug to be manually toggled on')
@@ -58,7 +61,7 @@ parser.add_argument('ExpWorkflowVer', type=float, help='')
 parser.add_argument('Lab', type=str, help='Must select LBL or HC', choices=set(("LBL", "HC")))
 parser.add_argument('--molarmax1', nargs='?', type=float, default=False, help='Manual cutoff for the upper bound of PbI2 concentration')
 args = parser.parse_args()
-log=open("LocalFileBackup/LogFile.txt", "w")
+log=open("localfiles/LogFile.txt", "w")
 try:
     molarmax1=args.molarmax1
 except NameError:
@@ -193,33 +196,19 @@ print("\n"
 #############################################################################################################################
 
 
-## Big security no no here... this will need to be fixed! ## 
-credsjson={
-  "type": "service_account",
-  "project_id": "sd2perovskitedrp",
-  "private_key_id": "05516a110e2f053145747c432c8124a218118fca",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPI4jqjofDw1VA\n1VE0q9adAt7T9Ad8IafQURae/yFXsakkJjIgpQficUTDq78/3OYbcjKPayeUmBUp\nn9jb2XVTjouKrUAeGeXO3rB2gZ8fEMLuLQgz1ELwoZkuAWpzxlcUySakO06DEMkw\nZD0zN7jUQqxqlim7eE1VST3tHiLWbtygdOxwxI3qD0XdzMqeEsTBO0u4W5q7G0Rg\ndds2Af3BMddvwk7O8kyiqLXez1HxDBEQcNm1ZNV+sVl1+QEnrzOUGkJ3UcP/pNCB\nAZEd+4hoIeDAhR2HiLh/jGS55tigcn781QxbDlqfoE5dz/xeJRlDO1GZDDJaeQ7J\nuGhJ27wTAgMBAAECggEAHeF0aNGyyAyvibC8DCsVxISbfFvhkIiSWry31KvdNXdN\nfQd9h7QG1SWd09Q8vIuzLhZlMMc2aHsf4mdKszxFbo5Llu+zJiR6QENjlVTRjXuv\ngwg//KoMFgZZwIc3wgfEnB0AVASyKLoNK8vqAC9znDsaAC41SvPpw/nS0xfb0q7c\n8PZhM9ER3RsnsCeNWDInVkLMl7rF+yLpeVK+zG64TlytdcID77LaPVemW4mCkh+9\nrnaAjzAKHxm+jaRkQw8m6E51p6HW1Flo64Xv969mcqHmDQoqEziT+ey33Hu3Trw8\n70B0s2oeenxxeKMZbhgvQo6xztwe8JimPLxbawY1QQKBgQDtU2jjbSkiTzEp7yPp\nRV996U6B0+59J4939zfZ3VLm/FLtWKcsO6usxTirAxGzd8hVTi4y2WN4N/Wz7Y2p\n9XBhLGM5BgpmIk7uU+zn99gN+I+xrqh4FLm49yxNFV9B2m4QEnuF4yuyHnuk0Ja0\nK75OBGPXpk/jEhu8IElONAN1MQKBgQDfcA0BbUKOsaPebbuGGUvLoAgBqN7oO/M4\nxdg9sxXAJIocAt2RHg8Po8NzyE1LaCR9eQkAR+yIWrh18g3Qahjb19ZJWGFZeQfB\nOTBLadoXi1gb7UzUT5bANairIj1Kj/sgkGlXI3yTQjAXMLVMtreq8qTiRD5mcUOh\nQqDCeeIEgwKBgQCbCVtC/yPZCvzmFRhTooMwYQJtY8KvtfFOgIzW4XPv+7Q84yZK\niiyrcCeF6DpfEIgp2inqBAOsHHqBcVWTSwiAIpwrO1v9vrnrjZ39J/bXoaJVg/EA\niSGOyMIDFUwmXAh8rWZOX8pC0REa6T0aNF1c4BdNYJNdlo3RxxG8adQ8cQKBgQCY\nlbmb9tRUBAXHOSKtkgrL1M6C66LF72LKq3lfsTOyUoGqXV6X4nIgmRI5uFjonQcG\nVKiL85IZD/MWQKWkZT/yqfPhhKR+aIOeNYLAjVntaDBUafpkprFpM3uq2qgGikrR\n0yzM4CQLoFCdFZtJ9yF4cVmeV0JRzRmFP63vATMTJwKBgEYOSJaRix+iUk8br0ks\nMLHR/1jpkAKpdylZveDNlH7hyDaI/49BhUiBVfgZpvmmsVBaCuT3zs6EYZgxaKMT\nsNQ79RpFZ37iPcSNcowWx1fA7chbWOU/KadGwajRwyXAJUxf5sqRplFK9uss/7vR\n2IoNs8hKcf097zP3W+60/Adp\n-----END PRIVATE KEY-----\n",
-  "client_email": "uploadtogooglesheets@sd2perovskitedrp.iam.gserviceaccount.com",
-  "client_id": "101584110543551066070",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://accounts.google.com/o/oauth2/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/uploadtogooglesheets%40sd2perovskitedrp.iam.gserviceaccount.com"
-}
-
 ### General Setup Information ###
 ##GSpread Authorization information
 scope= ['https://spreadsheets.google.com/feeds']
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(credsjson, scope)
+credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
 gc =gspread.authorize(credentials)
 
 
 ### Directory and file collection handling###
 ##Generates new working directory with updated templates, return working folder ID
 def NewWrkDir(RunID, Debug, robotfile, logfile): 
-    NewDir=Google_IO.DriveCreateFolder(RunID, Debug)
-    Google_IO.GupFile(NewDir, robotfile, logfile, RunID)
-    file_dict=Google_IO.DriveAddTemplates(NewDir, RunID, Debug)
+    NewDir=googleio.DriveCreateFolder(RunID, Debug)
+    googleio.GupFile(NewDir, robotfile, logfile, RunID)
+    file_dict=googleio.DriveAddTemplates(NewDir, RunID, Debug)
     return(file_dict) #returns the experimental data sheet google pointer url (GoogleID)
 
 def ChemicalData():
@@ -481,11 +470,11 @@ def CreateRobotXLS():
     FinalAmountArray_hold.append((stockFormicAcid5/1000).round(2))
     FinalAmountArray_hold.append((stockFormicAcid6/1000).round(2))
     log.close()
-    os.rename('LocalFileBackup/LogFile.txt', "LocalFileBackup/%s_LogFile.txt"%RunID)
-    outframe.to_excel("LocalFileBackup/%s_RobotInput.xls" %RunID, sheet_name='NIMBUS_reaction', index=False)
-    robotfile=("LocalFileBackup/%s_RobotInput.xls" %RunID)
-    logfile=("LocalFileBackup/%s_LogFile.txt"%RunID)
-    PrepareDirectory(RunID, robotfile, FinalAmountArray_hold, logfile) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
+    os.rename('localfiles/LogFile.txt', "localfiles/%s_LogFile.txt"%RunID)
+    outframe.to_excel("localfiles/%s_RobotInput.xls" %RunID, sheet_name='NIMBUS_reaction', index=False)
+    robotfile=("localfiles/%s_RobotInput.xls" %RunID)
+    logfile=("localfiles/%s_LogFile.txt"%RunID)
+#    PrepareDirectory(RunID, robotfile, FinalAmountArray_hold, logfile) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
 #    return(rdf)
 
 CreateRobotXLS()

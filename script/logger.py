@@ -32,19 +32,19 @@ def runuidgen(rxndict):
     return(rxndict)
 
 # A bit of automation in curating the chemical space.  Sanity checked value will be output to the final log
-def cleanvalues(rxndict):
-    modlog = logging.getLogger('initialize.cleanvalues')
-    try: # ensures that the maximum concentration of chemical 2 does not exceed the upper physical limitation (should be done for each chemical eventually)
-        if rxndict['chem2_molarmax'] > rxndict['reag2_target_conc_chemical2']*rxndict['reagent_target_volume']/1000:
-            rxndict['chem2_molarmax']=rxndict['reag2_target_conc_chemical2']*rxndict['reagent_target_volume']/1000
-            modlog.warning("Maximum mmol target for %s set too high - adjusted to %s mmol" %(rxndict['chem2_abbreviation'],rxndict['chem2_max']))
-        else:
-            rxndict['chem2_molarmax']
-            pass
-    except KeyError:
-        rxndict['chem2_molarmax']=rxndict['reag2_target_conc_chemical2']*rxndict['reagent_target_volume']/1000
-        rxndict['chem2_molarmax']
-    return(rxndict)
+#def cleanvalues(rxndict):
+#    modlog = logging.getLogger('initialize.cleanvalues')
+#    try: # ensures that the maximum concentration of chemical 2 does not exceed the upper physical limitation (should be done for each chemical eventually)
+#        if rxndict['chem2_molarmax'] > rxndict['reag2_target_conc_chemical2']*rxndict['reagent_target_volume']/1000:
+#            rxndict['chem2_molarmax']=rxndict['reag2_target_conc_chemical2']*rxndict['reagent_target_volume']/1000
+#            modlog.warning("Maximum mmol target for %s set too high - adjusted to %s mmol" %(rxndict['chem2_abbreviation'],rxndict['chem2_max']))
+#        else:
+#            rxndict['chem2_molarmax']
+#            pass
+#    except KeyError:
+#        rxndict['chem2_molarmax']=rxndict['reag2_target_conc_chemical2']*rxndict['reagent_target_volume']/1000
+#        rxndict['chem2_molarmax']
+#    return(rxndict)
 
 #record a detailed and organized set of the variables set by the user
 def initialize(rxndict):
@@ -83,6 +83,3 @@ def initialize(rxndict):
             del(abbreviation, minimum, maximum)
         except:
             pass
-    ##Constraints
-    if rxndict['chem2_molarmax'] is None:
-        rxndict['chem2_molarmax']=(rxndict['reag2_target_conc_chemical2']*rxndict['reagent_target_volume']/1000)  #Greatest number of millimoles (mmol) of lead iodidde added to any well

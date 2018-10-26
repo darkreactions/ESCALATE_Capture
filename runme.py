@@ -29,7 +29,7 @@ ploton=0                              #Setting this value to "1" turns on plotti
 ##############################
 #First reagent 
 lab = 'LBL'                           #Options are "LBL" or "HC" (Haverford College)
-wellcount = 1000                        # (maximum 96) Total number of experimental wells on the plate 
+wellcount = 96                        # (maximum 96) Total number of experimental wells on the plate 
 exp1 = [[2,3,1],[6,7]]                # combination of reagents added to a particular experiment. First reagent is always 'solvent', second reagent will be targeted for maximum search range available. 
 exp1_vols = [[500,500],[0,250]]                # Volume allocated to each list in the the exp.  For instance [500,250] would mean a total final volume of 750uL
 #exp1_wells = 20                       # number of experimental wells to dedicate to a particular experiment
@@ -65,23 +65,23 @@ chem1_abbreviation = 'GBL'            # Abbreviation from chemical list https://
 
 #chemical 2 (PbI2)
 chem2_abbreviation = 'PbI2'           # Abbreviation from chemical list https://goo.gl/UZSCBj    
-chem2_molarmin = 0.00                 # Lower [M] molar concentration for chemical2 in any given portion for all experiments
-chem2_molarmax = 0.60                 # Upper [M] molar concentration for chemical2 in any given portion for all experiments
+#chem2_molarmin = 0.00                 # Lower [M] molar concentration for chemical2 in any given portion for all experiments
+#chem2_molarmax = 1.50                 # Upper [M] molar concentration for chemical2 in any given portion for all experiments
 
 #chemical 3 (Amine1)
 chem3_abbreviation = 'ImidazoliumIodide' # Abbreviation from chemical list https://goo.gl/UZSCBj  #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
-chem3_molarmin = 0.0                  # Lower [M] molar concentration for chemical3 in any given portion for all experiments
-chem3_molarmax = 1.2                  # Upper [M] molar concentration for chemical3 in any given portion for all experiments 
+#chem3_molarmin = 0.0                  # Lower [M] molar concentration for chemical3 in any given portion for all experiments
+#chem3_molarmax = 4.0                  # Upper [M] molar concentration for chemical3 in any given portion for all experiments 
 
 #chemical 4 (Amine2)
 chem4_abbreviation = 'n-BuNH3I'       # Abbreviation from chemical list https://goo.gl/UZSCBj    
-chem4_molarmin = 0.0                  # Lower [M] molar concentration for chemical4 in any given portion for all experiments
-chem4_molarmax = 1.0                  # Upper [M] molar concentration for chemical4 in any given portion for all experiments 
+#chem4_molarmin = 0.0                  # Lower [M] molar concentration for chemical4 in any given portion for all experiments
+#chem4_molarmax = 1.0                  # Upper [M] molar concentration for chemical4 in any given portion for all experiments 
 
 #chemical 5 (Formic Acid)
 chem5_abbreviation = 'FAH'            # Abbreviation from chemical list https://goo.gl/UZSCBj    
-chem5_molarmin = 0.0                  # Lower [M] molar concentration for chemical3 in any given portion for all experiments 
-chem5_molarmax = 6.0                  # Upper [M] molar concentration for chemical3 in any given portion for all experiments 
+#chem5_molarmin = 0.0                  # Lower [M] molar concentration for chemical3 in any given portion for all experiments 
+#chem5_molarmax = 6.0                  # Upper [M] molar concentration for chemical3 in any given portion for all experiments 
 
 ############################
 ###  Reagent Information ###
@@ -144,6 +144,6 @@ if __name__ == "__main__":
     rxndict['RoboVersion']=2.0 #Workflow version of the robotic JSON generation script (this script)
     loggerfile=logger.buildlogger(rxndict)
     rxndict['logfile']=loggerfile
-    rxndict=logger.cleanvalues(rxndict)
+#    rxndict=logger.cleanvalues(rxndict)
     logger.initialize(rxndict)
     expgenerator.datapipeline(rxndict)

@@ -90,4 +90,4 @@ Amine2=$Amine1 #v1.1: Amine2=Amine1, #Ensure: https://goo.gl/UZSCBj present, Rea
 ############################
 ### Nasty Execution Line ###
 ############################
-python main/expgenerator.py $Db $Pt $Temp1 $SRPM $S1Dur $S2Dur $Temp2 $FinalHold $Amine1 $Amine2 $ConcStock $CSAm $SAper $RTemp $DeadVol $MaximumStock $MaximumWell $maxEquivAmine $Wellcount $molarmin1 $molarminFA $molarmaxFA $R2PreTemp $R2StirRPM $R2Dur $R3PreTemp $R3StirRPM $R3Dur $ExpWrkVer $Lab --molarmax1 $molarmax1
+python PythonFiles/RoboJSONScript.py $Db $Pt $Temp1 $SRPM $S1Dur $S2Dur $Temp2 $FinalHold $Amine1 $Amine2 $ConcStock $CSAm $SAper $RTemp $DeadVol $MaximumStock $MaximumWell $maxEquivAmine $Wellcount $molarmin1 $molarminFA $molarmaxFA $R2PreTemp $R2StirRPM $R2Dur $R3PreTemp $R3StirRPM $R3Dur $ExpWrkVer $Lab --molarmax1 $molarmax1

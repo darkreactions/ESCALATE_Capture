@@ -1,14 +1,9 @@
+#Copyright (c) 2018 Ian Pendleton - MIT License
 #### Some useful links for later, possibly
+########################################################################################
 ### https://stackoverflow.com/questions/43865016/python-copy-a-file-in-google-drive-into-a-specific-folder
 ### https://github.com/gsuitedevs/PyDrive
 ### https://stackoverflow.com/questions/24419188/automating-pydrive-verification-process
-
-##########################################################
-#  _        ___           _                              #
-# |_)    o   |   _. ._   |_) _  ._   _| |  _ _|_  _  ._  #
-# |_) \/ o  _|_ (_| | |  |  (/_ | | (_| | (/_ |_ (_) | | #
-#     /                                                  #
-##########################################################
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
@@ -27,11 +22,8 @@ gauth.SaveCredentialsFile("localfiles/mycred.txt")
 drive=GoogleDrive(gauth)
 
 ##Creating template directory for later copying of relevant files
-def DriveCreateFolder(title1, Debug):
-    if Debug == 0:
-        tgt_folder_id='13xmOpwh-uCiSeJn8pSktzMlr7BaPDo7B' #Target Folder for actual runs
-    elif Debug == 1:
-        tgt_folder_id='11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe' #Target Folder for debugging
+def DriveCreateFolder(title1):
+    tgt_folder_id='11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe' #Target Folder for debugging
     file_metadata = {
         'title': title1,
         "parents": [{"kind": "drive#fileLink","id": tgt_folder_id}],
@@ -49,18 +41,12 @@ def DriveCreateFolder(title1, Debug):
 
 ##Copies all files from template directory into the new directory
 ##Returns a referenced dictionary of files (title, Gdrive ID)
-def DriveAddTemplates(opdir, RunID, Debug):
-    print("Copying files into %s on Google Drive" %RunID, end='')
-    if Debug == 0:
-        template_folder='1OxuxqfumIpg3MPr3rgtRxwcOgCfetkIu'  #Target folder for actual runs
-    if Debug == 1:
-        template_folder='1HneaSFzgJgHImDAL-8OgQfSx1ioFJp6S'  #Debugging target folder
+def DriveAddTemplates(opdir, RunID):
+    template_folder='1HneaSFzgJgHImDAL-8OgQfSx1ioFJp6S'  #Debugging target folder
     file_template_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % template_folder}).GetList()
     for templatefile in file_template_list:       
             basename=templatefile['title']
-            print('.', end='')
             drive.auth.service.files().copy(fileId=templatefile['id'], body={"parents": [{"kind": "drive#fileLink", "id": opdir}], 'title': '%s_%s' %(RunID,basename)}).execute(),
-    print("done")
     newdir_list = drive.ListFile({'q': "'%s' in parents and trashed=false" %opdir}).GetList()
     ExpDataFile="%s_ExpDataEntry"%(RunID)
     new_dict={}
@@ -68,14 +54,13 @@ def DriveAddTemplates(opdir, RunID, Debug):
         new_dict[file1['title']]=file1['id']
     return(new_dict)
 
-def GupFile(opdir, robotfile_name, logfile_name, RunID):
+def GupFile(opdir, robotfile_name, rxndict):
     robotfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
     robotfile.SetContentFile(robotfile_name)
-    robotfile['title']='%s_RobotInput.xls'%RunID
+    robotfile['title']='%s_RobotInput.xls'%rxndict['RunID']
     robotfile.Upload()
     logfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
-    logfile.SetContentFile(logfile_name)
-    logfile['title']='%s_LogFile.txt'%RunID
+    logfile.SetContentFile(rxndict['logfile'])
+    logfile['title']='%s_LogFile.txt'%rxndict['RunID']
     logfile.Upload()
     print(robotfile['title'], "and", logfile['title'], "Successfully Uploaded")
-    

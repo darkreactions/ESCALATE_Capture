@@ -15,9 +15,11 @@ RELEASE HISTORY
 --------------------------
   * Organized code, fixed some initial bugs in the data generation, automated and distributed working version of the code to stakeholders (zhi, mansoor)
 
-1.3 (2018-09-26, projected)
+2.0 (2018-09-29, projected)
 ---------------------------
   * Bug fixes
   * Added capacity for additional reagent
   * added volume correction to workflow which records the final prepared volume of the stock solution in addition nominal and actual solvent measured out during reagent preparation
   * Organized code into smaller portions prior to distribution and forking for challenge problem
+  * Updated user interface (execution script) with a bit more flexibility
+  * Improved logging

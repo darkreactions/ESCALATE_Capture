@@ -33,11 +33,11 @@ wellcount = 96                        # (maximum 96) Total number of experimenta
 exp1 = [[2,3,1],[6,7]]                # combination of reagents added to a particular experiment. First reagent is always 'solvent', second reagent will be targeted for maximum search range available. 
 exp1_vols = [[500,500],[0,250]]                # Volume allocated to each list in the the exp.  For instance [500,250] would mean a total final volume of 750uL
 #exp1_wells = 20                       # number of experimental wells to dedicate to a particular experiment
-exp2 = [[4,5,1],[6,7]]
-exp2_vols = [[3000,3000],[1000,1000]]
+#exp2 = [[4,5,1],[6,7]]
+#exp2_vols = [[3000,3000],[1000,1000]]
 #exp2_wells = 40
-exp3 = [[2,1]]
-exp3_vols = [[100,100]]
+#exp3 = [[2,1]]
+#exp3_vols = [[100,100]]
 #exp3_wells = 36
 reagent_target_volume = 500           #[range > 0] v1.1=500, Maximum volume of reagents 1-4 (Should not be adjusted unless absolutely certain)
 maximum_total_volume = 750            #[range > MaximumStock] v1.1=700, Total maximum volume permitted in any well after all reagents added
@@ -71,7 +71,7 @@ chem2_abbreviation = 'PbI2'           # Abbreviation from chemical list https://
 #chemical 3 (Amine1)
 chem3_abbreviation = 'ImidazoliumIodide' # Abbreviation from chemical list https://goo.gl/UZSCBj  #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
 #chem3_molarmin = 0.0                  # Lower [M] molar concentration for chemical3 in any given portion for all experiments
-#chem3_molarmax = 4.0                  # Upper [M] molar concentration for chemical3 in any given portion for all experiments 
+chem3_molarmax = 3.0                  # Upper [M] molar concentration for chemical3 in any given portion for all experiments 
 
 #chemical 4 (Amine2)
 chem4_abbreviation = 'n-BuNH3I'       # Abbreviation from chemical list https://goo.gl/UZSCBj    
@@ -108,7 +108,6 @@ reag2_target_conc_chemical3 = 3.00     # Amine 1  target molarity [M]
 reag3_chemicals = [3,1]                # List of the chemicals present in reagent 3, in order of addition
 reag3_target_conc_chemical3 = 6.00     # Amine 1  target molarity [M]
 
-        #These Settings Available Soon
 #Reagent 4 information
 reag4_chemicals = [2,4,1]             # List of the chemicals present in reagent 4, in order of addition
 reag4_target_conc_chemical2 = 2.0     # PbI2 target molarity [M] [range > 0] v1.1) in the final solution (not accounting for non-idea solvent behavior)

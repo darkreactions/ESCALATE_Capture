@@ -23,25 +23,23 @@ def reagentdataframe(volmax, volmin, reagent, wellnum):
     return(rdf)
     #Generate a range of Amine concentrations dependent upon the range possible due to the presence of amine in Stock solution A \
 
+#very similar to calcvollimit
+def vollimitdf(reagent, rdata, rvolmax, rvolmin, volmax, rdf, reagentcount):
+#    rdonelist = []
+#    for column in rdf.columns:
+#        if column in rdonelist:
+#            pass
+#        else:
+#            rdonelist.append(column)
+    remaindf = volmax - rdf
+    name = ['volmax_r%s'%reagent]
+    remaindf.columns = name
+    #replace values that exceed the total amount possible for that reagent
+    remaindf = (pd.concat([remaindf,rdf], axis=1))
+    return(remaindf)
 
-def vollimitcont(userlimits, reagent, rdata, volmax, volmin, rdf, reagentcount):
-    for row in rdf.itertuples(index=False):
-        print(row)
 
-def maxconcdet(rdata, reagentlist, reagent, currchemical):
-    #Determines the maximum possible concentration for any chemical throughout the course of the portion of the experiment. 
-    #Need to consider the reagents in all the chemicals and return a fatal error if the upperbound cannot be met.  
-    #In the case where this upperbound cannot be met the user has overconstrained the system
-    maxconc = 0
-    for rnum in reagentlist:
-        chemname = 'conc_chem%s' %currchemical
-        for chemid,conc in rdata['%s' %rnum].concs.items():
-            if chemname in chemid:
-                if conc > maxconc:
-                    maxconc = conc
-    return(maxconc)
-
-def calcvollimit(userlimits, reagent, rdict, volmax, volmin, reagentlist, experiment): 
+def calcvollimitdf(rdf, userlimits, rdict, volmax, volmin, experiment, reagentlist, reagent, wellnum): 
     rdata = rdict['%s'%reagent]
     chemicals = rdata.chemicals
     possiblemaxvolumes = []
@@ -50,9 +48,9 @@ def calcvollimit(userlimits, reagent, rdict, volmax, volmin, reagentlist, experi
     possibleminvolumes.append(volmin)
     # Determine if any user constraints override the maximum concentrations dependent on the volume limits
     for chemical in chemicals:
-        #The code will update the maximum volume to meet the lower bound requirements set by the user
+        #The code will update the maximum volume to meet the upper bound set by the user
         try: 
-            maxconc = maxconcdet(rdict, reagentlist, reagent, chemical)
+            maxconc = maxconcdet(rdict, reagent, chemical)
             userdefinedmax = (userlimits['chem%s_molarmax'%chemical])
             if userdefinedmax <= maxconc:
                 volmaxnew = userdefinedmax / maxconc * volmax
@@ -62,7 +60,7 @@ def calcvollimit(userlimits, reagent, rdict, volmax, volmin, reagentlist, experi
                 sys.exit()
         except Exception:
             pass
-        #The code will update the minimum volume to meet the lower bound requirements set by the user
+        #The code will update the minimum volume to meet the lower bound set by the user
         try: 
             reagconc = (rdata.concs['conc_chem%s' %chemical])
             userdefinedmin = (userlimits['chem%s_molarmin'%chemical])
@@ -73,14 +71,85 @@ def calcvollimit(userlimits, reagent, rdict, volmax, volmin, reagentlist, experi
         except Exception:
             pass
     if (min(possiblemaxvolumes)) != volmax:
-        print(possiblemaxvolumes)
-        modlog.warning("User has constrained the maximum search space by lowering the maximum value for a chemical in %s reagent %s, be sure this is intentional" % (experiment, reagent))
+        modlog.warning("User has constrained the maximum search space by lowering the maximum value for a chemical in experiment %s reagent %s, be sure this is intentional" % (experiment, reagent))
+        volmax = min(possiblemaxvolumes)
     if (max(possibleminvolumes)) != 0:
-        modlog.warning("User has constrained the maximum search space by raising the minimum value for a chemical in %s reagent %s, be sure this is intentional" % (experiment, reagent))
+        modlog.warning("User has constrained the maximum search space by raising the minimum value for a chemical in experiment %s reagent %s, be sure this is intentional" % (experiment, reagent))
+        volmin = max(possibleminvolumes)
+    else: pass
+    testing.reagenttesting(volmax,volmin)
+
+
+    return(rvolrangedf)
+
+
+def maxconcdet(rdata, rnum, currchemical):
+    #Determines the maximum possible concentration for any chemical throughout the course of the portion of the experiment. 
+    #Need to consider the reagents in all the chemicals and return a fatal error if the upperbound cannot be met.  
+    #In the case where this upperbound cannot be met the user has overconstrained the system
+    maxconc = 0
+    chemname = 'conc_chem%s' %currchemical
+    for chemid,conc in rdata['%s' %rnum].concs.items():
+        if chemname in chemid:
+            if conc > maxconc:
+                maxconc = conc
+    return(maxconc)
+
+#very similar to vollimtcont
+def calcvollimit(rdf, userlimits, rdict, volmax, volmin, experiment, reagentlist, reagent, wellnum): 
+    rdata = rdict['%s'%reagent]
+    chemicals = rdata.chemicals
+    possiblemaxvolumes = []
+    possiblemaxvolumes.append(volmax)
+    possibleminvolumes = []
+    possibleminvolumes.append(volmin)
+    # Determine if any user constraints override the maximum concentrations dependent on the volume limits
+    for chemical in chemicals:
+        #The code will update the maximum volume to meet the upper bound set by the user
+        try: 
+            maxconc = maxconcdet(rdict, reagent, chemical)
+            userdefinedmax = (userlimits['chem%s_molarmax'%chemical])
+            if userdefinedmax <= maxconc:
+                volmaxnew = userdefinedmax / maxconc * volmax
+                possiblemaxvolumes.append(int(volmaxnew))
+            else: 
+                modlog.error("User defined concentration greater than physically possible for chemical%s in experiment %s" %(chemical, experiment))
+                sys.exit()
+        except Exception:
+            pass
+        #The code will update the minimum volume to meet the lower bound set by the user
+        try: 
+            reagconc = (rdata.concs['conc_chem%s' %chemical])
+            userdefinedmin = (userlimits['chem%s_molarmin'%chemical])
+            if userdefinedmin >= 0:
+                volminnew = userdefinedmin / reagconc * volmax
+                possibleminvolumes.append(int(volminnew))
+            else: pass
+        except Exception:
+            pass
+    if (min(possiblemaxvolumes)) != volmax:
+        modlog.warning("User has constrained the maximum search space by lowering the maximum value for a chemical in experiment %s reagent %s, be sure this is intentional" % (experiment, reagent))
+        volmax = min(possiblemaxvolumes)
+    if (max(possibleminvolumes)) != 0:
+        modlog.warning("User has constrained the maximum search space by raising the minimum value for a chemical in experiment %s reagent %s, be sure this is intentional" % (experiment, reagent))
         volmin = max(possibleminvolumes)
     else: pass
     testing.reagenttesting(volmax,volmin)
     return(volmax, volmin)
+
+def mmolextension(reagentdf, rdict, experiment, reagent):
+    mmoldf = (pd.DataFrame(reagentdf))
+    portionmmoldf = pd.DataFrame()
+    print(len(rdict['%s' %reagent].concs.items()))
+    for chemical, conc in (rdict['%s' %reagent].concs.items()):
+        chemname = chemical.split('m')[1]
+        newmmoldf = mmoldf * conc / 1000
+        newmmoldf.rename(columns={'Reagent%s'%reagent:'experiment%s_reagent%s_chemical%s' %(experiment, reagent, chemname)}, inplace=True)
+        portionmmoldf = pd.concat([portionmmoldf, newmmoldf], axis=1)
+    return(portionmmoldf)
+
+
+
 
 
 def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
@@ -92,24 +161,32 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
         # Determine from the chemicals and the remaining volume the maximum and minimum volume possible for the sobol method
         volmax = vollimits[portionnum][1]
         # unoptimized code that ensure that the previous reagents are considered and that the final reagent accurately fills to the minimum volume set by the users "fill to" requirement
+        rdf = pd.DataFrame()
         for reagent in portion:
             volmin = vollimits[portionnum][0]
             # Unique set of requirements for the first entry
             if reagentcount == 0:
                 volmin = 0 # for the first of a set of reagents the minimum volume that can be added is always presumed to be 0
-                volmax, volmin = calcvollimit(userlimits, reagent, rdict, volmax, volmin, portion, experiment)
-                rdf = reagentdataframe(volmax, volmin, reagent, wellnum)
+                # since all of the volume limits for the first draw are the same these can be treated with a sobol sequence
+                rvolmax, rvolmin = calcvollimit(rdf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum)
+                rdf = reagentdataframe(rvolmax, rvolmin, reagent, wellnum)
+                mmoldf = mmolextension((rdf['Reagent%s' %reagent]), rdict, experiment, reagent)
+
                 reagentcount+=1
                 pass
             #operate within the available ranges taken from the previous constraints
-            elif reagentcount < reagenttotal:
+            elif reagentcount < reagenttotal-1:
                 volmin = 0
+                # The constraints on the second draw are more complicated and are dependent upon the first, a different sampling strategy must be used
+#                rvolrangedf = calcvollimitdf(rdf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum)
                 # vollimitcont is very similar to calcvollimit, just need a reliable way to parse the dataframe for all reagent states (none, some, final..)
-                vollimitcont(userlimits, reagent, rdict, volmax, volmin, rdf, reagentcount)
+#                vdf  = vollimitdf(reagent, rdict, rvolmax, rvolmin, volmax, rdf, reagentcount)
+#                print(vdf)
+                # Since each volume maximum is different, need to sample the remaining reagents uniquely... 
 #                volmax, volmin = calcvollimit(userlimits, reagent, rdict['%s'%reagent], volmax, volmin)
                 reagentcount+=1
                 pass
-            elif reagentcount == reagenttotal:
+            elif reagentcount == reagenttotal-1:
                 #Make sure that the portion is filled using the final reagent! 
                 pass
             else: 

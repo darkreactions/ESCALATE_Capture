@@ -267,7 +267,7 @@ def buildreagents(rxndict, chemdf):
             if entry in variable:
                 variable=(variable.split('_',1))
                 reagentvariables[variable[1]]=value
-        reagent=reactantclasses.perovskitereagent(reagentvariables, rxndict, entry_num[1])  # should scale nicely, class can be augmented without breaking the code
+        reagent=reactantclasses.perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf)  # should scale nicely, class can be augmented without breaking the code
         #return the class objects in a new dictionary for later use!
         reagentdict[entry_num[1]]=reagent
     return(reagentdict)

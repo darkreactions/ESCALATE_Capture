@@ -40,3 +40,5 @@ def reagenttesting(volmax, volmin):
 # are there reagents in the second portion that are present in the first? Not possible to discriminate yet... (needs to be implemented from the robotic side) 
 # does the first chemical of the first reagent constrain the system? not fatal but should be flagged as possible nonsense until coded
  # Need a check to make sure the sizes of the lists in the experimental dict are correct and correspondant.  These are largely automatically generated so the process should be fairly robust
+# need a warning which checks final concentrations.  The likely violations will be from instances where the minimum volume increases the overall concentration above some user defined threshold ## This is an "Overconstrain" and just should be an alert
+# Noted assumption, use the most concentrated solution to fill to a minimum user requirement

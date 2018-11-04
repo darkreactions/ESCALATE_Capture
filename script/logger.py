@@ -51,7 +51,7 @@ def initialize(rxndict):
     modlog = logging.getLogger('initialize.variablelogging')
     #Adjust for manual setting perovskite workflow 1 specific
     ##Setup Run ID Information
-    modlog.info("Plotted (? -- boolean) = %s " %rxndict['ploton'])
+    modlog.info("Plotted (? -- boolean) = %s " %rxndict['plotter_on'])
     #Plate variables
     modlog.info("Pre-reaction Temperature = %s:celsius" %rxndict['temperature1_nominal'])
     modlog.info("Tray Shake Rate 1 (After First Addition) = %s:RPM" %rxndict['duratation_stir1'])

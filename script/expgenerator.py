@@ -5,8 +5,8 @@ from script import rxnprng
 from script import reactantclasses
 import json
 import csv
-#from script import googleio
-#from oauth2client.service_account import ServiceAccountCredentials
+from script import googleio
+from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 import pandas as pd
 import numpy as np
@@ -14,24 +14,16 @@ import sys
 import logging
 from script import testing
 
-
 # create logger
 modlog = logging.getLogger('initialize.expgenerator')
 
-
-### Directory and file collection handling###
-##Generates new working directory with updated templates, return working folder ID
-def NewWrkDir(robotfile, rxndict): 
-    print(rxndict['RunID'])
-    scope= ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc =gspread.authorize(credentials)
-    NewDir=googleio.DriveCreateFolder(rxndict['RunID'])
-    googleio.GupFile(NewDir, robotfile, rxndict)
-    file_dict=googleio.DriveAddTemplates(NewDir, rxndict['RunID'])
-    return(file_dict) #returns the experimental data sheet google pointer url (GoogleID)
+scope= ['https://spreadsheets.google.com/feeds']
+credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
+gc =gspread.authorize(credentials)
 
 def ChemicalData():
+    ### General Setup Information ###
+    ##GSpread Authorization information
     print('Obtaining chemical information from Google Drive.. \n', end='')
     chemsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
     ChemicalBook = gc.open_by_key(chemsheetid)
@@ -45,10 +37,14 @@ def ChemicalData():
 
 ### File preparation --- Main Code Body ###
 ##Updates all of the run data information and creates the empty template for amine information
-def PrepareDirectory(robotfile, FinalAmountArray, rxndict):
-    new_dict=NewWrkDir(robotfile, rxndict) #Calls NewWrkDir Function to get the list of files
+def PrepareDirectory(uploadlist, FinalAmountArray, rxndict):
+    ### Directory and file collection handling###
+    ##Generates new working directory with updated templates, return working folder ID
+    print(rxndict['RunID'])
+    NewDir=googleio.DriveCreateFolder(rxndict['RunID'])
+    file_dict=googleio.DriveAddTemplates(NewDir, rxndict['RunID'])
     print('Writing final values to experimental data entry form.....')
-    for key,val in new_dict.items(): 
+    for key,val in file_dict.items(): 
         if "ExpDataEntry" in key: #Experimentalsheet = gc.open_bysearches for ExpDataEntry Form to get id
             sheetobject = gc.open_by_key(val).sheet1
             sheetobject.update_acell('B2', rxndict['date']) #row, column, replacement in experimental data entry form
@@ -89,6 +85,7 @@ def PrepareDirectory(robotfile, FinalAmountArray, rxndict):
             sheetobject.update_acell('E24', 'null')
             sheetobject.update_acell('E25', 'null')
             sheetobject.update_acell('E26', 'null')
+    googleio.GupFile(NewDir, uploadlist, rxndict)
 
 #Constructs well array information based on the total number of wells for the run
 #Future versions could do better at controlling the specific location on the tray that reagents are dispensed.  This would be place to start
@@ -110,25 +107,44 @@ def MakeWellList(rxndict):
     df_VialInfo['Labware ID:']=rxndict['plate_container'] 
     return(df_VialInfo)
 
-#Defines what type of liquid class sample handler (pipette) will be needed for the run
-def volarray(rdf):
+#Defines what type of liquid class sample handler (pipette) will be needed for the run, these are hardcoded to the robot
+def volarray(rdf, maxr):
     hv='HighVolume_Water_DispenseJet_Empty'
     sv='StandardVolume_Water_DispenseJet_Empty'
     lv='LowVolume_Water_DispenseJet_Empty'
     x=1
     vol_ar=[]
-    while x <=6:
+    while x <= maxr:
         name_maxvol=(rdf.loc[:,"Reagent%i (ul)" %(x)]).max()
-        x+=1
         if name_maxvol >= 300:
             vol_ar.append(hv)
         if name_maxvol >= 50 and name_maxvol <300:
             vol_ar.append(sv)
         if name_maxvol < 50:
             vol_ar.append(lv)
+        x+=1
     return(vol_ar)
 
-def conreag(rxndict, rdf, chemdf):
+def preprobotfile(rxndict, erdf, robotfile):
+    df_Tray=MakeWellList(rxndict)
+    vol_ar=volarray(erdf, rxndict['max_robot_reagents'])
+    Parameters={
+    'Reaction Parameters':['Temperature (C):','Stir Rate (rpm):','Mixing time1 (s):','Mixing time2 (s):', 'Reaction time (s):',""], 
+    'Parameter Values':[rxndict['temperature2_nominal'], rxndict['stirrate'], rxndict['duratation_stir1'], rxndict['duratation_stir2'], rxndict['duration_reaction'] ,''],
+    }
+    Conditions={
+    'Reagents':['Reagent1', "Reagent2", "Reagent3", "Reagent4",'Reagent5','Reagent6','Reagent7'],
+    'Reagent identity':['1', "2", "3", "4",'5','6','7'],
+    'Liquid Class':vol_ar,
+    'Reagent Temperature':[rxndict['reagents_prerxn_temperature']]*len(vol_ar)}
+    df_parameters=pd.DataFrame(data=Parameters)
+    df_conditions=pd.DataFrame(data=Conditions)
+
+    outframe=pd.concat([df_Tray.iloc[:,0],erdf,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
+    outframe.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
+
+
+def conreag(rxndict, rdf, chemdf, rdict, robotfile):
     #Constructing output information for creating the experimental excel input sheet
     solventvolume=rdf['Reagent1 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
     stockAvolume=rdf['Reagent2 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
@@ -138,28 +154,12 @@ def conreag(rxndict, rdf, chemdf):
     PbI2mol=(stockAvolume/1000/1000*rxndict['reag2_target_conc_chemical2'])
     PbI2mass=(PbI2mol*float(chemdf.loc["PbI2", "Molecular Weight (g/mol)"]))
     StockAAminePercent=(rxndict['reag2_target_conc_chemical3']/rxndict['reag2_target_conc_chemical2'])
-  #  aminemassA=(stockAvolume/1000/1000*rxndict['reag2_target_conc_chemical2']*StockAAminePercent*float(chemdf.loc[rxndict['chem3_abbreviation'], "Molecular Weight (g/mol)"]))
+    aminemassA=(stockAvolume/1000/1000*rxndict['reag2_target_conc_chemical2']*StockAAminePercent*float(chemdf.loc[rxndict['chem3_abbreviation'], "Molecular Weight (g/mol)"]))
     stockBvolume=rdf['Reagent3 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-  #  Aminemol=(stockBvolume/1000/1000*rxndict['reag3_target_conc_chemical2'])
-    aminemassB=(Aminemol*float(chemdf.loc[rxndict['chem2_abbreviation'], "Molecular Weight (g/mol)"]))
+    Aminemol=(stockBvolume/1000/1000*rxndict['reag3_target_conc_chemical3'])
+    aminemassB=(Aminemol*float(chemdf.loc[rxndict['chem3_abbreviation'], "Molecular Weight (g/mol)"]))
 
     #The following section handles and output dataframes to the format required by the robot.xls file.  File type is very picky about white space and formatting.  
-    df_Tray=MakeWellList(rxndict)
-    vol_ar=volarray(rdf)
-    Parameters={
-    'Reaction Parameters':['Temperature (C):','Stir Rate (rpm):','Mixing time1 (s):','Mixing time2 (s):', 'Reaction time (s):',""], 
-    'Parameter Values':[rxndict['temperature2_nominal'], rxndict['stirrate'], rxndict['duratation_stir1'], rxndict['duratation_stir2'], rxndict['duration_reaction'] ,''],
-    }
-    Conditions={
-    'Reagents':['Reagent1', "Reagent2", "Reagent3", "Reagent4",'Reagent5','Reagent6'],
-    'Reagent identity':['1', "2", "3", "4",'5','6'],
-    'Liquid Class':vol_ar,
-    'Reagent Temperature':[rxndict['reagents_prerxn_temperature'],rxndict['reagents_prerxn_temperature'],rxndict['reagents_prerxn_temperature'],rxndict['reagents_prerxn_temperature'],rxndict['reagents_prerxn_temperature'],rxndict['reagents_prerxn_temperature']]
-    }
-    df_parameters=pd.DataFrame(data=Parameters)
-    df_conditions=pd.DataFrame(data=Conditions)
-    outframe=pd.concat([df_Tray.iloc[:,0],rdf,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
-    outframe.to_excel("localfiles/%s_RobotInput.xls" %rxndict['RunID'], sheet_name='NIMBUS_reaction', index=False)
     FinalAmountArray_hold=[]
     FinalAmountArray_hold.append((solventvolume/1000).round(2))
     FinalAmountArray_hold.append(PbI2mass.round(2))
@@ -170,7 +170,6 @@ def conreag(rxndict, rdf, chemdf):
     FinalAmountArray_hold.append((stockFormicAcid5/1000).round(2))
     FinalAmountArray_hold.append((stockFormicAcid6/1000).round(2))
     return(FinalAmountArray_hold)
-
 
 def expwellcount(rxndict, exp, exp_wells,edict):
     # if already configured with all well counts explicityly defined, return an unaltered well count dict
@@ -238,8 +237,6 @@ def expbuild(rxndict, rdict): # parse the reaction dictionary and reagent dictio
         else:
             exp[entry] = value
     # Determine how many different xperiments are running on this tray
-    expeval = 1
-    edict_coded = {}
     totalexperiments = (len(exp))
     # divide remaining wells not manually assigned for the other experiments, add the well count to exp_wells dict and rxndict for later use.
     rxndict['totalexperiments'] = totalexperiments
@@ -280,7 +277,28 @@ def chemicallimits(rxndict):
         if "chem" in k and "molarmax" in k:
             climits[k] = v
     return(climits)
-        
+
+# Clean up the final volume dataframe so the robot doesn't die
+def postprocess(erdf, maxr):
+    columnlist = []
+    templatelst = [0]*(len(erdf.iloc[0:]))
+    for column in erdf.columns:
+        columnlist.append(column)
+    count = 1
+    newcolumnslist = []
+    while count <= maxr:
+        reagentname =('Reagent%s (ul)' %count)
+        if reagentname not in columnlist:
+            newcolumnslist.append(reagentname)
+        else:
+            pass
+        count+=1
+    for item in newcolumnslist:
+        newdf = pd.DataFrame(templatelst)
+        newdf.columns = [item]
+        erdf = pd.concat([erdf, newdf], axis=1, sort=True)
+    erdf = erdf.reindex(sorted(erdf.columns), axis=1)
+    return(erdf)
 
 
 ## Prepares directory and relevant files, calls upon code to operate on those files to generate a new experimental run (workflow 1)
@@ -300,11 +318,25 @@ def datapipeline(rxndict):
     (rxndict, edict)=expbuild(rxndict, rdict)
     # Some basic experiment validation and error reporting.  Checks the user constraints prior to executing the sampling method
     testing.postbuildvalidation(rxndict,rdict,edict) # some basic in line code to make sure that the experiment and reagents have been correctly constructed by the user
-    #Send out all of the constraints and chemical information for run assembly
-    rdf1=rxnprng.preprocess(chemdf, rxndict, edict, rdict, climits) 
+    #Send out all of the constraints and chemical information for run assembly (all experiments are returned)
+    (erdf, ermmoldf, emsumdf) = rxnprng.preprocess(chemdf, rxndict, edict, rdict, climits) 
+    # Clean up dataframe for robot file -> create xls --> upload 
+    erdf = postprocess(erdf, rxndict['max_robot_reagents'])
+    robotfile = ("localfiles/%s_RobotInput.xls" %rxndict['RunID'])
+    preprobotfile(rxndict, erdf, robotfile)
+    # Export additional information files for later use / storage 
+    ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
+    ermmoldf.to_csv(ermmolcsv)
+    emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
+    emsumdf.to_csv(emsumcsv)
+    # List to send for uploads 
+    uploadlist = [robotfile, ermmolcsv, emsumcsv]
 
-
-#    FinalAmountArray_hold =  conreag(rxndict,rdf1, chemdf)
-    robotfile=("localfiles/%s_RobotInput.xls" %rxndict['RunID'])
-#    PrepareDirectory(robotfile, FinalAmountArray_hold, rxndict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
+    #Calculates values for upload to experimental datasheet on gdrive
+    printvals =  conreag(rxndict, erdf, chemdf, rdict, robotfile)
+    # Final uploads
+    if rxndict['debug'] == 1:
+        pass
+    else:
+        PrepareDirectory(uploadlist, printvals, rxndict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
     print("Job Creation Complete")

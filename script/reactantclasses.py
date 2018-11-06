@@ -17,15 +17,23 @@ class perovskitereagent:
             self.preptemperature = "null"
             self.prepstirrate = "null"
             self.prepduration = "null"
+        self.prerxntemp = self.prerxn(reactantinfo, rxndict)
         self.preptempunits = "celsius"
         self.prepstirunits = "rpm"
         self.prepdurunits = "seconds"
 
     #checks for user specified values, if none, returns default 
+    def prerxn(self, reactantinfo, rxndict):
+        try:
+            self.prerxntemp = reactantinfo['prerxn_temperature']
+        except Exception:
+            self.prerxntemp = rxndict['reagents_prerxn_temperature']
+        return(self.prerxntemp)
+
     def preptemp(self, reactantinfo, rxndict):
         try:
             self.preptemperature = reactantinfo['prep_temperature']
-        except:
+        except Exception:
             self.preptemperature = rxndict['reagents_prep_temperature']
         return(self.preptemperature)
 

@@ -330,4 +330,6 @@ def preprocess(chemdf, rxndict, edict, rdict, climits):
 #    plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
     #combine the experiments for the tray into one full set of volumes for all the wells on the plate
     modlog.info('Begin combining the experimental volume dataframes')
+#    for chemical in rdict['2'].chemicals:
+#        print(rxndict['chem%s_abbreviation' %chemical])
     return(erdf,ermmoldf,emsumdf)

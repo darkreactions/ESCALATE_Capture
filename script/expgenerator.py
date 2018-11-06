@@ -17,14 +17,13 @@ from script import testing
 # create logger
 modlog = logging.getLogger('initialize.expgenerator')
 
-scope= ['https://spreadsheets.google.com/feeds']
-credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-gc =gspread.authorize(credentials)
-
 def ChemicalData():
     ### General Setup Information ###
     ##GSpread Authorization information
     print('Obtaining chemical information from Google Drive.. \n', end='')
+    scope= ['https://spreadsheets.google.com/feeds']
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
+    gc =gspread.authorize(credentials)
     chemsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
     ChemicalBook = gc.open_by_key(chemsheetid)
     chemicalsheet = ChemicalBook.get_worksheet(0)
@@ -37,55 +36,91 @@ def ChemicalData():
 
 ### File preparation --- Main Code Body ###
 ##Updates all of the run data information and creates the empty template for amine information
-def PrepareDirectory(uploadlist, FinalAmountArray, rxndict):
+def PrepareDirectory(uploadlist, prepdict, rxndict, rdict):
     ### Directory and file collection handling###
     ##Generates new working directory with updated templates, return working folder ID
     print(rxndict['RunID'])
+    scope= ['https://spreadsheets.google.com/feeds']
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
+    gc =gspread.authorize(credentials)
     NewDir=googleio.DriveCreateFolder(rxndict['RunID'])
     file_dict=googleio.DriveAddTemplates(NewDir, rxndict['RunID'])
     print('Writing final values to experimental data entry form.....')
+    # This is hardcoded as we don't know how long / much time we want to invest in developing an extensible interface.  
+    # Will need a new version for WF3, likely.
     for key,val in file_dict.items(): 
         if "ExpDataEntry" in key: #Experimentalsheet = gc.open_bysearches for ExpDataEntry Form to get id
             sheetobject = gc.open_by_key(val).sheet1
+#            print(sheetobject.get_all_values()) # Uncomment this to see some of the power of gspread
+#            cell_list = sheetobject.range('B15:C30')
+#            for cell in cell_list:
+#                print(cell.label)
+            # Direct writing by grouping until generalizing, minimum viable project
+            # Reaction information
             sheetobject.update_acell('B2', rxndict['date']) #row, column, replacement in experimental data entry form
             sheetobject.update_acell('B3', rxndict['time'])
             sheetobject.update_acell('B4', rxndict['lab'])
             sheetobject.update_acell('B6', rxndict['RunID'])
             sheetobject.update_acell('B7', rxndict['ExpWorkflowVer'])
             sheetobject.update_acell('B8', rxndict['RoboVersion'])
-            sheetobject.update_acell('B9', 'null')
+
+            # Notes section - blank values as default
             sheetobject.update_acell('B10', 'null')
             sheetobject.update_acell('B11', 'null')
-            sheetobject.update_acell('B16', rxndict['chem2_abbreviation'])
-            sheetobject.update_acell('B17', rxndict['chem3_abbreviation'])
-            sheetobject.update_acell('B20', rxndict['chem3_abbreviation'])
-#            sheetobject.update_acell('C2', AMINE3)
-            sheetobject.update_acell('D4', rxndict['reagents_prep_temperature'])
-            sheetobject.update_acell('E4', rxndict['reagents_prep_stirrate'])
-            sheetobject.update_acell('F4', rxndict['reagents_prep_duration'])
-            sheetobject.update_acell('D5', rxndict['reagents_prep_temperature'])
-            sheetobject.update_acell('E5', rxndict['reagents_prep_stirrate'])
-            sheetobject.update_acell('F5', rxndict['reagents_prep_duration'])
-            sheetobject.update_acell('C14', FinalAmountArray[0])
-            sheetobject.update_acell('C16', FinalAmountArray[1])
-            sheetobject.update_acell('C17', FinalAmountArray[2])
-            sheetobject.update_acell('C18', FinalAmountArray[3])
-            sheetobject.update_acell('C20', FinalAmountArray[4])
-            sheetobject.update_acell('C21', FinalAmountArray[5])
-            sheetobject.update_acell('C27', FinalAmountArray[6])
-            sheetobject.update_acell('C28', FinalAmountArray[7])
-            sheetobject.update_acell('B22', 'null')
-            sheetobject.update_acell('E22', 'null')
-            sheetobject.update_acell('B24', 'null')
-            sheetobject.update_acell('B25', 'null')
-            sheetobject.update_acell('B26', 'null')
-            sheetobject.update_acell('C24', 'null')
-            sheetobject.update_acell('C25', 'null')
-            sheetobject.update_acell('C26', 'null')
-            sheetobject.update_acell('E24', 'null')
-            sheetobject.update_acell('E25', 'null')
-            sheetobject.update_acell('E26', 'null')
-    googleio.GupFile(NewDir, uploadlist, rxndict)
+            sheetobject.update_acell('B12', 'null')
+
+            # Reagent preparation
+             #Reagent 2
+            sheetobject.update_acell('D4', rdict['2'].preptemperature)
+            sheetobject.update_acell('E4', rdict['2'].prepstirrate)
+            sheetobject.update_acell('F4', rdict['2'].prepduration)
+             #Reagent 3
+            sheetobject.update_acell('D5', rdict['3'].preptemperature)
+            sheetobject.update_acell('E5', rdict['3'].prepstirrate)
+            sheetobject.update_acell('F5', rdict['3'].prepduration)
+            # Reagent 1 - use all values present if possible
+            sheetobject.update_acell('B16', rxndict['chem%s_abbreviation'%rdict['1'].chemicals[0]])
+            sheetobject.update_acell('C15', prepdict['solvent_volume']) #nominal final
+            sheetobject.update_acell('C16', prepdict['solvent_volume']) #chemical added
+            sheetobject.update_acell('E16', 'milliliter') #label for volume based measurements, units for GBL
+            sheetobject.update_acell('H15', rdict['1'].prerxntemp)
+            # Reagent 2 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
+            sheetobject.update_acell('C19', prepdict['Afinalvolume']) # final nominal
+            sheetobject.update_acell('B20', rxndict['chem%s_abbreviation'%rdict['2'].chemicals[0]])
+            sheetobject.update_acell('B21', rxndict['chem%s_abbreviation'%rdict['2'].chemicals[1]])
+            sheetobject.update_acell('B22', rxndict['chem%s_abbreviation'%rdict['2'].chemicals[2]])
+            sheetobject.update_acell('C20', prepdict['pbi2mass'])
+            sheetobject.update_acell('E20', 'gram') #label for solid based measurements, units for pbi2
+            sheetobject.update_acell('C21', prepdict['Aaminemass'])
+            sheetobject.update_acell('E21', 'gram') #label for solid based measurements, units for pbi2
+            sheetobject.update_acell('C22', prepdict['Afinalvolume'])
+            sheetobject.update_acell('E22', 'milliliter') #label for volume based measurements, units for GBL
+            sheetobject.update_acell('H19', rdict['2'].prerxntemp)
+            # Reagent 3 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
+            sheetobject.update_acell('C23', prepdict['Bfinalvolume'])
+            sheetobject.update_acell('B24', rxndict['chem%s_abbreviation'%rdict['3'].chemicals[0]])
+            sheetobject.update_acell('B25', rxndict['chem%s_abbreviation'%rdict['3'].chemicals[1]])
+            sheetobject.update_acell('C24', prepdict['Baminemass'])
+            sheetobject.update_acell('E24', 'gram') #label for solid based measurements, units for pbi2
+            sheetobject.update_acell('C25', prepdict['Bfinalvolume'])
+            sheetobject.update_acell('E25', 'milliliter') #label for volume based measurements, units for GBL
+            sheetobject.update_acell('H23', rdict['3'].prerxntemp)
+            # Reagent 4 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
+            # Reagent 5 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
+            sheetobject.update_acell('B32', rxndict['chem%s_abbreviation'%rdict['5'].chemicals[0]])
+            sheetobject.update_acell('C31', prepdict['FA5'])
+            sheetobject.update_acell('C32', prepdict['FA5'])
+            sheetobject.update_acell('E32', 'milliliter') #label for volume based measurements, units for GBL
+            sheetobject.update_acell('H31', rdict['5'].prerxntemp)
+            # Reagent 6 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
+            sheetobject.update_acell('B36', rxndict['chem%s_abbreviation'%rdict['6'].chemicals[0]])
+            sheetobject.update_acell('C35', prepdict['FA6'])
+            sheetobject.update_acell('C36', prepdict['FA6'])
+            sheetobject.update_acell('E36', 'milliliter') #label for volume based measurements, units for GBL
+            sheetobject.update_acell('H35', rdict['6'].prerxntemp)
+
+            # Reagent 7 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
+#    googleio.GupFile(NewDir, uploadlist, rxndict)
 
 #Constructs well array information based on the total number of wells for the run
 #Future versions could do better at controlling the specific location on the tray that reagents are dispensed.  This would be place to start
@@ -160,15 +195,15 @@ def conreag(rxndict, rdf, chemdf, rdict, robotfile):
     aminemassB=(Aminemol*float(chemdf.loc[rxndict['chem3_abbreviation'], "Molecular Weight (g/mol)"]))
 
     #The following section handles and output dataframes to the format required by the robot.xls file.  File type is very picky about white space and formatting.  
-    FinalAmountArray_hold=[]
-    FinalAmountArray_hold.append((solventvolume/1000).round(2))
-    FinalAmountArray_hold.append(PbI2mass.round(2))
-    FinalAmountArray_hold.append((aminemassA.round(2)))
-    FinalAmountArray_hold.append((stockAvolume/1000).round(2))
-    FinalAmountArray_hold.append(aminemassB.round(2))
-    FinalAmountArray_hold.append((stockBvolume/1000).round(2))
-    FinalAmountArray_hold.append((stockFormicAcid5/1000).round(2))
-    FinalAmountArray_hold.append((stockFormicAcid6/1000).round(2))
+    FinalAmountArray_hold={}
+    FinalAmountArray_hold['solvent_volume']=((solventvolume/1000).round(2))
+    FinalAmountArray_hold['pbi2mass']=(PbI2mass.round(2))
+    FinalAmountArray_hold['Aaminemass']=((aminemassA.round(2)))
+    FinalAmountArray_hold['Afinalvolume']=((stockAvolume/1000).round(2))
+    FinalAmountArray_hold['Baminemass']=(aminemassB.round(2))
+    FinalAmountArray_hold['Bfinalvolume']=((stockBvolume/1000).round(2))
+    FinalAmountArray_hold['FA5']=((stockFormicAcid5/1000).round(2))
+    FinalAmountArray_hold['FA6']=((stockFormicAcid6/1000).round(2))
     return(FinalAmountArray_hold)
 
 def expwellcount(rxndict, exp, exp_wells,edict):
@@ -333,10 +368,10 @@ def datapipeline(rxndict):
     uploadlist = [robotfile, ermmolcsv, emsumcsv]
 
     #Calculates values for upload to experimental datasheet on gdrive
-    printvals =  conreag(rxndict, erdf, chemdf, rdict, robotfile)
+    prepdict =  conreag(rxndict, erdf, chemdf, rdict, robotfile)
     # Final uploads
     if rxndict['debug'] == 1:
         pass
     else:
-        PrepareDirectory(uploadlist, printvals, rxndict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
+        PrepareDirectory(uploadlist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
     print("Job Creation Complete")

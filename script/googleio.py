@@ -42,7 +42,8 @@ def DriveCreateFolder(title1):
 ##Copies all files from template directory into the new directory
 ##Returns a referenced dictionary of files (title, Gdrive ID)
 def DriveAddTemplates(opdir, RunID):
-    template_folder='1HneaSFzgJgHImDAL-8OgQfSx1ioFJp6S'  #Debugging target folder
+#    template_folder='1HneaSFzgJgHImDAL-8OgQfSx1ioFJp6S'  #Debugging target folder
+    template_folder='131G45eK7o9ZiDb4a2yV7l2E1WVQrz16d' #New template 11/5/2018
     file_template_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % template_folder}).GetList()
     for templatefile in file_template_list:       
             basename=templatefile['title']

@@ -63,6 +63,7 @@ def PrepareDirectory(uploadlist, prepdict, rxndict, rdict):
             sheetobject.update_acell('B6', rxndict['RunID'])
             sheetobject.update_acell('B7', rxndict['ExpWorkflowVer'])
             sheetobject.update_acell('B8', rxndict['RoboVersion'])
+            sheetobject.update_acell('B9', rxndict['challengeproblem'])
 
             # Notes section - blank values as default
             sheetobject.update_acell('B10', 'null')
@@ -120,7 +121,7 @@ def PrepareDirectory(uploadlist, prepdict, rxndict, rdict):
             sheetobject.update_acell('H35', rdict['6'].prerxntemp)
 
             # Reagent 7 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-#    googleio.GupFile(NewDir, uploadlist, rxndict)
+    googleio.GupFile(NewDir, uploadlist, rxndict)
 
 #Constructs well array information based on the total number of wells for the run
 #Future versions could do better at controlling the specific location on the tray that reagents are dispensed.  This would be place to start
@@ -153,9 +154,9 @@ def volarray(rdf, maxr):
         name_maxvol=(rdf.loc[:,"Reagent%i (ul)" %(x)]).max()
         if name_maxvol >= 300:
             vol_ar.append(hv)
-        if name_maxvol >= 50 and name_maxvol <300:
+        elif name_maxvol >= 50 and name_maxvol <300:
             vol_ar.append(sv)
-        if name_maxvol < 50:
+        elif name_maxvol < 50:
             vol_ar.append(lv)
         x+=1
     return(vol_ar)
@@ -340,10 +341,10 @@ def postprocess(erdf, maxr):
 def datapipeline(rxndict):
     testing.prebuildvalidation(rxndict) # testing to ensure that the user defined parameters match code specs.  
     #Dataframe containing all of the chemical information
-    chemdf=pd.read_csv('ChemicalIndex.csv', index_col=1)
+#    chemdf=pd.read_csv('ChemicalIndex.csv', index_col=1)
+    chemdf=ChemicalData() #Retrieves information regarding chemicals and performs a vlookup on the generated dataframe
     #Dictionary with the user defined chemical limits for later use
     climits = chemicallimits(rxndict)
-#    chemdf=ChemicalData() #Retrieves information regarding chemicals and performs a vlookup on the generated dataframe
     # Build a dictionary of the information on each reagent.  Can be inspected in the log file if needed
     rdict=buildreagents(rxndict, chemdf)
     for k,v in rdict.items():

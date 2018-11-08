@@ -66,7 +66,7 @@ class perovskitereagent:
             if len(self.chemicals) == 1:
                 if [key for key,value in reactantinfo.items() if variablename in key] == []:
                         #density / molecular weight function returns mol / L of the chemical
-                        concdict[updatedname] = (float(chemdf.loc[rxndict['chem%s_abbreviation'%chemical],"Density            (g/mL)"])/ chemdf.loc[rxndict['chem%s_abbreviation' %chemical],"Molecular Weight (g/mol)"] * 1000)
+                        concdict[updatedname] = (float(chemdf.loc[rxndict['chem%s_abbreviation'%chemical],"Density            (g/mL)"])/ float(chemdf.loc[rxndict['chem%s_abbreviation' %chemical],"Molecular Weight (g/mol)"]) * 1000)
             else: pass
         return(concdict)
 

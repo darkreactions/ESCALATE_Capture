@@ -68,8 +68,8 @@ def initialize(rxndict):
     modlog.info("reag3_target_conc_chemical2 = %s M" %rxndict['reag3_target_conc_chemical3'])
     modlog.info("reagents_prerxn_temperature = %s Celsius" %rxndict['reagents_prerxn_temperature'])
     modlog.info("reagent_dead_volume = %s:mL" %rxndict['reagent_dead_volume'])
-    modlog.info("reagent 1,2,3 target volume = %s:mL" %rxndict['reagent_target_volume'])
-    modlog.info("reagent maximum volume threshold = %s:mL" %rxndict['maximum_total_volume'])
+#    modlog.info("reagent 1,2,3 target volume = %s:mL" %rxndict['reagent_target_volume'])
+#    modlog.info("reagent maximum volume threshold = %s:mL" %rxndict['maximum_total_volume'])
     ##Space constraints
     for key, value in rxndict.items():
         try: 

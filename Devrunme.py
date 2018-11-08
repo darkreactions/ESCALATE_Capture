@@ -25,7 +25,7 @@ plotter_on = 0                              # 1 = on , 0 = off (default)
 #################################
 #First reagent 
 lab = 'LBL'                           #Options are "LBL" or "HC" (Haverford College)
-wellcount = 96                        # (maximum 96) Total number of experimental wells on the plate 
+wellcount = 96                           # (maximum 96) Total number of experimental wells on the plate 
 exp1 = [[2,3,1],[5,6]]                # combination of reagents added to a particular experiment. First reagent is always 'solvent', second reagent will be targeted for maximum search range available. 
 exp1_vols = [[500,500],[0,250]]                # Volume allocated to each list in the the exp.  For instance [500,250] would mean a total final volume of 750uL
 #exp1_wells = 20                       # number of experimental wells to dedicate to a particular experiment

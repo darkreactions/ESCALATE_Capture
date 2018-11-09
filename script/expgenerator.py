@@ -36,15 +36,16 @@ def ChemicalData():
 
 ### File preparation --- Main Code Body ###
 ##Updates all of the run data information and creates the empty template for amine information
-def PrepareDirectory(uploadlist, prepdict, rxndict, rdict):
+def PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict):
     ### Directory and file collection handling###
     ##Generates new working directory with updated templates, return working folder ID
     print(rxndict['RunID'])
     scope= ['https://spreadsheets.google.com/feeds']
     credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
     gc =gspread.authorize(credentials)
-    NewDir=googleio.DriveCreateFolder(rxndict['RunID'])
-    file_dict=googleio.DriveAddTemplates(NewDir, rxndict['RunID'])
+    tgt_folder_id='11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe' #Target Folder for debugging
+    PriDir=googleio.DriveCreateFolder(rxndict['RunID'], tgt_folder_id)
+    file_dict=googleio.DriveAddTemplates(PriDir, rxndict['RunID'])
     print('Writing final values to experimental data entry form.....')
     # This is hardcoded as we don't know how long / much time we want to invest in developing an extensible interface.  
     # Will need a new version for WF3, likely.
@@ -119,9 +120,26 @@ def PrepareDirectory(uploadlist, prepdict, rxndict, rdict):
             sheetobject.update_acell('C36', prepdict['FA6'])
             sheetobject.update_acell('E36', 'milliliter') #label for volume based measurements, units for GBL
             sheetobject.update_acell('H35', rdict['6'].prerxntemp)
+    secfold_name = "%s_subdata" %rxndict['RunID']
+    secdir = googleio.DriveCreateFolder(secfold_name, PriDir)
+    googleio.GupFile(PriDir, secdir, secfilelist, uploadlist, rxndict)
+
 
             # Reagent 7 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-    googleio.GupFile(NewDir, uploadlist, rxndict)
+
+def PrepareDirectoryCP(uploadlist, secfilelist, rxndict, rdict):
+    scope= ['https://spreadsheets.google.com/feeds']
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
+    gc =gspread.authorize(credentials)
+    tgt_folder_id='11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe' #Target Folder for debugging
+    PriDir=googleio.DriveCreateFolder(rxndict['RunID'], tgt_folder_id)
+    file_dict=googleio.DriveAddTemplates(PriDir, rxndict['RunID'])
+    subfold_name = "%s_submissions" %rxndict['RunID']
+    subdir = googleio.DriveCreateFolder(subfold_name, PriDir)
+    secfold_name = "%s_subdata" %rxndict['RunID']
+    secdir = googleio.DriveCreateFolder(secfold_name, PriDir)
+    googleio.GupFile(PriDir, secdir, secfilelist, uploadlist, rxndict)
+
 
 #Constructs well array information based on the total number of wells for the run
 #Future versions could do better at controlling the specific location on the tray that reagents are dispensed.  This would be place to start
@@ -161,7 +179,8 @@ def volarray(rdf, maxr):
         x+=1
     return(vol_ar)
 
-def preprobotfile(rxndict, erdf, robotfile):
+
+def preprobotfile(rxndict, erdf):
     df_Tray=MakeWellList(rxndict)
     vol_ar=volarray(erdf, rxndict['max_robot_reagents'])
     Parameters={
@@ -175,9 +194,10 @@ def preprobotfile(rxndict, erdf, robotfile):
     'Reagent Temperature':[rxndict['reagents_prerxn_temperature']]*len(vol_ar)}
     df_parameters=pd.DataFrame(data=Parameters)
     df_conditions=pd.DataFrame(data=Conditions)
-
     outframe=pd.concat([df_Tray.iloc[:,0],erdf,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
+    robotfile = ("localfiles/%s_RobotInput.xls" %rxndict['RunID'])
     outframe.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
+    return(robotfile)
 
 
 def conreag(rxndict, rdf, chemdf, rdict, robotfile):
@@ -336,6 +356,26 @@ def postprocess(erdf, maxr):
     erdf = erdf.reindex(sorted(erdf.columns), axis=1)
     return(erdf)
 
+def augdescriptors(inchikeys, rxndict):
+    #bring in the inchi key based features for a left merge
+    with open('perov_desc.csv', 'r') as my_descriptors:
+       descriptor_df=pd.read_csv(my_descriptors) 
+    descriptor_df=inchikeys.merge(descriptor_df, left_on='_rxn_organic-inchikey', right_on='_raw_inchikey', how='inner')
+    cur_list = [c for c in descriptor_df.columns if 'raw' not in c]
+    descriptor_df = descriptor_df[cur_list]
+    descriptor_df.drop(columns=['_rxn_organic-inchikey'], inplace=True)
+    ds1 = [rxndict['duratation_stir1']]*rxndict['wellcount']
+    ds1df = pd.DataFrame(ds1, columns=['_rxn_mixingtime1S'])
+    ds2 = [rxndict['duratation_stir2']]*rxndict['wellcount']
+    ds2df = pd.DataFrame(ds2, columns=['_rxn_mixingtime2S'])
+    dr = [rxndict['duration_reaction']]*rxndict['wellcount']
+    drdf = pd.DataFrame(dr, columns=['_rxn_reactiontimeS'])
+    sr1 = [rxndict['stirrate']]*rxndict['wellcount']
+    sr1df = pd.DataFrame(sr1, columns=['_rxn_stirrateRPM'])
+    t = [rxndict['temperature2_nominal']]*rxndict['wellcount']
+    tdf = pd.DataFrame(t, columns=['_rxn_temperatureC'])
+    outdf = pd.concat([inchikeys, ds1df,ds2df,drdf,sr1df,tdf,descriptor_df], axis=1)
+    return(outdf)
 
 ## Prepares directory and relevant files, calls upon code to operate on those files to generate a new experimental run (workflow 1)
 def datapipeline(rxndict):
@@ -358,21 +398,52 @@ def datapipeline(rxndict):
     (erdf, ermmoldf, emsumdf) = rxnprng.preprocess(chemdf, rxndict, edict, rdict, climits) 
     # Clean up dataframe for robot file -> create xls --> upload 
     erdf = postprocess(erdf, rxndict['max_robot_reagents'])
-    robotfile = ("localfiles/%s_RobotInput.xls" %rxndict['RunID'])
-    preprobotfile(rxndict, erdf, robotfile)
-    # Export additional information files for later use / storage 
-    ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
-    ermmoldf.to_csv(ermmolcsv)
-    emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
-    emsumdf.to_csv(emsumcsv)
-    # List to send for uploads 
-    uploadlist = [robotfile, ermmolcsv, emsumcsv]
-
-    #Calculates values for upload to experimental datasheet on gdrive
-    prepdict =  conreag(rxndict, erdf, chemdf, rdict, robotfile)
-    # Final uploads
-    if rxndict['debug'] == 1:
-        pass
+    # Generate new CP run
+    if rxndict['challengeproblem'] == 1:
+        ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
+        ermmoldf.to_csv(ermmolcsv)
+        emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
+        emsumdf.to_csv(emsumcsv)
+        prerun = ('localfiles/%s_prerun.csv' %rxndict['RunID'])
+        stateset = ('localfiles/%sstateset.csv' %rxndict['chem3_abbreviation'])
+        # Hardcode the inchikey lookup for the "amine" aka chemical 3 for the time being, though there must be a BETTER WAY!
+        # Hardcode the inchikey lookup for the "amine" aka chemical 3 for the time being, though there must be a BETTER WAY!
+        inchilist = [(chemdf.loc[rxndict['chem3_abbreviation'], "InChI Key (ID)"])]*rxndict['wellcount']
+        inchidf = pd.DataFrame(inchilist, columns=['_rxn_organic-inchikey'])
+        #highly specific curation for the wf1 cp dataflow
+        emsumdf.drop(columns=['chemical1 [M]'], inplace=True)
+        emsumdf.rename(columns={"chemical2 [M]":"_rxn_M_inorganic", "chemical3 [M]":"_rxn_M_organic", "chemical5 [M]":"_rxn_M_acid"}, inplace=True)
+        ddf = augdescriptors(inchidf, rxndict)
+        prerun_df = pd.concat([erdf, emsumdf, ddf], axis=1)
+        stateset_df = pd.concat([emsumdf,ddf], axis=1)
+        prerun_df.to_csv(prerun)
+        stateset_df.to_csv(stateset)
+        uploadlist = [prerun, stateset]
+        secfilelist = [ermmolcsv, emsumcsv, rxndict['exefilename']]
+        if rxndict['debug'] == 1:
+            pass
+        else:
+            PrepareDirectoryCP(uploadlist, secfilelist, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
+    #Execute normal run
+    elif rxndict['challengeproblem'] == 0:
+        robotfile = preprobotfile(rxndict, erdf)
+        # Export additional information files for later use / storage 
+        ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
+        ermmoldf.to_csv(ermmolcsv)
+        emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
+        emsumdf.to_csv(emsumcsv)
+        # List to send for uploads 
+        uploadlist = [robotfile]
+        secfilelist = [ermmolcsv, emsumcsv, rxndict['exefilename']]
+        prepdict =  conreag(rxndict, erdf, chemdf, rdict, robotfile)
+        if rxndict['debug'] == 1:
+            pass
+        else:
+            PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
+    #Finalize CP run based on directory UID
     else:
-        PrepareDirectory(uploadlist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
+        #insert code to do stuff to a previously generated directory
+        pass
+    #Calculates values for upload to experimental datasheet on gdrive
+    # Final uploads
     print("Job Creation Complete")

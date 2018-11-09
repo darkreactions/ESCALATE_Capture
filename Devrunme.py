@@ -127,7 +127,7 @@ reag6_prerxn_temperature = 22       # [range 0-105] v1.1=45, units (C) Temperatu
 ######################################################################################################################################################################
 import argparse as ap
 parser = ap.ArgumentParser(description='Generate experimental run data')
-parser.add_argument('--cp', default=0, type=int, help='Activates the challenge problem pipeline. Default = 0 (standard pipeline)') #Default, debugging on and real code off == "1"
+parser.add_argument('--cp', default=str(0), type=str, help='Activates the challenge problem pipeline. Default = 0 (standard pipeline)') #Default, debugging on and real code off == "1"
 parser.add_argument('--debug', default=0, type=int, help='Disables dataupload. Default = 0 (Upload enabled)') #Default, debugging on and real code off == "1"
 
 max_robot_reagents = 7

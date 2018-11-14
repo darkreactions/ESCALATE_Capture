@@ -147,7 +147,7 @@ def MakeWellList(rxndict):
 def volarray(rdf, maxr):
     hv='HighVolume_Water_DispenseJet_Empty'
     sv='StandardVolume_Water_DispenseJet_Empty'
-    lv='LowVolume_Water_DispenseJet_Empty'
+    lv='Tip_50ul_Water_DispenseJet_Empty'
     x=1
     vol_ar=[]
     while x <= maxr:

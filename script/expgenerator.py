@@ -165,7 +165,7 @@ def MakeWellList(rxndict):
 def volarray(rdf, maxr):
     hv='HighVolume_Water_DispenseJet_Empty'
     sv='StandardVolume_Water_DispenseJet_Empty'
-    lv='LowVolume_Water_DispenseJet_Empty'
+    lv='Tip_50ul_Water_DispenseJet_Empty'
     x=1
     vol_ar=[]
     while x <= maxr:
@@ -446,4 +446,8 @@ def datapipeline(rxndict):
         pass
     #Calculates values for upload to experimental datasheet on gdrive
     # Final uploads
+    if rxndict['debug'] == 1:
+        pass
+    else:
+        PrepareDirectory(uploadlist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
     print("Job Creation Complete")

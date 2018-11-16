@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timezone
+from shutil import copyfile
 
 def buildlogger(rxndict):
     # create logger with 'initialize'
@@ -29,6 +30,8 @@ def runuidgen(rxndict):
     rxndict['date']=datetime.now(timezone.utc).strftime("%Y-%m-%d")
     rxndict['time']=datetime.now(timezone.utc).strftime("%H_%M_%S")
     rxndict['RunID']=rxndict['readdate'] + "_" + rxndict['lab'] #Agreed Upon format for final run information
+    copyfile(rxndict['exefilename'], 'localfiles/%s_%s' %(rxndict['RunID'], rxndict['exefilename']))
+    rxndict['exefilename'] = 'localfiles/%s_%s' %(rxndict['RunID'], rxndict['exefilename'])
     return(rxndict)
 
 # A bit of automation in curating the chemical space.  Sanity checked value will be output to the final log

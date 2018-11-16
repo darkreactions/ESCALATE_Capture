@@ -108,18 +108,18 @@ def PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict):
             sheetobject.update_acell('E25', 'milliliter') #label for volume based measurements, units for GBL
             sheetobject.update_acell('H23', rdict['3'].prerxntemp)
             # Reagent 4 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-            # Reagent 5 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-            sheetobject.update_acell('B32', rxndict['chem%s_abbreviation'%rdict['5'].chemicals[0]])
-            sheetobject.update_acell('C31', prepdict['FA5'])
-            sheetobject.update_acell('C32', prepdict['FA5'])
-            sheetobject.update_acell('E32', 'milliliter') #label for volume based measurements, units for GBL
-            sheetobject.update_acell('H31', rdict['5'].prerxntemp)
             # Reagent 6 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
             sheetobject.update_acell('B36', rxndict['chem%s_abbreviation'%rdict['6'].chemicals[0]])
             sheetobject.update_acell('C35', prepdict['FA6'])
             sheetobject.update_acell('C36', prepdict['FA6'])
             sheetobject.update_acell('E36', 'milliliter') #label for volume based measurements, units for GBL
             sheetobject.update_acell('H35', rdict['6'].prerxntemp)
+            # Reagent 7 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
+            sheetobject.update_acell('B40', rxndict['chem%s_abbreviation'%rdict['7'].chemicals[0]])
+            sheetobject.update_acell('C39', prepdict['FA7'])
+            sheetobject.update_acell('C40', prepdict['FA7'])
+            sheetobject.update_acell('E40', 'milliliter') #label for volume based measurements, units for GBL
+            sheetobject.update_acell('H39', rdict['7'].prerxntemp)
     secfold_name = "%s_subdata" %rxndict['RunID']
     secdir = googleio.DriveCreateFolder(secfold_name, PriDir)
     googleio.GupFile(PriDir, secdir, secfilelist, uploadlist, rxndict)
@@ -204,8 +204,8 @@ def conreag(rxndict, rdf, chemdf, rdict, robotfile):
     #Constructing output information for creating the experimental excel input sheet
     solventvolume=rdf['Reagent1 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
     stockAvolume=rdf['Reagent2 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-    stockFormicAcid5=rdf['Reagent5 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
     stockFormicAcid6=rdf['Reagent6 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
+    stockFormicAcid7=rdf['Reagent7 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
 
     PbI2mol=(stockAvolume/1000/1000*rxndict['reag2_target_conc_chemical2'])
     PbI2mass=(PbI2mol*float(chemdf.loc["PbI2", "Molecular Weight (g/mol)"]))
@@ -223,8 +223,8 @@ def conreag(rxndict, rdf, chemdf, rdict, robotfile):
     FinalAmountArray_hold['Afinalvolume']=((stockAvolume/1000).round(2))
     FinalAmountArray_hold['Baminemass']=(aminemassB.round(2))
     FinalAmountArray_hold['Bfinalvolume']=((stockBvolume/1000).round(2))
-    FinalAmountArray_hold['FA5']=((stockFormicAcid5/1000).round(2))
     FinalAmountArray_hold['FA6']=((stockFormicAcid6/1000).round(2))
+    FinalAmountArray_hold['FA7']=((stockFormicAcid7/1000).round(2))
     return(FinalAmountArray_hold)
 
 def expwellcount(rxndict, exp, exp_wells,edict):

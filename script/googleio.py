@@ -7,6 +7,8 @@
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+import logging
+modlog = logging.getLogger('initialize.googleio')
 
 
 ##Authentication for pydrive, designed globally to minimally generate token (a slow process)
@@ -22,8 +24,7 @@ gauth.SaveCredentialsFile("localfiles/mycred.txt")
 drive=GoogleDrive(gauth)
 
 ##Creating template directory for later copying of relevant files
-def DriveCreateFolder(title1):
-    tgt_folder_id='11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe' #Target Folder for debugging
+def DriveCreateFolder(title1, tgt_folder_id):
     file_metadata = {
         'title': title1,
         "parents": [{"kind": "drive#fileLink","id": tgt_folder_id}],
@@ -55,14 +56,29 @@ def DriveAddTemplates(opdir, RunID):
         new_dict[file1['title']]=file1['id']
     return(new_dict)
 
-def GupFile(opdir, filelist, rxndict):
+def GupFile(opdir, secdir, secfilelist, filelist, rxndict):
     for file in filelist:
         outfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
         outfile.SetContentFile(file)
         outfile['title']=file.split('/')[1]
         outfile.Upload()
+    #  Data files that need to be stored but are not crucial for performers
+    for secfile in secfilelist:
+        outfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": secdir}]})
+        outfile.SetContentFile(secfile)
+        outfile['title']=secfile.split('/')[1]
+        outfile.Upload()
     logfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
     logfile.SetContentFile(rxndict['logfile'])
     logfile['title']='%s_LogFile.txt'%rxndict['RunID']
     logfile.Upload()
-    print((filelist), logfile['title'], "Successfully Uploaded")
+    wdir = drive.CreateFile({'id': opdir})
+    swdir = drive.CreateFile({'id': secdir})
+    modlog.info('%s successfully uploaded to %s' %(logfile['title'], swdir['title']))
+    print('%s successfully uploaded to %s' %(logfile['title'], swdir['title']))
+    for item in filelist:
+        modlog.info('%s successfully uploaded to %s' %(item, wdir['title']))
+        print('%s successfully uploaded to %s' %(item, wdir['title']))
+    for item in secfilelist:
+        modlog.info('%s successfully uploaded to %s' %(item, swdir['title']))
+        print('%s successfully uploaded to %s' %(item, swdir['title']))

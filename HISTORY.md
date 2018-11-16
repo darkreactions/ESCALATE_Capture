@@ -28,3 +28,8 @@ RELEASE HISTORY
   * Example scripts for user execution
   * Updated user interface (execution script) with a bit more flexibility
   * Improved logging --> More work still pending
+2.0.1 (2018-11-07)
+---------------------------
+  * Fixed FAH to reagents 6,7
+  * Debugging fixes to generator
+  * Additional CP automation

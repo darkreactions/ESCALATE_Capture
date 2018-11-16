@@ -20,14 +20,14 @@
 ExpWorkflowVer=1.1                    #The workflow version of the experimental protocol
 
 # Show plot for each experiment before submitting?
-plotter_on = 0                        # 1 = on , 0 = off (default)
+plotter_on = 1                        # 1 = on , 0 = off (default)
 
 #################################
 ### Tray / Plate  Information ###
 #################################
 lab = 'LBL'                           # Options are "LBL" or "HC" (Haverford College), or ECL (pending dev)
-wellcount = 96                        # (#)    [range <96] Total number of experimental wells to run on the plate 
-exp1 = [[2,3,1],[5,6]]                # [[portion1_reagent1, portion1_reagent2], [portion2_reagent#]] Last reagent will be used to fill. First reagent will be targeted for maximum search range available. 
+wellcount = 96                       # (#)    [range <96] Total number of experimental wells to run on the plate 
+exp1 = [[2,3,1],[6,7]]                # [[portion1_reagent1, portion1_reagent2], [portion2_reagent#]] Last reagent will be used to fill. First reagent will be targeted for maximum search range available. 
 exp1_vols = [[500,500],[0,250]]       # [[portion1_minimum_vol, portion1_max_vol], [portion2_min_vol,portion2_max_vol]] Volume min and max allocated to each portion of a single experiment 
 
 ############################
@@ -57,7 +57,7 @@ chem2_abbreviation = 'PbI2'            # Abbreviation from chemical list https:/
 #chem2_molarmax = 1.5                  # Upper [M] molar concentration for chemical2 in any given portion for all experiments
 
 #chemical 3 (Amine1)
-chem3_abbreviation = 'PhEtNH3I'        # Abbreviation from chemical list https://goo.gl/UZSCBj  #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
+chem3_abbreviation = 'EtNH3I'        # Abbreviation from chemical list https://goo.gl/UZSCBj  #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
 #chem3_molarmin = 3.0                  # Lower [M] molar concentration for chemical3 in any given portion for all experiments 
 #chem3_molarmax = 4.0                  # Upper [M] molar concentration for chemical3 in any given portion for all experiments 
 
@@ -80,33 +80,36 @@ reag1_chemicals = [1]                  # List of the chemicals present in reagen
 
 #Reagent 2 information
 reag2_chemicals = [2,3,1]              # List of the chemicals present in reagent 2, user should provide in PRIORITY order
-reag2_target_conc_chemical2 = 2.22     # PbI2 stock concentration target molarity [M] [range > 0] v1.1) in the final solution (not accounting for non-idea solvent behavior)
-reag2_target_conc_chemical3 = 1.11     # Amine 1  target molarity [M]
+reag2_target_conc_chemical2 = 1.50     # PbI2 stock concentration target molarity [M] [range > 0] v1.1) in the final solution (not accounting for non-idea solvent behavior)
+reag2_target_conc_chemical3 = 3.00     # Amine 1  target molarity [M]
 #reag2_prep_temperature = 75           # Overrides reagent default preparation temperature (C)       ## To use on other reagents change reag# number
 #reag2_prep_stirrate = 450             # Overrides reagent default preparation stir rate (rpm)       ## To use on other reagents change reag# number
 #reag2_prep_duration = 3600            # Overrides reagent default stir duration (s)                 ## To use on other reagents change reag# number
 
 #Reagent 3 information
 reag3_chemicals = [3,1]                # List of the chemicals present in reagent 3, in order of addition
-reag3_target_conc_chemical3 = 1.57     # Amine 1  target molarity [M]
+reag3_target_conc_chemical3 = 6.0      # Amine 1  target molarity [M]
 #reag3_prep_temperature = 75           # Overrides reagent default preparation temperature (C)       ## To use on other reagents change reag# number
 #reag3_prep_stirrate = 450             # Overrides reagent default preparation stir rate (rpm)       ## To use on other reagents change reag# number
 #reag3_prep_duration = 3600            # Overrides reagent default stir duration (s)                 ## To use on other reagents change reag# number
 
 #Reagent 5 information
-reag5_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
-reag5_prerxn_temperature = 22          # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
+#reag5_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
+#reag5_prerxn_temperature = 22          # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
 
 #Reagent 6 information
 reag6_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
 reag6_prerxn_temperature = 22          # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
 
+#Reagent 7 information
+reag7_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
+reag7_prerxn_temperature = 22          # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
 ######################################################################################################################################################################
 ######################################################################################################################################################################
 import argparse as ap
 parser = ap.ArgumentParser(description='Generate experimental run data')
 parser.add_argument('--cp', default=0, type=int, help='Activates the challenge problem pipeline. Default = 0 (standard pipeline)') #Default, debugging on and real code off == "1"
-parser.add_argument('--debug', default=0, type=int, help='Disables dataupload. Default = 0 (Upload enabled)') #Default, debugging on and real code off == "1"
+parser.add_argument('-d', '--debug', default=0, type=int, help='Disables dataupload. Default = 0 (Upload enabled)') #Default, debugging on and real code off == "1"
 
 max_robot_reagents = 7
 RoboVersion = 2.0
@@ -120,6 +123,8 @@ debug = args.debug
 if __name__ == "__main__":
     localsdictionaryholder = {}
     import os
+    import sys
+    exefilename = sys.argv[0]
     if not os.path.exists('localfiles'):
         os.mkdir('localfiles')
     for x,y in locals().copy().items():

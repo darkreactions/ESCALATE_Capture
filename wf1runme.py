@@ -20,14 +20,14 @@
 ExpWorkflowVer=1.1                    #The workflow version of the experimental protocol
 
 # Show plot for each experiment before submitting?
-plotter_on = 0                        # 1 = on , 0 = off (default)
+plotter_on = 1                        # 1 = on , 0 = off (default)
 
 #################################
 ### Tray / Plate  Information ###
 #################################
 lab = 'LBL'                           # Options are "LBL" or "HC" (Haverford College), or ECL (pending dev)
 wellcount = 96                       # (#)    [range <96] Total number of experimental wells to run on the plate 
-exp1 = [[2,3,1],[5,6]]                # [[portion1_reagent1, portion1_reagent2], [portion2_reagent#]] Last reagent will be used to fill. First reagent will be targeted for maximum search range available. 
+exp1 = [[2,3,1],[6,7]]                # [[portion1_reagent1, portion1_reagent2], [portion2_reagent#]] Last reagent will be used to fill. First reagent will be targeted for maximum search range available. 
 exp1_vols = [[500,500],[0,250]]       # [[portion1_minimum_vol, portion1_max_vol], [portion2_min_vol,portion2_max_vol]] Volume min and max allocated to each portion of a single experiment 
 
 ############################
@@ -94,13 +94,16 @@ reag3_target_conc_chemical3 = 6.0      # Amine 1  target molarity [M]
 #reag3_prep_duration = 3600            # Overrides reagent default stir duration (s)                 ## To use on other reagents change reag# number
 
 #Reagent 5 information
-reag5_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
-reag5_prerxn_temperature = 22          # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
+#reag5_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
+#reag5_prerxn_temperature = 22          # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
 
 #Reagent 6 information
 reag6_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
 reag6_prerxn_temperature = 22          # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
 
+#Reagent 7 information
+reag7_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
+reag7_prerxn_temperature = 22          # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
 ######################################################################################################################################################################
 ######################################################################################################################################################################
 import argparse as ap

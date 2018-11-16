@@ -441,13 +441,14 @@ def datapipeline(rxndict):
         else:
             PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
     #Finalize CP run based on directory UID
-    else:
+    elif rxndict['challengeproblem'] == 2:
+
+	
+        if rxndict['debug'] == 1:
+            pass
+        else:
+            PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
         #insert code to do stuff to a previously generated directory
         pass
     #Calculates values for upload to experimental datasheet on gdrive
-    # Final uploads
-    if rxndict['debug'] == 1:
-        pass
-    else:
-        PrepareDirectory(uploadlist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
     print("Job Creation Complete")

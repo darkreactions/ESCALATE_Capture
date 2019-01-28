@@ -1,18 +1,20 @@
 #Copyright (c) 2018 Ian Pendleton - MIT License
 import os
 import logging
-from script import rxnprng
-from script import reactantclasses
 import json
 import csv
-from script import googleio
-from oauth2client.service_account import ServiceAccountCredentials
-import gspread
 import pandas as pd
 import numpy as np
 import sys
 import logging
+
+from oauth2client.service_account import ServiceAccountCredentials
+import gspread
+
+from script import googleio
 from script import testing
+from script import rxnprng
+from script import reactantclasses
 
 # create logger
 modlog = logging.getLogger('initialize.expgenerator')
@@ -356,7 +358,7 @@ def postprocess(erdf, maxr):
     erdf = erdf.reindex(sorted(erdf.columns), axis=1)
     return(erdf)
 
-def augdescriptors(inchikeys, rxndict, erdfrows):
+def augdescriptors(inchikeys, rxndict):
     #bring in the inchi key based features for a left merge
     with open('perov_desc.csv', 'r') as my_descriptors:
        descriptor_df=pd.read_csv(my_descriptors) 
@@ -364,15 +366,15 @@ def augdescriptors(inchikeys, rxndict, erdfrows):
     cur_list = [c for c in descriptor_df.columns if 'raw' not in c]
     descriptor_df = descriptor_df[cur_list]
     descriptor_df.drop(columns=['_rxn_organic-inchikey'], inplace=True)
-    ds1 = [rxndict['duratation_stir1']]*erdfrows
+    ds1 = [rxndict['duratation_stir1']]*rxndict['wellcount']
     ds1df = pd.DataFrame(ds1, columns=['_rxn_mixingtime1S'])
-    ds2 = [rxndict['duratation_stir2']]*erdfrows
+    ds2 = [rxndict['duratation_stir2']]*rxndict['wellcount']
     ds2df = pd.DataFrame(ds2, columns=['_rxn_mixingtime2S'])
-    dr = [rxndict['duration_reaction']]*erdfrows
+    dr = [rxndict['duration_reaction']]*rxndict['wellcount']
     drdf = pd.DataFrame(dr, columns=['_rxn_reactiontimeS'])
-    sr1 = [rxndict['stirrate']]*erdfrows
+    sr1 = [rxndict['stirrate']]*rxndict['wellcount']
     sr1df = pd.DataFrame(sr1, columns=['_rxn_stirrateRPM'])
-    t = [rxndict['temperature2_nominal']]*erdfrows
+    t = [rxndict['temperature2_nominal']]*rxndict['wellcount']
     tdf = pd.DataFrame(t, columns=['_rxn_temperatureC'])
     outdf = pd.concat([inchikeys, ds1df,ds2df,drdf,sr1df,tdf,descriptor_df], axis=1)
     return(outdf)
@@ -397,7 +399,6 @@ def datapipeline(rxndict):
     #Send out all of the constraints and chemical information for run assembly (all experiments are returned)
     (erdf, ermmoldf, emsumdf) = rxnprng.preprocess(chemdf, rxndict, edict, rdict, climits) 
     # Clean up dataframe for robot file -> create xls --> upload 
-    erdfrows = erdf.shape[0]
     erdf = postprocess(erdf, rxndict['max_robot_reagents'])
     # Generate new CP run
     if rxndict['challengeproblem'] == 1:
@@ -409,17 +410,14 @@ def datapipeline(rxndict):
         stateset = ('localfiles/%sstateset.csv' %rxndict['chem3_abbreviation'])
         # Hardcode the inchikey lookup for the "amine" aka chemical 3 for the time being, though there must be a BETTER WAY!
         # Hardcode the inchikey lookup for the "amine" aka chemical 3 for the time being, though there must be a BETTER WAY!
-        inchilist = [(chemdf.loc[rxndict['chem3_abbreviation'], "InChI Key (ID)"])]*erdfrows
+        inchilist = [(chemdf.loc[rxndict['chem3_abbreviation'], "InChI Key (ID)"])]*rxndict['wellcount']
         inchidf = pd.DataFrame(inchilist, columns=['_rxn_organic-inchikey'])
-        #highly specific curation for the wf1 cp dataflow # drops GBL column
+        #highly specific curation for the wf1 cp dataflow
         emsumdf.drop(columns=['chemical1 [M]'], inplace=True)
         emsumdf.rename(columns={"chemical2 [M]":"_rxn_M_inorganic", "chemical3 [M]":"_rxn_M_organic", "chemical5 [M]":"_rxn_M_acid"}, inplace=True)
-        ddf = augdescriptors(inchidf, rxndict, erdfrows)
+        ddf = augdescriptors(inchidf, rxndict)
         prerun_df = pd.concat([erdf, emsumdf, ddf], axis=1)
         stateset_df = pd.concat([emsumdf,ddf], axis=1)
-        #hidden toggle to prevent state space from having all of the features added
-#        stateset_df = emsumdf
-        prerun_df.to_csv(prerun)
         prerun_df.to_csv(prerun)
         stateset_df.to_csv(stateset)
         uploadlist = [prerun, stateset]

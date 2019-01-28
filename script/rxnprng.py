@@ -307,7 +307,7 @@ def statedataframe(expoverview, vollimits, rdict, experiment):
         reagentvols=[]
         # generate the list of possible volumes for each reagent and the associated mmol calculated values (for parsing later)
         for reagent in portion:
-            reagentvols.append((list(range(0, vollimits[portionnum][1]+1, 100)))) #Take the maximum volume limit and generate a list of all possible volumes from 0 to the max
+            reagentvols.append((list(range(0, vollimits[portionnum][1]+1, 10)))) #Take the maximum volume limit and generate a list of all possible volumes from 0 to the max
             reagentnamelist.append('Reagent%s (ul)'%reagent)
             fullreagentnamelist.append('Reagent%s (ul)'%reagent)
         #generate permutation of all of the volumes

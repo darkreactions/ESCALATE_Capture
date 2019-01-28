@@ -20,7 +20,7 @@
 ExpWorkflowVer=1.1                    #The workflow version of the experimental protocol
 
 # Show plot for each experiment before submitting?
-plotter_on = 0                        # 1 = on , 0 = off (default)
+plotter_on = 1                        # 1 = on , 0 = off (default)
 
 #################################
 ### Tray / Plate  Information ###

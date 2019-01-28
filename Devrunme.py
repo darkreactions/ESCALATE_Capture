@@ -25,8 +25,8 @@ plotter_on = 0                              # 1 = on , 0 = off (default)
 #################################
 #First reagent 
 lab = 'LBL'                           #Options are "LBL" or "HC" (Haverford College)
-wellcount = 96                           # (maximum 96) Total number of experimental wells on the plate 
-exp1 = [[2,3,1],[5,6]]                # combination of reagents added to a particular experiment. First reagent is always 'solvent', second reagent will be targeted for maximum search range available. 
+wellcount = 72                           # (maximum 96) Total number of experimental wells on the plate 
+exp1 = [[2,3,1],[6,7]]                # combination of reagents added to a particular experiment. First reagent is always 'solvent', second reagent will be targeted for maximum search range available. 
 exp1_vols = [[500,500],[0,250]]                # Volume allocated to each list in the the exp.  For instance [500,250] would mean a total final volume of 750uL
 #exp1_wells = 20                       # number of experimental wells to dedicate to a particular experiment
 #exp2 = [[4,5,1],[6,7]]
@@ -47,7 +47,7 @@ stirrate = 750                        #[range 0-750] v1.1=750, Tray shake rate i
 temperature1_nominal = 80             #[range >0], v1.1=80, temperature robot will reach prior to adding any reagents to the wells
 duratation_stir1 = 900                #[range > 0]  v1.1=900, Duration of shake after addition of first three reagents 
 duratation_stir2 = 1200               #[range > 0] v1.1=1200, Duration of shake after addition of reagent 5 and 6 (formic acid in 1.1)
-temperature2_nominal = 105             #[range 25-120, 105] v1.1=105, Temperature to set the robot for the ITC process
+temperature2_nominal = 70             #[range 25-120, 105] v1.1=105, Temperature to set the robot for the ITC process
 duration_reaction = 12600             #[range > 0] v1.1=12600, Duration of ITC after all reagents and shaking protocols are complete.  Holds at temperature 2
 reagent_dead_volume = 3.0             #[range > 0] v1.1=3.0, Dead volume, excess reagent prepared, ensures that enough solution will be present for plate
 plate_container = 'Symyx_96_well_0003'
@@ -61,11 +61,11 @@ chem1_abbreviation = 'GBL'             # Abbreviation from chemical list https:/
 
 #chemical 2 (PbI2)
 chem2_abbreviation = 'PbI2'            # Abbreviation from chemical list https://goo.gl/UZSCBj    
-chem2_molarmin = 0.2                  # Lower [M] molar concentration for chemical2 in any given portion for all experiments
+#chem2_molarmin = 0.2                  # Lower [M] molar concentration for chemical2 in any given portion for all experiments
 #chem2_molarmax = 1.5                  # Upper [M] molar concentration for chemical2 in any given portion for all experiments
 
 #chemical 3 (Amine1)
-chem3_abbreviation = 'PhEtNH3I'          # Abbreviation from chemical list https://goo.gl/UZSCBj  #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
+chem3_abbreviation = 'EtNH3I'          # Abbreviation from chemical list https://goo.gl/UZSCBj  #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
 #chem3_molarmin = 3.0                  # Lower [M] molar concentration for chemical3 in any given portion for all experiments 
 #chem3_molarmax = 4.0                  # Upper [M] molar concentration for chemical3 in any given portion for all experiments 
 
@@ -93,8 +93,8 @@ reag1_chemicals = [1]                  # List of the chemicals present in reagen
 
 #Reagent 2 information
 reag2_chemicals = [2,3,1]              # List of the chemicals present in reagent 2,  in order of priority for constraints
-reag2_target_conc_chemical2 = 2.22     # PbI2 target molarity [M] [range > 0] v1.1) in the final solution (not accounting for non-idea solvent behavior)
-reag2_target_conc_chemical3 = 1.11     # Amine 1  target molarity [M]
+reag2_target_conc_chemical2 = 1.5     # PbI2 target molarity [M] [range > 0] v1.1) in the final solution (not accounting for non-idea solvent behavior)
+reag2_target_conc_chemical3 = 3.0     # Amine 1  target molarity [M]
         #Example Manual Overrides
 #reag2_prep_temperature = 75           # Overrides reagent default preparation temperature  ## To use on other reagents just change the respective reagent number
 #reag2_prep_stirrate = 450             # Overrides reagent default Stir rate during prepration (rpm) ## To use on other reagents just change the respective reagent number
@@ -102,7 +102,7 @@ reag2_target_conc_chemical3 = 1.11     # Amine 1  target molarity [M]
 
 #Reagent 3 information
 reag3_chemicals = [3,1]                # List of the chemicals present in reagent 3, in order of addition
-reag3_target_conc_chemical3 = 1.57     # Amine 1  target molarity [M]
+reag3_target_conc_chemical3 = 6.00     # Amine 1  target molarity [M]
 
 #Reagent 4 information
 #reag4_chemicals = [2,4,1]             # List of the chemicals present in reagent 4, in order of addition
@@ -110,8 +110,8 @@ reag3_target_conc_chemical3 = 1.57     # Amine 1  target molarity [M]
 #reag4_target_conc_chemical4 = 1.4     # Amine 1  target molarity [M]
 
 #Reagent 5 information
-reag5_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
-reag5_prerxn_temperature = 22       # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
+#reag5_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
+#reag5_prerxn_temperature = 22       # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
 #reag5_chemicals = [4,1]               # List of the chemicals present in reagent 5, in order of addition
 #reag5_target_conc_chemical4 = 7.4     # Amine 1  target molarity [M]
         #End of upcoming settings
@@ -121,14 +121,16 @@ reag6_chemicals = [5]                   # List of the chemicals present in reage
 reag6_prerxn_temperature = 22       # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
 
 #Reagent 7 information
+reag7_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
+reag7_prerxn_temperature = 22       # [range 0-105] v1.1=45, units (C) Temperature of reagents immediately prior to addition to experiment / well 
 #reag7_chemicals = [5]                  # List of the chemicals present in reagent 6, in order of addition
 
 ######################################################################################################################################################################
 ######################################################################################################################################################################
 import argparse as ap
 parser = ap.ArgumentParser(description='Generate experimental run data')
-parser.add_argument('--cp', default=str(0), type=str, help='Activates the challenge problem pipeline. Default = 0 (standard pipeline)') #Default, debugging on and real code off == "1"
-parser.add_argument('--debug', default=0, type=int, help='Disables dataupload. Default = 0 (Upload enabled)') #Default, debugging on and real code off == "1"
+parser.add_argument('--cp', default=0, type=int, help='Activates the challenge problem pipeline. Default = 0 (standard pipeline)') #Default, debugging on and real code off == "1"
+parser.add_argument('-d', '--debug', default=0, type=int, help='Disables dataupload. Default = 0 (Upload enabled)') #Default, debugging on and real code off == "1"
 
 max_robot_reagents = 7
 RoboVersion = 2.0
@@ -142,6 +144,8 @@ debug = args.debug
 if __name__ == "__main__":
     localsdictionaryholder = {}
     import os
+    import sys
+    exefilename = sys.argv[0]
     if not os.path.exists('localfiles'):
         os.mkdir('localfiles')
     for x,y in locals().copy().items():

@@ -5,9 +5,11 @@
 ### https://github.com/gsuitedevs/PyDrive
 ### https://stackoverflow.com/questions/24419188/automating-pydrive-verification-process
 
+import logging
+
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
-import logging
+
 modlog = logging.getLogger('initialize.googleio')
 
 

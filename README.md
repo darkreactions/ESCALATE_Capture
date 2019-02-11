@@ -53,7 +53,7 @@ To build the proper environment using anaconda (https://conda.io/docs/user-guide
    * xlutitls
    * matplotlib
    * argparse
-3. Download or request access from ipendleton . at . haverford.edu or another member of the perovskite development team for access to the google drive folder of secure keys at: https://drive.google.com/drive/u/1/folders/1cN12AMZSvM5T5yVpFy9tkM_NEle7caQd
+3. Download or request access from ipendleton . at . haverford.edu or another member of the perovskite development team for access to the google drive folder of secure keys at: https://drive.google.com/drive/u/0/folders/1yet1CdQxJb4nG0uPCco8rMjqEwpZLeJM
 4. Unzip the keys and the client_secrets.json file in the main directory where the wf1runme.py script is located
 
 If during the installation process you encounter any issues, please submit a bug report / issue to the git repo or email ipendleton . at . haverford.edu

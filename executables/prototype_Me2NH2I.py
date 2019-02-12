@@ -49,7 +49,7 @@ plate_container = 'Symyx_96_well_0003' # Plate identifier (manual, no checks on 
 ############################
 
 #chemical 1 (GBL)
-chem1_abbreviation = 'GBL'             # Abbreviation from chemical list https://goo.gl/UZSCBj    
+chem1_abbreviation = 'DMF'             # Abbreviation from chemical list https://goo.gl/UZSCBj    
 
 #chemical 2 (PbI2)
 chem2_abbreviation = 'PbI2'            # Abbreviation from chemical list https://goo.gl/UZSCBj    
@@ -57,7 +57,7 @@ chem2_abbreviation = 'PbI2'            # Abbreviation from chemical list https:/
 #chem2_molarmax = 1.5                  # Upper [M] molar concentration for chemical2 in any given portion for all experiments
 
 #chemical 3 (Amine1)
-chem3_abbreviation = 'EtNH3I'        # Abbreviation from chemical list https://goo.gl/UZSCBj  #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
+chem3_abbreviation = 'Me2NH2I'        # Abbreviation from chemical list https://goo.gl/UZSCBj  #Ensure: https://goo.gl/UZSCBj present, Reagent 2 amine
 #chem3_molarmin = 3.0                  # Lower [M] molar concentration for chemical3 in any given portion for all experiments 
 #chem3_molarmax = 4.0                  # Upper [M] molar concentration for chemical3 in any given portion for all experiments 
 
@@ -80,15 +80,15 @@ reag1_chemicals = [1]                  # List of the chemicals present in reagen
 
 #Reagent 2 information
 reag2_chemicals = [2,3,1]              # List of the chemicals present in reagent 2, user should provide in PRIORITY order
-reag2_target_conc_chemical2 = 1.50     # PbI2 stock concentration target molarity [M] [range > 0] v1.1) in the final solution (not accounting for non-idea solvent behavior)
-reag2_target_conc_chemical3 = 3.00     # Amine 1  target molarity [M]
+reag2_target_conc_chemical2 = 1.86     # PbI2 stock concentration target molarity [M] [range > 0] v1.1) in the final solution (not accounting for non-idea solvent behavior)
+reag2_target_conc_chemical3 = 1.86     # Amine 1  target molarity [M]
 #reag2_prep_temperature = 75           # Overrides reagent default preparation temperature (C)       ## To use on other reagents change reag# number
 #reag2_prep_stirrate = 450             # Overrides reagent default preparation stir rate (rpm)       ## To use on other reagents change reag# number
 #reag2_prep_duration = 3600            # Overrides reagent default stir duration (s)                 ## To use on other reagents change reag# number
 
 #Reagent 3 information
 reag3_chemicals = [3,1]                # List of the chemicals present in reagent 3, in order of addition
-reag3_target_conc_chemical3 = 6.0      # Amine 1  target molarity [M]
+reag3_target_conc_chemical3 = 2.3      # Amine 1  target molarity [M]
 #reag3_prep_temperature = 75           # Overrides reagent default preparation temperature (C)       ## To use on other reagents change reag# number
 #reag3_prep_stirrate = 450             # Overrides reagent default preparation stir rate (rpm)       ## To use on other reagents change reag# number
 #reag3_prep_duration = 3600            # Overrides reagent default stir duration (s)                 ## To use on other reagents change reag# number

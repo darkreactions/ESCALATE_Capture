@@ -26,14 +26,17 @@ def buildlogger(rxndict):
     return('localfiles/%s_Logfile.log' %rxndict['RunID'])
 
 def runuidgen(rxndict):
-    rxndict['readdate_gen']=datetime.now(timezone.utc).isoformat()
-    rxndict['readdate']=rxndict['readdate_gen'].replace(':', '_') #Remove problematic characters
-    rxndict['date']=datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    rxndict['time']=datetime.now(timezone.utc).strftime("%H_%M_%S")
-    rxndict['RunID']=rxndict['readdate'] + "_" + rxndict['lab'] #Agreed Upon format for final run information
-    copyfile(rxndict['exefilename'], 'localfiles/%s_%s' %(rxndict['RunID'], rxndict['exefilename']))
-    rxndict['exefilename'] = 'localfiles/%s_%s' %(rxndict['RunID'], rxndict['exefilename'])
-    return(rxndict)
+    if rxndict['challengeproblem']==2:
+        rxndict['']
+    else:
+        rxndict['readdate_gen']=datetime.now(timezone.utc).isoformat()
+        rxndict['readdate']=rxndict['readdate_gen'].replace(':', '_') #Remove problematic characters
+        rxndict['date']=datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        rxndict['time']=datetime.now(timezone.utc).strftime("%H_%M_%S")
+        rxndict['RunID']=rxndict['readdate'] + "_" + rxndict['lab'] #Agreed Upon format for final run information
+        copyfile(rxndict['exefilename'], 'localfiles/%s_%s' %(rxndict['RunID'], rxndict['exefilename']))
+        rxndict['exefilename'] = 'localfiles/%s_%s' %(rxndict['RunID'], rxndict['exefilename'])
+        return(rxndict)
 
 # A bit of automation in curating the chemical space.  Sanity checked value will be output to the final log
 #def cleanvalues(rxndict):

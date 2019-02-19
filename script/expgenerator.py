@@ -13,6 +13,7 @@ import numpy as np
 import sys
 import logging
 from script import testing
+from pandas import ExcelWriter
 
 # create logger
 modlog = logging.getLogger('initialize.expgenerator')
@@ -445,14 +446,14 @@ def datapipeline(rxndict):
         else:
             PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
     #Finalize CP run based on directory UID
-    elif rxndict['challengeproblem'] == 2:
-
-	
-        if rxndict['debug'] == 1:
-            pass
-        else:
-            PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
-        #insert code to do stuff to a previously generated directory
-        pass
-    #Calculates values for upload to experimental datasheet on gdrive
+#    elif rxndict['challengeproblem'] == 2:
+#
+#	
+#        if rxndict['debug'] == 1:
+#            pass
+#        else:
+#            PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
+#        #insert code to do stuff to a previously generated directory
+#        pass
+#    #Calculates values for upload to experimental datasheet on gdrive
     print("Job Creation Complete")

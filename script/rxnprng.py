@@ -280,7 +280,7 @@ def chemicallist(rxndict):
             chemicallist.append(name)
     return(chemicallist)
 
-def finalmmolsums(chemicals, usedchems, mmoldf):
+def finalmmolsums(chemicals, mmoldf):
     finalsummedmmols = pd.DataFrame()
     for chemical in chemicals:
         cname = 'chemical%s' %chemical
@@ -378,7 +378,8 @@ def preprocess(chemdf, rxndict, edict, rdict, climits):
     ermmoldf.fillna(value=0, inplace=True)
     clist = (chemicallist(rxndict))
     # Final nominal molarity for each reagent in each well
-    emsumdf = finalmmolsums(clist, clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
+    # Final nominal molarity for each reagent in each well
+    emsumdf = finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
     emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
     if rxndict['plotter_on'] == 1:
         if 1 <= rxndict['ExpWorkflowVer'] < 2:

@@ -271,10 +271,13 @@ def expwellcount(rxndict, exp, exp_wells,edict):
     return(rxndict, edict)
 
 
-# This sort of parsing is needed to ensure that the diversity of experiments that we geenrate throughout this process is scalable
-# We don't want to be limited on the nubmer of reactions that can be considered for a single plate.  
-# Lots of things need to be organized sequentially.  This code is written out long form to make the manipulations more interpretable
-def expbuild(rxndict, rdict): # parse the reaction dictionary and reagent diction for relevant information
+''' This sort of parsing is needed to ensure that the diversity of experiments that 
+we geenrate throughout this process is scalable.  We don't want to be limited on the 
+nubmer of reactions that can be considered for a single plate. Lots of things need to
+be organized sequentially.  This code is written out long form to make the manipulations 
+more interpretable '''
+# parse the reaction dictionary and reagent dictionary for information on specific experiment
+def expbuild(rxndict, rdict): 
     # pull out only the terms with exp in the name (just consider and manipulate user defined variables) this will break if user adds variables with no default processing, that breaking is intentional
     edict = {}
     for k,v in rxndict.items(): #get out all of the information about experiments (the chemicals and the associated volumes and well counts)

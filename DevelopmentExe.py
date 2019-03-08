@@ -165,8 +165,8 @@ if __name__ == "__main__":
         else:
             localsdictionaryholder[x]=y
     from script import expgenerator
-    from script import logger
-    rxndict=logger.runuidgen(localsdictionaryholder) 
+    from log import logger
+    rxndict=logger.runuidgen(localsdictionaryholder, rxndict) 
     loggerfile=logger.buildlogger(rxndict)
     rxndict['logfile']=loggerfile
 #    rxndict=logger.cleanvalues(rxndict)

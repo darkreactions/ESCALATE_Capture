@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from shutil import copyfile
 
-def buildlogger(rxndict):
+def buildlogger(rxndict, vardict):
     # create logger with 'initialize'
     logger = logging.getLogger('initialize')
     logger.setLevel(logging.DEBUG)
@@ -25,33 +25,18 @@ def buildlogger(rxndict):
     logger.info("Run Initiation (iso): %s" %rxndict['readdate'])  #Agreed Upon format for final run information
     return('localfiles/%s_Logfile.log' %rxndict['RunID'])
 
-def runuidgen(rxndict):
-    if rxndict['challengeproblem']==2:
-        rxndict['']
-    else:
-        rxndict['readdate_gen']=datetime.now(timezone.utc).isoformat()
-        rxndict['readdate']=rxndict['readdate_gen'].replace(':', '_') #Remove problematic characters
-        rxndict['date']=datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        rxndict['time']=datetime.now(timezone.utc).strftime("%H_%M_%S")
-        rxndict['RunID']=rxndict['readdate'] + "_" + rxndict['lab'] #Agreed Upon format for final run information
-        copyfile(rxndict['exefilename'], 'localfiles/%s_%s' %(rxndict['RunID'], rxndict['exefilename']))
-        rxndict['exefilename'] = 'localfiles/%s_%s' %(rxndict['RunID'], rxndict['exefilename'])
-        return(rxndict)
-
-# A bit of automation in curating the chemical space.  Sanity checked value will be output to the final log
-#def cleanvalues(rxndict):
-#    modlog = logging.getLogger('initialize.cleanvalues')
-#    try: # ensures that the maximum concentration of chemical 2 does not exceed the upper physical limitation (should be done for each chemical eventually)
-#        if rxndict['chem2_molarmax'] > rxndict['reag2_target_conc_chemical2']*rxndict['reagent_target_volume']/1000:
-#            rxndict['chem2_molarmax']=rxndict['reag2_target_conc_chemical2']*rxndict['reagent_target_volume']/1000
-#            modlog.warning("Maximum mmol target for %s set too high - adjusted to %s mmol" %(rxndict['chem2_abbreviation'],rxndict['chem2_max']))
-#        else:
-#            rxndict['chem2_molarmax']
-#            pass
-#    except KeyError:
-#        rxndict['chem2_molarmax']=rxndict['reag2_target_conc_chemical2']*rxndict['reagent_target_volume']/1000
-#        rxndict['chem2_molarmax']
-#    return(rxndict)
+def runuidgen(rxndict, vardict):
+#    if vardict['challengeproblem']==2:
+#        vardict['']
+#    else:
+    rxndict['readdate_gen']=datetime.now(timezone.utc).isoformat()
+    rxndict['readdate']=rxndict['readdate_gen'].replace(':', '_') #Remove problematic characters
+    rxndict['date']=datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    rxndict['time']=datetime.now(timezone.utc).strftime("%H_%M_%S")
+    rxndict['RunID']=rxndict['readdate'] + "_" + rxndict['lab'] #Agreed Upon format for final run information
+    copyfile(vardict['exefilename'], 'localfiles/%s_%s' %(rxndict['RunID'], vardict['exefilename']))
+    vardict['exefilename'] = 'localfiles/%s_%s' %(rxndict['RunID'], vardict['exefilename'])
+    return(rxndict, vardict)
 
 #record a detailed and organized set of the variables set by the user
 def initialize(rxndict):

@@ -181,9 +181,9 @@ def volarray(rdf, maxr):
     return(vol_ar)
 
 
-def preprobotfile(rxndict, erdf):
+def preprobotfile(rxndict, vardict, erdf):
     df_Tray=MakeWellList(rxndict)
-    vol_ar=volarray(erdf, rxndict['max_robot_reagents'])
+    vol_ar=volarray(erdf, vardict['max_robot_reagents'])
     Parameters={
     'Reaction Parameters':['Temperature (C):','Stir Rate (rpm):','Mixing time1 (s):','Mixing time2 (s):', 'Reaction time (s):',""], 
     'Parameter Values':[rxndict['temperature2_nominal'], rxndict['stirrate'], rxndict['duratation_stir1'], rxndict['duratation_stir2'], rxndict['duration_reaction'] ,''],
@@ -382,7 +382,7 @@ def augdescriptors(inchikeys, rxndict, erdfrows):
     return(outdf)
 
 ## Prepares directory and relevant files, calls upon code to operate on those files to generate a new experimental run (workflow 1)
-def datapipeline(rxndict):
+def datapipeline(rxndict, vardict):
     testing.prebuildvalidation(rxndict) # testing to ensure that the user defined parameters match code specs.  
     #Dataframe containing all of the chemical information
 #    chemdf=pd.read_csv('ChemicalIndex.csv', index_col=1)
@@ -402,9 +402,9 @@ def datapipeline(rxndict):
     (erdf, ermmoldf, emsumdf) = rxnprng.preprocess(chemdf, rxndict, edict, rdict, climits) 
     # Clean up dataframe for robot file -> create xls --> upload 
     erdfrows = erdf.shape[0]
-    erdf = postprocess(erdf, rxndict['max_robot_reagents'])
+    erdf = postprocess(erdf, vardict['max_robot_reagents'])
     # Generate new CP run
-    if rxndict['challengeproblem'] == 1:
+    if vardict['challengeproblem'] == 1:
         ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
         ermmoldf.to_csv(ermmolcsv)
         emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
@@ -427,14 +427,14 @@ def datapipeline(rxndict):
         prerun_df.to_csv(prerun)
         stateset_df.to_csv(stateset)
         uploadlist = [prerun, stateset]
-        secfilelist = [ermmolcsv, emsumcsv, rxndict['exefilename']]
-        if rxndict['debug'] == 1:
+        secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
+        if vardict['debug'] == 1:
             pass
         else:
             PrepareDirectoryCP(uploadlist, secfilelist, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
     #Execute normal run
-    elif rxndict['challengeproblem'] == 0:
-        robotfile = preprobotfile(rxndict, erdf)
+    elif vardict['challengeproblem'] == 0:
+        robotfile = preprobotfile(rxndict, vardict, erdf)
         # Export additional information files for later use / storage 
         ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
         ermmoldf.to_csv(ermmolcsv)
@@ -442,9 +442,9 @@ def datapipeline(rxndict):
         emsumdf.to_csv(emsumcsv)
         # List to send for uploads 
         uploadlist = [robotfile]
-        secfilelist = [ermmolcsv, emsumcsv, rxndict['exefilename']]
+        secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
         prepdict =  conreag(rxndict, erdf, chemdf, rdict, robotfile)
-        if rxndict['debug'] == 1:
+        if vardict['debug'] == 1:
             pass
         else:
             PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly

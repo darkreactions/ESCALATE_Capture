@@ -1,19 +1,33 @@
 import os
 import sys
-import argparse as ap
 import ast
-from script import expgenerator
-from log import logger
 import xlrd
+import logging
+import argparse as ap
+
+from log import init
+from capture import specify
 
 ## Development flags
 max_robot_reagents = 7
 RoboVersion = 2.1
 
+def escalatecapture(rxndict,vardict):
+    ''' Subsequent calls to each portion of the escalate_capture pipeline
+
+    Manages processing calls to specify, generate, and prepare --> leads to execute
+    '''
+    modlog = logging.getLogger('capture.escalatecapture')
+    modlog.info("Initializing specify")
+    specify.datapipeline(rxndict, vardict)
+
 def linkprocess(linkfile):
     pass
 
 def readvars(rxnvarfile):
+    '''
+    Processes excel (specifically formatted) excel form and converts to dict
+    '''
     rxndict={}
     varfile = (rxnvarfile)
     wb = xlrd.open_workbook(varfile)
@@ -34,7 +48,9 @@ def readvars(rxnvarfile):
                 rxndict[cell_dict_id.strip()] = cell_dict_value
     return(rxndict)
 
-
+'''
+Gather variables input into the XLS form, developer code, and CLI
+'''
 if __name__ == "__main__":
     vardict={}
     rxnvarfile = "WF1_variables.xlsx"
@@ -51,12 +67,12 @@ if __name__ == "__main__":
     parser.add_argument('-e', '--escalation', type=str,
         help="User specifies challenge problem crank number for run generation")
 
-    # Challenge Problem / escalation Toggle
     args = parser.parse_args()
     challengeproblem = args.cp
     debug = args.debug
     vardict['exefilename'] = rxnvarfile
     vardict['max_robot_reagents'] = max_robot_reagents
+    vardict['RoboVersion'] = RoboVersion
 
     if args.escalation == None:
         pass
@@ -65,12 +81,16 @@ if __name__ == "__main__":
 
     rxndict = readvars(rxnvarfile)
     vardict['debug'] = debug
+
+    # include the challenge problem flag in both variable spaces until fully resolved
     vardict['challengeproblem'] = challengeproblem
     rxndict['challengeproblem'] = challengeproblem
+
     if not os.path.exists('localfiles'):
         os.mkdir('localfiles')
-    rxndict, vardict = logger.runuidgen(rxndict, vardict) 
-    loggerfile=logger.buildlogger(rxndict, vardict)
+    rxndict, vardict = init.runuidgen(rxndict, vardict) 
+    loggerfile=init.buildlogger(rxndict)
     rxndict['logfile']=loggerfile
-    logger.initialize(rxndict)
-    expgenerator.datapipeline(rxndict, vardict)
+    init.initialize(rxndict, vardict) #logs all variables
+    # >>>  Should insert variable tests here <<<<  #
+    escalatecapture(rxndict,vardict)

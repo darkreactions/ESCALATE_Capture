@@ -33,3 +33,9 @@ RELEASE HISTORY
   * Fixed FAH to reagents 6,7
   * Debugging fixes to generator
   * Additional CP automation
+
+2.1 (2019-02-27)
+----------------------------
+  * Removed user variable entry from code to XLS file
+  * Organized code into appropriate sections for clarity
+  * Deconvoluted variable relationships (made dictionaries easier to work with)

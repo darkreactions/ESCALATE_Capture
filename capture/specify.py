@@ -1,146 +1,21 @@
 #Copyright (c) 2018 Ian Pendleton - MIT License
 import os
-import logging
-from script import rxnprng
-from script import reactantclasses
-import json
-import csv
-from script import googleio
-from oauth2client.service_account import ServiceAccountCredentials
-import gspread
-import pandas as pd
-import numpy as np
 import sys
 import logging
-from script import testing
+import json
+import csv
+import logging
+import numpy as np
+import pandas as pd
 from pandas import ExcelWriter
 
+from capture import testing
+from capture import rxnprng
+from capture.models import reagent
+from capture.models import chemical
+
 # create logger
-modlog = logging.getLogger('initialize.expgenerator')
-
-def ChemicalData():
-    ### General Setup Information ###
-    ##GSpread Authorization information
-    print('Obtaining chemical information from Google Drive.. \n', end='')
-    scope= ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc =gspread.authorize(credentials)
-    chemsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
-    ChemicalBook = gc.open_by_key(chemsheetid)
-    chemicalsheet = ChemicalBook.get_worksheet(0)
-    chemical_list = chemicalsheet.get_all_values()
-    chemdf=pd.DataFrame(chemical_list, columns=chemical_list[0])
-    chemdf=chemdf.iloc[1:]
-    chemdf=chemdf.reset_index(drop=True)
-    chemdf=chemdf.set_index(['Chemical Abbreviation'])
-    return(chemdf)
-
-### File preparation --- Main Code Body ###
-##Updates all of the run data information and creates the empty template for amine information
-def PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict):
-    ### Directory and file collection handling###
-    ##Generates new working directory with updated templates, return working folder ID
-    print(rxndict['RunID'])
-    scope= ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc =gspread.authorize(credentials)
-    tgt_folder_id='11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe' #Target Folder for debugging
-    PriDir=googleio.DriveCreateFolder(rxndict['RunID'], tgt_folder_id)
-    file_dict=googleio.DriveAddTemplates(PriDir, rxndict['RunID'])
-    print('Writing final values to experimental data entry form.....')
-    # This is hardcoded as we don't know how long / much time we want to invest in developing an extensible interface.  
-    # Will need a new version for WF3, likely.
-    for key,val in file_dict.items(): 
-        if "ExpDataEntry" in key: #Experimentalsheet = gc.open_bysearches for ExpDataEntry Form to get id
-            sheetobject = gc.open_by_key(val).sheet1
-#            print(sheetobject.get_all_values()) # Uncomment this to see some of the power of gspread
-#            cell_list = sheetobject.range('B15:C30')
-#            for cell in cell_list:
-#                print(cell.label)
-            # Direct writing by grouping until generalizing, minimum viable project
-            # Reaction information
-            sheetobject.update_acell('B2', rxndict['date']) #row, column, replacement in experimental data entry form
-            sheetobject.update_acell('B3', rxndict['time'])
-            sheetobject.update_acell('B4', rxndict['lab'])
-            sheetobject.update_acell('B6', rxndict['RunID'])
-            sheetobject.update_acell('B7', rxndict['ExpWorkflowVer'])
-            sheetobject.update_acell('B8', rxndict['RoboVersion'])
-            sheetobject.update_acell('B9', rxndict['challengeproblem'])
-
-            # Notes section - blank values as default
-            sheetobject.update_acell('B10', 'null')
-            sheetobject.update_acell('B11', 'null')
-            sheetobject.update_acell('B12', 'null')
-
-            # Reagent preparation
-             #Reagent 2
-            sheetobject.update_acell('D4', rdict['2'].preptemperature)
-            sheetobject.update_acell('E4', rdict['2'].prepstirrate)
-            sheetobject.update_acell('F4', rdict['2'].prepduration)
-             #Reagent 3
-            sheetobject.update_acell('D5', rdict['3'].preptemperature)
-            sheetobject.update_acell('E5', rdict['3'].prepstirrate)
-            sheetobject.update_acell('F5', rdict['3'].prepduration)
-            # Reagent 1 - use all values present if possible
-            sheetobject.update_acell('B16', rxndict['chem%s_abbreviation'%rdict['1'].chemicals[0]])
-            sheetobject.update_acell('C15', prepdict['solvent_volume']) #nominal final
-            sheetobject.update_acell('C16', prepdict['solvent_volume']) #chemical added
-            sheetobject.update_acell('E16', 'milliliter') #label for volume based measurements, units for GBL
-            sheetobject.update_acell('H15', rdict['1'].prerxntemp)
-            # Reagent 2 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-            sheetobject.update_acell('C19', prepdict['Afinalvolume']) # final nominal
-            sheetobject.update_acell('B20', rxndict['chem%s_abbreviation'%rdict['2'].chemicals[0]])
-            sheetobject.update_acell('B21', rxndict['chem%s_abbreviation'%rdict['2'].chemicals[1]])
-            sheetobject.update_acell('B22', rxndict['chem%s_abbreviation'%rdict['2'].chemicals[2]])
-            sheetobject.update_acell('C20', prepdict['pbi2mass'])
-            sheetobject.update_acell('E20', 'gram') #label for solid based measurements, units for pbi2
-            sheetobject.update_acell('C21', prepdict['Aaminemass'])
-            sheetobject.update_acell('E21', 'gram') #label for solid based measurements, units for pbi2
-            sheetobject.update_acell('C22', prepdict['Afinalvolume'])
-            sheetobject.update_acell('E22', 'milliliter') #label for volume based measurements, units for GBL
-            sheetobject.update_acell('H19', rdict['2'].prerxntemp)
-            # Reagent 3 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-            sheetobject.update_acell('C23', prepdict['Bfinalvolume'])
-            sheetobject.update_acell('B24', rxndict['chem%s_abbreviation'%rdict['3'].chemicals[0]])
-            sheetobject.update_acell('B25', rxndict['chem%s_abbreviation'%rdict['3'].chemicals[1]])
-            sheetobject.update_acell('C24', prepdict['Baminemass'])
-            sheetobject.update_acell('E24', 'gram') #label for solid based measurements, units for pbi2
-            sheetobject.update_acell('C25', prepdict['Bfinalvolume'])
-            sheetobject.update_acell('E25', 'milliliter') #label for volume based measurements, units for GBL
-            sheetobject.update_acell('H23', rdict['3'].prerxntemp)
-            # Reagent 4 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-            # Reagent 6 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-            sheetobject.update_acell('B36', rxndict['chem%s_abbreviation'%rdict['6'].chemicals[0]])
-            sheetobject.update_acell('C35', prepdict['FA6'])
-            sheetobject.update_acell('C36', prepdict['FA6'])
-            sheetobject.update_acell('E36', 'milliliter') #label for volume based measurements, units for GBL
-            sheetobject.update_acell('H35', rdict['6'].prerxntemp)
-            # Reagent 7 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-            sheetobject.update_acell('B40', rxndict['chem%s_abbreviation'%rdict['7'].chemicals[0]])
-            sheetobject.update_acell('C39', prepdict['FA7'])
-            sheetobject.update_acell('C40', prepdict['FA7'])
-            sheetobject.update_acell('E40', 'milliliter') #label for volume based measurements, units for GBL
-            sheetobject.update_acell('H39', rdict['7'].prerxntemp)
-    secfold_name = "%s_subdata" %rxndict['RunID']
-    secdir = googleio.DriveCreateFolder(secfold_name, PriDir)
-    googleio.GupFile(PriDir, secdir, secfilelist, uploadlist, rxndict)
-
-
-            # Reagent 7 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-
-def PrepareDirectoryCP(uploadlist, secfilelist, rxndict, rdict):
-    scope= ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc =gspread.authorize(credentials)
-    tgt_folder_id='11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe' #Target Folder for debugging
-    PriDir=googleio.DriveCreateFolder(rxndict['RunID'], tgt_folder_id)
-    file_dict=googleio.DriveAddTemplates(PriDir, rxndict['RunID'])
-    subfold_name = "%s_submissions" %rxndict['RunID']
-    subdir = googleio.DriveCreateFolder(subfold_name, PriDir)
-    secfold_name = "%s_subdata" %rxndict['RunID']
-    secdir = googleio.DriveCreateFolder(secfold_name, PriDir)
-    googleio.GupFile(PriDir, secdir, secfilelist, uploadlist, rxndict)
-
+modlog = logging.getLogger('capture.expgenerator')
 
 #Constructs well array information based on the total number of wells for the run
 #Future versions could do better at controlling the specific location on the tray that reagents are dispensed.  This would be place to start
@@ -305,29 +180,7 @@ def expbuild(rxndict, rdict):
     # Each particular subdivision of wells (each exp grouping) is added to the dictionary of overall experiments and returned
     return(rxndict, edict)
 
-#custom function built to parse the current version of the runme.py script.
-#This function operates specifcially to move the information from the initial user input into the reagent class for later use
-def buildreagents(rxndict, chemdf):
-    reagentlist=[]
-    reagentdict={}
-    #find all of the reagents constructured in the run
-    for item in rxndict:
-        if 'reag' in item and "chemicals" in item:
-            reagentname=(item.split('_'))
-            reagentlist.append(reagentname[0])
-    #Turn all of those reagents into class objects
-    for entry in reagentlist:
-        reagentvariables={}
-        reagentvariables['reagent']=entry
-        entry_num = entry.split('g')
-        for variable,value in rxndict.items(): 
-            if entry in variable:
-                variable=(variable.split('_',1))
-                reagentvariables[variable[1]]=value
-        reagent=reactantclasses.perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf)  # should scale nicely, class can be augmented without breaking the code
-        #return the class objects in a new dictionary for later use!
-        reagentdict[entry_num[1]]=reagent
-    return(reagentdict)
+
 
 def chemicallimits(rxndict):
     climits = {}
@@ -383,26 +236,26 @@ def augdescriptors(inchikeys, rxndict, erdfrows):
 
 ## Prepares directory and relevant files, calls upon code to operate on those files to generate a new experimental run (workflow 1)
 def datapipeline(rxndict, vardict):
+    '''Gathers experimental environment from user (rxndict), dev (vardict), and googleapi for file handling
+
+    '''
     testing.prebuildvalidation(rxndict) # testing to ensure that the user defined parameters match code specs.  
-    #Dataframe containing all of the chemical information
-#    chemdf=pd.read_csv('ChemicalIndex.csv', index_col=1)
-    chemdf=ChemicalData() #Retrieves information regarding chemicals and performs a vlookup on the generated dataframe
-    #Dictionary with the user defined chemical limits for later use
-    climits = chemicallimits(rxndict)
-    # Build a dictionary of the information on each reagent.  Can be inspected in the log file if needed
-    rdict=buildreagents(rxndict, chemdf)
+    chemdf=chemical.ChemicalData() #Dataframe containing all of the chemical information from gdrive
+    climits = chemicallimits(rxndict) #Dictionary with the user defined chemical limits for later use
+    rdict=reagent.buildreagents(rxndict, chemdf)
     for k,v in rdict.items():
         modlog.info("%s : %s" %(k,vars(v)))
-    # Build a dictionary for experimental construction and constraints
-    # Send off the experiments to be built using the reagents and the experimental constraints from the rxndict chemicals (soon to be synbiohub and user settings)
-    (rxndict, edict)=expbuild(rxndict, rdict)
-    # Some basic experiment validation and error reporting.  Checks the user constraints prior to executing the sampling method
+    (rxndict, edict)=expbuild(rxndict, rdict) # Send off the experiments to be built using the reagents and the experimental constraints from the rxndict chemicals
     testing.postbuildvalidation(rxndict,rdict,edict) # some basic in line code to make sure that the experiment and reagents have been correctly constructed by the user
     #Send out all of the constraints and chemical information for run assembly (all experiments are returned)
     (erdf, ermmoldf, emsumdf) = rxnprng.preprocess(chemdf, rxndict, edict, rdict, climits) 
     # Clean up dataframe for robot file -> create xls --> upload 
     erdfrows = erdf.shape[0]
     erdf = postprocess(erdf, vardict['max_robot_reagents'])
+
+
+
+    from capture.prepare import interface
     # Generate new CP run
     if vardict['challengeproblem'] == 1:
         ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
@@ -431,7 +284,7 @@ def datapipeline(rxndict, vardict):
         if vardict['debug'] == 1:
             pass
         else:
-            PrepareDirectoryCP(uploadlist, secfilelist, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
+            interface.PrepareDirectoryCP(uploadlist, secfilelist, rxndict['RunID'], rxndict['logfile'],rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
     #Execute normal run
     elif vardict['challengeproblem'] == 0:
         robotfile = preprobotfile(rxndict, vardict, erdf)
@@ -447,16 +300,5 @@ def datapipeline(rxndict, vardict):
         if vardict['debug'] == 1:
             pass
         else:
-            PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
-    #Finalize CP run based on directory UID
-#    elif rxndict['challengeproblem'] == 2:
-#
-#	
-#        if rxndict['debug'] == 1:
-#            pass
-#        else:
-#            PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
-#        #insert code to do stuff to a previously generated directory
-#        pass
-#    #Calculates values for upload to experimental datasheet on gdrive
+            interface.PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict, vardict) #Significant online operation, slow.  Comment out to test .xls generation (robot file) portions of the code more quickly
     print("Job Creation Complete")

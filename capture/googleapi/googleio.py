@@ -58,7 +58,7 @@ def DriveAddTemplates(opdir, RunID):
         new_dict[file1['title']]=file1['id']
     return(new_dict)
 
-def GupFile(opdir, secdir, secfilelist, filelist, rxndict):
+def GupFile(opdir, secdir, secfilelist, filelist, runID, eclogfile):
     for file in filelist:
         outfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
         outfile.SetContentFile(file)
@@ -71,8 +71,8 @@ def GupFile(opdir, secdir, secfilelist, filelist, rxndict):
         outfile['title']=secfile.split('/')[1]
         outfile.Upload()
     logfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
-    logfile.SetContentFile(rxndict['logfile'])
-    logfile['title']='%s_LogFile.txt'%rxndict['RunID']
+    logfile.SetContentFile(eclogfile)
+    logfile['title']='%s_LogFile.txt'%runID
     logfile.Upload()
     wdir = drive.CreateFile({'id': opdir})
     swdir = drive.CreateFile({'id': secdir})

@@ -1,16 +1,16 @@
 import optunity
 import pandas as pd
 import numpy as np
-from script import plotter
+from capture import plotter
 import logging
 import sys
 import random
-from script import testing
+from capture import testing
 import matplotlib.pyplot as plt
 import itertools
 
 
-modlog = logging.getLogger('initialize.rxnprng')
+modlog = logging.getLogger('capture.rxnprng')
                     
 ##Place holder function.  This can be fit to change the distribution of points at a later time. For now
 ## the method returns only the sobol value unmodified.  The sampling in each input x1, x2, x3 should be evenly distributed

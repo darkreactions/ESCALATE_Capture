@@ -1,11 +1,10 @@
 import logging
 from datetime import datetime, timezone
-
 from shutil import copyfile
 
-def buildlogger(rxndict, vardict):
+def buildlogger(rxndict):
     # create logger with 'initialize'
-    logger = logging.getLogger('initialize')
+    logger = logging.getLogger('capture')
     logger.setLevel(logging.DEBUG)
     # create file handler which logs event debug messages
     fh = logging.FileHandler('localfiles/%s_LogFile.log' %rxndict['RunID'])
@@ -26,9 +25,8 @@ def buildlogger(rxndict, vardict):
     return('localfiles/%s_Logfile.log' %rxndict['RunID'])
 
 def runuidgen(rxndict, vardict):
-#    if vardict['challengeproblem']==2:
-#        vardict['']
-#    else:
+    '''generates a UID for the run as needed
+    '''
     rxndict['readdate_gen']=datetime.now(timezone.utc).isoformat()
     rxndict['readdate']=rxndict['readdate_gen'].replace(':', '_') #Remove problematic characters
     rxndict['date']=datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -38,30 +36,21 @@ def runuidgen(rxndict, vardict):
     vardict['exefilename'] = 'localfiles/%s_%s' %(rxndict['RunID'], vardict['exefilename'])
     return(rxndict, vardict)
 
-#record a detailed and organized set of the variables set by the user
-def initialize(rxndict):
-    modlog = logging.getLogger('initialize.variablelogging')
-    #Adjust for manual setting perovskite workflow 1 specific
-    ##Setup Run ID Information
-    modlog.info("Plotted (? -- boolean) = %s " %rxndict['plotter_on'])
-    #Plate variables
-    modlog.info("Pre-reaction Temperature = %s:celsius" %rxndict['temperature1_nominal'])
-    modlog.info("Tray Shake Rate 1 (After First Addition) = %s:RPM" %rxndict['duratation_stir1'])
-    modlog.info("Tray Shake Rate 2 (After FAH addition) = %s:RPM" %rxndict['duratation_stir2'])
-    modlog.info("Reaction Temperature of Tray = %s:celsius" %rxndict['temperature2_nominal'])
-    modlog.info("Duration held at final temperature = %s:second" %rxndict['duration_reaction'])
-    modlog.info("Wellcount %s" %rxndict['wellcount'])
-    # Reagent variables
-    modlog.info("reagents preparation temperature = %s Celsius" %rxndict['reagents_prep_temperature'])
-    modlog.info("reagents preparation stir rate = %s RPM" %rxndict['reagents_prep_stirrate'])
-    modlog.info("reagents preparation duration = %s seconds" %rxndict['reagents_prep_duration'])
-    modlog.info("reag2_target_conc_chemical2 = %s M" %rxndict['reag2_target_conc_chemical2'])
-    modlog.info("reag2_target_conc_chemical3 = %s M" %rxndict['reag2_target_conc_chemical3'])
-    modlog.info("reag3_target_conc_chemical2 = %s M" %rxndict['reag3_target_conc_chemical3'])
-    modlog.info("reagents_prerxn_temperature = %s Celsius" %rxndict['reagents_prerxn_temperature'])
-    modlog.info("reagent_dead_volume = %s:mL" %rxndict['reagent_dead_volume'])
-#    modlog.info("reagent 1,2,3 target volume = %s:mL" %rxndict['reagent_target_volume'])
-#    modlog.info("reagent maximum volume threshold = %s:mL" %rxndict['maximum_total_volume'])
+def initialize(rxndict, vardict):
+    ''' record a detailed and organized set of the variables set by the user
+
+    also records variables in the vardict space (vardict) variable
+    '''
+    modlog = logging.getLogger('capture.rxndict')
+    modlog.info("USER INPUT VARIABLES (UIV -- key : value in rxndict)")
+    for variable, condition in rxndict.items():
+        modlog.info("(UIV) %s : %s " %(variable, condition))
+    modlog.info("END -- USER INPUT VARIABLES (UIV)")
+    modlog = logging.getLogger('capture.vardict')
+    modlog.info("DEV INPUT VARIABLES (DIV -- key : value in vardict)")
+    for variable, condition in vardict.items():
+        modlog.info("(DIV) %s : %s"%(variable, condition))
+    modlog.info("END -- DEV INPUT VARIABLES (DIV -- key : value in vardict)")
     ##Space constraints
     for key, value in rxndict.items():
         try: 

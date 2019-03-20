@@ -53,7 +53,7 @@ Gather variables input into the XLS form, developer code, and CLI
 '''
 if __name__ == "__main__":
     vardict={}
-    rxnvarfile = "WF1_variables.xlsx"
+    rxnvarfile = "WF1_template.xlsx"
 
     parser = ap.ArgumentParser(description='Generate experimental run data')
     parser.add_argument('--cp', default=0, type=int, choices=[0,1], 

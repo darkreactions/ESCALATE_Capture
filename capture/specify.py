@@ -218,7 +218,9 @@ def augdescriptors(inchikeys, rxndict, erdfrows):
     with open('perov_desc.csv', 'r') as my_descriptors:
        descriptor_df=pd.read_csv(my_descriptors) 
     descriptor_df=inchikeys.merge(descriptor_df, left_on='_rxn_organic-inchikey', right_on='_raw_inchikey', how='inner')
-    cur_list = [c for c in descriptor_df.columns if 'raw' not in c]
+    cur_list = [c for c in descriptor_df.columns]
+#    cur_list = [c for c in descriptor_df.columns if 'raw' not in c]
+#    cur_list_raw = [c for c in descriptor_df.columns if 'raw' in c]
     descriptor_df = descriptor_df[cur_list]
     descriptor_df.drop(columns=['_rxn_organic-inchikey'], inplace=True)
     ds1 = [rxndict['duratation_stir1']]*erdfrows

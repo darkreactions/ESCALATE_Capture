@@ -14,4 +14,4 @@ client_secrets.json
 __pycache__/
 *.log
 *.ipynb_checkpoints
-!WF1_variables.xlsx
+!WF1_template.xlsx

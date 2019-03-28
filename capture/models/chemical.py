@@ -24,3 +24,12 @@ def ChemicalData():
     chemdf=chemdf.reset_index(drop=True)
     chemdf=chemdf.set_index(['Chemical Abbreviation'])
     return(chemdf)
+
+def chemicallimits(rxndict):
+    climits = {}
+    for k,v in rxndict.items():
+        if "chem" in k and "molarmin" in k:
+            climits[k] = v
+        if "chem" in k and "molarmax" in k:
+            climits[k] = v
+    return(climits)

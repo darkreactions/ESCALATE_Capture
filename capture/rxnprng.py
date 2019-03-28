@@ -172,8 +172,6 @@ def calcvollimitdf(rdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, r
     # Return the relevant datasets as int values (robot can't dispense anything smaller so lose the unsignificant figures /s)
     return(outvolmaxdf.astype(int), outvolmindf.astype(int))
 
-
-
 # Determine the absolute maximum concentration for a particular chemical across all reagents in a portion of the experiment
 def absmaxcondet(rdata, rnum, currchemical, reagentlist):
     maxconc = 0 
@@ -208,7 +206,6 @@ def ensuremin(rvolmindf, finalrdf, finalvolmin):
     trumindf = finalvolmin - currvoldf
     rvolmindf[rvolmindf < trumindf] = trumindf
     return(rvolmindf)
-
 
 
 def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
@@ -343,6 +340,53 @@ def statedataframe(expoverview, vollimits, rdict, experiment):
             pass
     return(prdf,finalmmoldf)
 
+def statepreprocess(chemdf, rxndict, edict, rdict, climits):
+    experiment = 1
+    modlog.info('Making a total of %s unique experiments on the tray' %rxndict['totalexperiments'])
+    erdf = pd.DataFrame() 
+    ermmoldf = pd.DataFrame()
+    while experiment < rxndict['totalexperiments']+1:
+        modlog.info('Initializing dataframe construction for experiment %s' %experiment)
+        experimentname = 'exp%s' %experiment
+        for k,v in edict.items():
+            if experimentname in k:
+                if 'wells' in k:
+                    wellnum = int(v)
+                if 'vols' in k:
+                    vollimits=(v)
+                else:
+                    pass
+        modlog.info('Building reagent state space for experiment %s using reagents %s' %(experiment, edict[experimentname]))
+        modlog.warning('Well count will be ignored for state space creation!  Please disable CP run if this incorrect')
+        prdf,prmmoldf = statedataframe(edict[experimentname], vollimits, rdict, experiment)
+        prdf,prmmoldf = portiondataframe(edict[experimentname], rdict, vollimits, rxndict, wellnum, climits, experiment)
+        erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
+        ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
+        # Return the reagent data frame with the volumes for that particular portion of the plate
+        modlog.info('Succesfully built experiment %s which returned.... ' %(experiment))
+        experiment+=1
+    #Final reagent volumes dataframe
+    erdf.fillna(value=0, inplace=True)
+    #Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
+    ermmoldf.fillna(value=0, inplace=True)
+    clist = (chemicallist(rxndict))
+    # Final nominal molarity for each reagent in each well
+    # Final nominal molarity for each reagent in each well
+    emsumdf = finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
+    emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
+    if rxndict['plotter_on'] == 1:
+        if 1 <= rxndict['ExpWorkflowVer'] < 2:
+            plotter.plotmewf1(emsumdf, rxndict)
+        else:
+            modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
+    else:
+        pass
+#    plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
+    #combine the experiments for the tray into one full set of volumes for all the wells on the plate
+    modlog.info('Begin combining the experimental volume dataframes')
+#    for chemical in rdict['2'].chemicals:
+#        print(rxndict['chem%s_abbreviation' %chemical])
+    return(erdf,ermmoldf,emsumdf)
 
 def preprocess(chemdf, rxndict, edict, rdict, climits):
     experiment = 1
@@ -360,13 +404,8 @@ def preprocess(chemdf, rxndict, edict, rdict, climits):
                     vollimits=(v)
                 else:
                     pass
-        if rxndict['challengeproblem'] == 1:
-            modlog.info('Building reagent state space for experiment %s using reagents %s' %(experiment, edict[experimentname]))
-            modlog.warning('Well count will be ignored for state space creation!  Please disable CP run if this incorrect')
-            prdf,prmmoldf = statedataframe(edict[experimentname], vollimits, rdict, experiment)
-        elif rxndict['challengeproblem'] == 0: 
-            modlog.info('Building reagent constraints for experiment %s using reagents %s for a total of %s wells' %(experiment, edict[experimentname], wellnum) )
-            prdf,prmmoldf = portiondataframe(edict[experimentname], rdict, vollimits, rxndict, wellnum, climits, experiment)
+        modlog.info('Building reagent constraints for experiment %s using reagents %s for a total of %s wells' %(experiment, edict[experimentname], wellnum) )
+        prdf,prmmoldf = portiondataframe(edict[experimentname], rdict, vollimits, rxndict, wellnum, climits, experiment)
         erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
         ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
         # Return the reagent data frame with the volumes for that particular portion of the plate

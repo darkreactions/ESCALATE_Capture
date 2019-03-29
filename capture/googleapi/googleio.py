@@ -5,9 +5,11 @@
 ### https://github.com/gsuitedevs/PyDrive
 ### https://stackoverflow.com/questions/24419188/automating-pydrive-verification-process
 
+import logging
+
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
-import logging
+
 modlog = logging.getLogger('initialize.googleio')
 
 
@@ -56,7 +58,7 @@ def DriveAddTemplates(opdir, RunID):
         new_dict[file1['title']]=file1['id']
     return(new_dict)
 
-def GupFile(opdir, secdir, secfilelist, filelist, rxndict):
+def GupFile(opdir, secdir, secfilelist, filelist, runID, eclogfile):
     for file in filelist:
         outfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
         outfile.SetContentFile(file)
@@ -69,16 +71,14 @@ def GupFile(opdir, secdir, secfilelist, filelist, rxndict):
         outfile['title']=secfile.split('/')[1]
         outfile.Upload()
     logfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
-    logfile.SetContentFile(rxndict['logfile'])
-    logfile['title']='%s_LogFile.txt'%rxndict['RunID']
+    logfile.SetContentFile(eclogfile)
+    logfile['title']='%s.log'%runID
     logfile.Upload()
     wdir = drive.CreateFile({'id': opdir})
     swdir = drive.CreateFile({'id': secdir})
     modlog.info('%s successfully uploaded to %s' %(logfile['title'], swdir['title']))
-    print('%s successfully uploaded to %s' %(logfile['title'], swdir['title']))
     for item in filelist:
         modlog.info('%s successfully uploaded to %s' %(item, wdir['title']))
-        print('%s successfully uploaded to %s' %(item, wdir['title']))
     for item in secfilelist:
         modlog.info('%s successfully uploaded to %s' %(item, swdir['title']))
-        print('%s successfully uploaded to %s' %(item, swdir['title']))
+    print('File Upload Complete')

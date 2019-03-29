@@ -26,7 +26,7 @@ plotter_on = 1                        # 1 = on , 0 = off (default)
 ### Tray / Plate  Information ###
 #################################
 lab = 'LBL'                           # Options are "LBL" or "HC" (Haverford College), or ECL (pending dev)
-wellcount = 96                       # (#)    [range <96] Total number of experimental wells to run on the plate 
+wellcount = 65                       # (#)    [range <96] Total number of experimental wells to run on the plate 
 exp1 = [[2,3,1],[6,7]]                # [[portion1_reagent1, portion1_reagent2], [portion2_reagent#]] Last reagent will be used to fill. First reagent will be targeted for maximum search range available. 
 exp1_vols = [[500,500],[0,250]]       # [[portion1_minimum_vol, portion1_max_vol], [portion2_min_vol,portion2_max_vol]] Volume min and max allocated to each portion of a single experiment 
 
@@ -39,7 +39,7 @@ stirrate = 750                         # (rmp) [range 0-750] v1.1=750, Plate sha
 temperature1_nominal = 80              # (C)   [range >0], v1.1=80, temperature robot will reach prior to adding any reagents to the wells
 duratation_stir1 = 900                 # (s)   [range > 0]  v1.1=900, Duration of shake after addition of first three reagents 
 duratation_stir2 = 1200                # (s)   [range > 0] v1.1=1200, Duration of shake after addition of reagent 5 and 6 (formic acid in 1.1)
-temperature2_nominal = 105             # (C)   [range 25-120, 105] v1.1=105(programmed), 92(actual), ITC process robot temp
+temperature2_nominal = 70             # (C)   [range 25-120, 105] v1.1=105(programmed), 92(actual), ITC process robot temp
 duration_reaction = 12600              # (s)   [range > 0] v1.1=12600, Duration of ITC after all reagents and shaking protocols are complete.  Holds at temperature 2
 reagent_dead_volume = 3.0              # (mL)  [range > 0] v1.1=3.0, Dead volume, excess reagent prepared, ensures that enough solution will be present for plate
 plate_container = 'Symyx_96_well_0003' # Plate identifier (manual, no checks on this entry)

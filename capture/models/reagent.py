@@ -1,4 +1,29 @@
-#Building the reaction classes for containing the relevant variables
+#custom function built to parse the current version of the runme.py script.
+#This function operates specifcially to move the information from the initial user input into the reagent class for later use
+def buildreagents(rxndict, chemdf):
+    reagentlist=[]
+    reagentdict={}
+    #find all of the reagents constructured in the run
+    for item in rxndict:
+        if 'reag' in item and "chemicals" in item:
+            reagentname=(item.split('_'))
+            reagentlist.append(reagentname[0])
+    #Turn all of those reagents into class objects
+    for entry in reagentlist:
+        reagentvariables={}
+        reagentvariables['reagent']=entry
+        entry_num = entry.split('g')
+        for variable,value in rxndict.items(): 
+            if entry in variable:
+                variable=(variable.split('_',1))
+                reagentvariables[variable[1]]=value
+        reagent=perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf)  # should scale nicely, class can be augmented without breaking the code
+        #return the class objects in a new dictionary for later use!
+        reagentdict[entry_num[1]]=reagent
+    return(reagentdict)
+
+
+    #Building the reaction classes for containing the relevant variables
 #designed specifically for use with workflow 2.0 of the code generator
 #Idea with the reagent class is to ensure that the values calculated for a single reagent remain together with the reagent object
 class perovskitereagent:
@@ -69,7 +94,3 @@ class perovskitereagent:
                         concdict[updatedname] = (float(chemdf.loc[rxndict['chem%s_abbreviation'%chemical],"Density            (g/mL)"])/ float(chemdf.loc[rxndict['chem%s_abbreviation' %chemical],"Molecular Weight (g/mol)"]) * 1000)
             else: pass
         return(concdict)
-
-class perovskitechemical:
-    def __init__(self, rxndict, chemdf):
-        pass

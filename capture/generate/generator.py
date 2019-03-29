@@ -1,13 +1,17 @@
 import pandas as pd
+import logging
 
 from capture.prepare import interface
-from capture import rxnprng
+from capture import plotter
+from capture.generate import qrandom
+from capture.generate import statespace
 from capture.prepare import stateset
 from capture.models.experiment import expmodel
 
+modlog = logging.getLogger('capture.generate.generator')
 
-def statepipeline(vardict, chemdf, rxndict, edict, rdict, climits):
-    (erdf, ermmoldf, emsumdf) = rxnprng.statepreprocess(chemdf, rxndict, edict, rdict, climits) 
+def statepipe(vardict, chemdf, rxndict, edict, rdict, climits):
+    (erdf, ermmoldf, emsumdf) =statespace.statepreprocess(chemdf, rxndict, edict, rdict, climits) 
     # Clean up dataframe for robot file -> create xls --> upload 
     erdfrows = erdf.shape[0]
     erdf = expmodel.postprocess(erdf, vardict['max_robot_reagents'])
@@ -34,15 +38,11 @@ def statepipeline(vardict, chemdf, rxndict, edict, rdict, climits):
     stateset_df.to_csv(statesetfile)
     uploadlist = [prerun, statesetfile]
     secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
-    if vardict['debug'] == 1:
-        pass
-    else:
-        interface.PrepareDirectoryCP(uploadlist, secfilelist, rxndict['RunID'], rxndict['logfile'],rdict)
+    return(emsumdf, uploadlist, secfilelist, rdict)
 
-def quasirandom(vardict, chemdf, rxndict, edict, rdict, climits):
-    (erdf, ermmoldf, emsumdf) = rxnprng.preprocess(chemdf, rxndict, edict, rdict, climits) 
+def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
+    (erdf, ermmoldf, emsumdf) = qrandom.preprocess(chemdf, rxndict, edict, rdict, climits) 
     # Clean up dataframe for robot file -> create xls --> upload 
-    erdfrows = erdf.shape[0]
     erdf = expmodel.postprocess(erdf, vardict['max_robot_reagents'])
     robotfile = expmodel.preprobotfile(rxndict, vardict, erdf)
     # Export additional information files for later use / storage 
@@ -54,16 +54,35 @@ def quasirandom(vardict, chemdf, rxndict, edict, rdict, climits):
     uploadlist = [robotfile]
     secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
     prepdict =  expmodel.conreag(rxndict, erdf, chemdf, rdict, robotfile)
-    if vardict['debug'] == 1:
-        pass
-    else:
-        interface.PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict, vardict) 
+    return(emsumdf, uploadlist, secfilelist, prepdict)
 
 def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
     # Generate new CP run
     if vardict['challengeproblem'] == 1:
-        statepipeline(vardict, chemdf, rxndict, edict, rdict, climits)
-    #Execute normal run
+        (emsumdf, uploadlist, secfilelist, rdict) = statepipe(vardict, chemdf, rxndict, edict, rdict, climits)
+        if rxndict['plotter_on'] == 1:
+            if 1 <= rxndict['ExpWorkflowVer'] < 2:
+                plotter.plotmewf1(emsumdf, rxndict)
+            else:
+                modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
+        else:
+            pass
+        if vardict['debug'] == 1:
+            pass
+        else:
+            interface.PrepareDirectoryCP(uploadlist, secfilelist, rxndict['RunID'], rxndict['logfile'],rdict)
+    #Execute default run
     elif vardict['challengeproblem'] == 0:
-        quasirandom(vardict, chemdf, rxndict, edict, rdict, climits)
+        (emsumdf, uploadlist, secfilelist, prepdict) = quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits)
+        if rxndict['plotter_on'] == 1:
+            if 1 <= rxndict['ExpWorkflowVer'] < 2:
+                plotter.plotmewf1(emsumdf, rxndict)
+            else:
+                modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
+        else:
+            pass
+        if vardict['debug'] == 1:
+            pass
+        else:            
+            interface.PrepareDirectory(uploadlist, secfilelist, prepdict, rxndict, rdict, vardict) 
         

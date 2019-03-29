@@ -1,31 +1,20 @@
+import logging
 import optunity
 import pandas as pd
-import numpy as np
-from capture import plotter
-import logging
-import sys
 import random
+import sys
+
 from capture import testing
-import matplotlib.pyplot as plt
-import itertools
 
+modlog = logging.getLogger('capture.generate.qrandom')
 
-modlog = logging.getLogger('capture.rxnprng')
-                    
-##Place holder function.  This can be fit to change the distribution of points at a later time. For now
-## the method returns only the sobol value unmodified.  The sampling in each input x1, x2, x3 should be evenly distributed
-## and unaltered.  (Blank function)
-def f(x1):
-    return 0.0
-
-def initialrdf(volmax, volmin, reagent, wellnum):
-    _, info_random, _ = optunity.minimize(f, num_evals=wellnum, x1=[volmin, volmax], solver_name='random search')
-    ##Create quasi-random data spread
-    reagentlist=info_random.call_log['args']['x1'] #Create reagent amounts (mmol), change x variable to change range, each generated from unique sobol index
-    reagentname = "Reagent%s (ul)" %reagent
-    rdf = pd.DataFrame({reagentname:reagentlist}).astype(int)
-    return(rdf)
-    #Generate a range of Amine concentrations dependent upon the range possible due to the presence of amine in Stock solution A \
+def chemicallist(rxndict):
+    chemicallist = []
+    for k,v in rxndict.items():
+        if 'abbreviation' in k:
+            name = k.split('m')[1].split('_')[0]
+            chemicallist.append(name)
+    return(chemicallist)
 
 def rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum):
     count = 0 
@@ -41,6 +30,37 @@ def rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum):
         count+=1
     rdf = pd.DataFrame({reagentname:reagentlist}).astype(int)
     return(rdf)
+
+# Determine the maximum concentration for a particular chemical in a reagent
+def maxconcdet(rdata, rnum, currchemical):
+    maxconc = 0
+    chemname = 'conc_chem%s' %currchemical
+    for chemid,conc in rdata['%s' %rnum].concs.items():
+        if chemname in chemid:
+            if conc > maxconc:
+                maxconc = conc
+    return(maxconc)
+
+# Determine the absolute maximum concentration for a particular chemical across all reagents in a portion of the experiment
+def absmaxcondet(rdata, rnum, currchemical, reagentlist):
+    maxconc = 0 
+    for reagent in reagentlist:
+        conc = (maxconcdet(rdata, reagent, currchemical))
+        if conc > maxconc:
+            maxconc =  conc
+    return(maxconc)
+
+def f(x1):
+    return 0.0
+
+def initialrdf(volmax, volmin, reagent, wellnum):
+    _, info_random, _ = optunity.minimize(f, num_evals=wellnum, x1=[volmin, volmax], solver_name='random search')
+    ##Create quasi-random data spread
+    reagentlist=info_random.call_log['args']['x1'] #Create reagent amounts (mmol), change x variable to change range, each generated from unique sobol index
+    reagentname = "Reagent%s (ul)" %reagent
+    rdf = pd.DataFrame({reagentname:reagentlist}).astype(int)
+    return(rdf)
+    #Generate a range of Amine concentrations dependent upon the range possible due to the presence of amine in Stock solution A \
 
 #very similar to vollimtcont
 def calcvollimit(userlimits, rdict, volmax, volmin, experiment, reagentlist, reagent, wellnum): 
@@ -115,7 +135,6 @@ def totalmmolchemicals(chemicals, usedchems, mmoldf):
         finalsummedmmols = pd.concat([finalsummedmmols, summedmmols], axis=1)
     finalsummedmmols.fillna(value=0, inplace=True) # Total mmmols added of each chemical in previous reagent additions
     return(finalsummedmmols)
-    
 
 def calcvollimitdf(rdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, reagentlist, reagent, wellnum, rxndict): 
     # Create dataframes which will hold the final comparisons for the max and min
@@ -171,42 +190,6 @@ def calcvollimitdf(rdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, r
     outvolmindf =  finalvolmindf.max(axis=1) 
     # Return the relevant datasets as int values (robot can't dispense anything smaller so lose the unsignificant figures /s)
     return(outvolmaxdf.astype(int), outvolmindf.astype(int))
-
-# Determine the absolute maximum concentration for a particular chemical across all reagents in a portion of the experiment
-def absmaxcondet(rdata, rnum, currchemical, reagentlist):
-    maxconc = 0 
-    for reagent in reagentlist:
-        conc = (maxconcdet(rdata, reagent, currchemical))
-        if conc > maxconc:
-            maxconc =  conc
-    return(maxconc)
-
-# Determine the maximum concentration for a particular chemical in a reagent
-def maxconcdet(rdata, rnum, currchemical):
-    maxconc = 0
-    chemname = 'conc_chem%s' %currchemical
-    for chemid,conc in rdata['%s' %rnum].concs.items():
-        if chemname in chemid:
-            if conc > maxconc:
-                maxconc = conc
-    return(maxconc)
-
-def mmolextension(reagentdf, rdict, experiment, reagent):
-    mmoldf = (pd.DataFrame(reagentdf))
-    portionmmoldf = pd.DataFrame()
-    for chemical, conc in (rdict['%s' %reagent].concs.items()):
-        chemname = chemical.split('m')[1]
-        newmmoldf = mmoldf * conc / 1000
-        newmmoldf.rename(columns={'Reagent%s (ul)'%reagent:'mmol_experiment%s_reagent%s_chemical%s' %(experiment, reagent, chemname)}, inplace=True)
-        portionmmoldf = pd.concat([portionmmoldf, newmmoldf], axis=1)
-    return(portionmmoldf)
-
-def ensuremin(rvolmindf, finalrdf, finalvolmin):
-    currvoldf = finalrdf.sum(axis=1)
-    trumindf = finalvolmin - currvoldf
-    rvolmindf[rvolmindf < trumindf] = trumindf
-    return(rvolmindf)
-
 
 def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
     portionnum = 0
@@ -269,13 +252,21 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
         portionnum+=1
     return(prdf, prmmoldf)
 
-def chemicallist(rxndict):
-    chemicallist = []
-    for k,v in rxndict.items():
-        if 'abbreviation' in k:
-            name = k.split('m')[1].split('_')[0]
-            chemicallist.append(name)
-    return(chemicallist)
+def ensuremin(rvolmindf, finalrdf, finalvolmin):
+    currvoldf = finalrdf.sum(axis=1)
+    trumindf = finalvolmin - currvoldf
+    rvolmindf[rvolmindf < trumindf] = trumindf
+    return(rvolmindf)
+
+def mmolextension(reagentdf, rdict, experiment, reagent):
+    mmoldf = (pd.DataFrame(reagentdf))
+    portionmmoldf = pd.DataFrame()
+    for chemical, conc in (rdict['%s' %reagent].concs.items()):
+        chemname = chemical.split('m')[1]
+        newmmoldf = mmoldf * conc / 1000
+        newmmoldf.rename(columns={'Reagent%s (ul)'%reagent:'mmol_experiment%s_reagent%s_chemical%s' %(experiment, reagent, chemname)}, inplace=True)
+        portionmmoldf = pd.concat([portionmmoldf, newmmoldf], axis=1)
+    return(portionmmoldf)
 
 def finalmmolsums(chemicals, mmoldf):
     finalsummedmmols = pd.DataFrame()
@@ -291,102 +282,6 @@ def finalmmolsums(chemicals, mmoldf):
         finalsummedmmols = pd.concat([finalsummedmmols, summedmmols], axis=1)
     finalsummedmmols.fillna(value=0, inplace=True) # Total mmmols added of each chemical in previous reagent additions
     return(finalsummedmmols)
-
-##generate a state set from the volume constraints of the experimental system ensuring that the limits are met, return the full df of volumes as well as the idealized conc df
-def statedataframe(expoverview, vollimits, rdict, experiment):
-    portionnum = 0
-    prdf = pd.DataFrame()
-    prmmoldf = pd.DataFrame()
-    fullreagentnamelist=[]
-    fullvollist=[]
-    for portion in expoverview:
-        reagentnamelist=[]
-        reagentvols=[]
-        # generate the list of possible volumes for each reagent and the associated mmol calculated values (for parsing later)
-        for reagent in portion:
-            reagentvols.append((list(range(0, vollimits[portionnum][1]+1, 10)))) #Take the maximum volume limit and generate a list of all possible volumes from 0 to the max
-            reagentnamelist.append('Reagent%s (ul)'%reagent)
-            fullreagentnamelist.append('Reagent%s (ul)'%reagent)
-        #generate permutation of all of the volumes
-        testdf = pd.DataFrame((list(itertools.product(*reagentvols))))
-        testdf.astype(int)
-        #organize dataframe with the sums of the generated numbers
-        sumdf=(testdf.sum(axis=1))
-        sumname='portion%s_volsum'%portionnum
-        reagentnamelist.append(sumname)
-        rdf = pd.concat([testdf, sumdf], axis=1, ignore_index=True)
-        rdf.columns = reagentnamelist
-        # Select only those which meet the volume critera specified by the portion of the experiment
-        finalrdf = ((rdf.loc[(rdf[sumname] >= int(vollimits[portionnum][0])) & (rdf[sumname] <= int(vollimits[portionnum][1]))]))
-        finalrdf = finalrdf.drop(labels=sumname, axis=1)
-        fullvollist.append(finalrdf.values.tolist())
-        portionnum+=1
-    #permute all combinations of the portions that meeet the requirements set by the user
-    fullpermlist = (((list(itertools.product(*fullvollist)))))
-    # combine the list of list for each rxn into a single list for import into pandas
-    finalfulllist=[]
-    for multivol in fullpermlist:
-        finalfulllist.append(list(itertools.chain.from_iterable(multivol)))
-    prdf = pd.DataFrame(finalfulllist)
-    prdf.columns = fullreagentnamelist
-    prdf.astype(int)
-    finalmmoldf = pd.DataFrame()
-    for reagentname in fullreagentnamelist:
-        if "Reagent" in reagentname:
-            reagentnum = reagentname.split('t')[1].split(' ')[0]
-            mmoldf = mmolextension(prdf[reagentname], rdict, experiment, reagentnum)
-            finalmmoldf = pd.concat([finalmmoldf,mmoldf], axis=1)
-        else:
-            pass
-    return(prdf,finalmmoldf)
-
-def statepreprocess(chemdf, rxndict, edict, rdict, climits):
-    experiment = 1
-    modlog.info('Making a total of %s unique experiments on the tray' %rxndict['totalexperiments'])
-    erdf = pd.DataFrame() 
-    ermmoldf = pd.DataFrame()
-    while experiment < rxndict['totalexperiments']+1:
-        modlog.info('Initializing dataframe construction for experiment %s' %experiment)
-        experimentname = 'exp%s' %experiment
-        for k,v in edict.items():
-            if experimentname in k:
-                if 'wells' in k:
-                    wellnum = int(v)
-                if 'vols' in k:
-                    vollimits=(v)
-                else:
-                    pass
-        modlog.info('Building reagent state space for experiment %s using reagents %s' %(experiment, edict[experimentname]))
-        modlog.warning('Well count will be ignored for state space creation!  Please disable CP run if this incorrect')
-        prdf,prmmoldf = statedataframe(edict[experimentname], vollimits, rdict, experiment)
-        prdf,prmmoldf = portiondataframe(edict[experimentname], rdict, vollimits, rxndict, wellnum, climits, experiment)
-        erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
-        ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
-        # Return the reagent data frame with the volumes for that particular portion of the plate
-        modlog.info('Succesfully built experiment %s which returned.... ' %(experiment))
-        experiment+=1
-    #Final reagent volumes dataframe
-    erdf.fillna(value=0, inplace=True)
-    #Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
-    ermmoldf.fillna(value=0, inplace=True)
-    clist = (chemicallist(rxndict))
-    # Final nominal molarity for each reagent in each well
-    # Final nominal molarity for each reagent in each well
-    emsumdf = finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
-    emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
-    if rxndict['plotter_on'] == 1:
-        if 1 <= rxndict['ExpWorkflowVer'] < 2:
-            plotter.plotmewf1(emsumdf, rxndict)
-        else:
-            modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
-    else:
-        pass
-#    plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
-    #combine the experiments for the tray into one full set of volumes for all the wells on the plate
-    modlog.info('Begin combining the experimental volume dataframes')
-#    for chemical in rdict['2'].chemicals:
-#        print(rxndict['chem%s_abbreviation' %chemical])
-    return(erdf,ermmoldf,emsumdf)
 
 def preprocess(chemdf, rxndict, edict, rdict, climits):
     experiment = 1
@@ -420,13 +315,6 @@ def preprocess(chemdf, rxndict, edict, rdict, climits):
     # Final nominal molarity for each reagent in each well
     emsumdf = finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
     emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
-    if rxndict['plotter_on'] == 1:
-        if 1 <= rxndict['ExpWorkflowVer'] < 2:
-            plotter.plotmewf1(emsumdf, rxndict)
-        else:
-            modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
-    else:
-        pass
 #    plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
     #combine the experiments for the tray into one full set of volumes for all the wells on the plate
     modlog.info('Begin combining the experimental volume dataframes')

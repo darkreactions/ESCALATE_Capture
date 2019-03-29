@@ -71,17 +71,14 @@ def GupFile(opdir, secdir, secfilelist, filelist, runID, eclogfile):
         outfile['title']=secfile.split('/')[1]
         outfile.Upload()
     logfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})
-#    logfile.SetContentFile(eclogfile)
-    print(eclogfile, logfile['title'])
-#    logfile['title']='%s'%runID
-#    logfile.Upload()
+    logfile.SetContentFile(eclogfile)
+    logfile['title']='%s.log'%runID
+    logfile.Upload()
     wdir = drive.CreateFile({'id': opdir})
     swdir = drive.CreateFile({'id': secdir})
     modlog.info('%s successfully uploaded to %s' %(logfile['title'], swdir['title']))
-    print('%s successfully uploaded to %s' %(logfile['title'], swdir['title']))
     for item in filelist:
         modlog.info('%s successfully uploaded to %s' %(item, wdir['title']))
-        print('%s successfully uploaded to %s' %(item, wdir['title']))
     for item in secfilelist:
         modlog.info('%s successfully uploaded to %s' %(item, swdir['title']))
-        print('%s successfully uploaded to %s' %(item, swdir['title']))
+    print('File Upload Complete')

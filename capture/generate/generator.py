@@ -2,7 +2,7 @@ import pandas as pd
 import logging
 
 from capture.prepare import interface
-from capture import plotter
+from capture.inspect import plotter
 from capture.generate import qrandom
 from capture.generate import statespace
 from capture.prepare import stateset

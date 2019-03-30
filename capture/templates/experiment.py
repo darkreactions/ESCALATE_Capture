@@ -52,6 +52,14 @@ nubmer of reactions that can be considered for a single plate. Lots of things ne
 be organized sequentially.  This code is written out long form to make the manipulations 
 more interpretable '''
 # parse the reaction dictionary and reagent dictionary for information on specific experiment
+def exppartition_new(rxndict, rdict):
+    edict = {}
+    count = 1
+#    while count < 10
+    for k, v in rxndict.items():
+        if 'exp' in k:
+            print(k, v)
+
 def exppartition(rxndict, rdict): 
     # pull out only the terms with exp in the name (just consider and manipulate user defined variables) this will break if user adds variables with no default processing, that breaking is intentional
     edict = {}

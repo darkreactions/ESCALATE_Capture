@@ -4,7 +4,7 @@ import pandas as pd
 import random
 import sys
 
-from capture import testing
+from capture.testing import inputvalidation
 
 modlog = logging.getLogger('capture.generate.qrandom')
 
@@ -142,7 +142,7 @@ def calcvollimitdf(rdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, r
     # Get the maximum volumes possible for this particular reagent based on user constraints
     rvolmax, rvolmin = calcvollimit(userlimits, rdict, volmax, volmin, experiment, reagentlist, reagent, wellnum)
     # get maximum values based on experimental constraints (well volume primarily)
-    testing.reagenttesting(volmax,volmin)
+    inputvalidation.reagenttesting(volmax,volmin)
     # Generate an upward limit for the chemical in dataframe based on the maximum user specified well volume and all previously used reagents
     volmaxdf = volmax - rdf.sum(axis=1)
     finalvolmaxdf = pd.concat([finalvolmaxdf, volmaxdf], axis=1)
@@ -284,6 +284,12 @@ def finalmmolsums(chemicals, mmoldf):
     return(finalsummedmmols)
 
 def preprocess(chemdf, rxndict, edict, rdict, climits):
+    ''' generates a set of random reactions within given reagent and user constraints
+
+    requires the chemical dataframe, rxndict (with user inputs), experiment dictionary, 
+    reagent dictionary and chemical limits (climits) -- update should enable easier
+    inspection of these elements
+    '''
     experiment = 1
     modlog.info('Making a total of %s unique experiments on the tray' %rxndict['totalexperiments'])
     erdf = pd.DataFrame() 

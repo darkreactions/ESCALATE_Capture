@@ -1,33 +1,5 @@
 import pandas as pd
 
-
-def conreag(rxndict, rdf, chemdf, rdict, robotfile):
-    #Constructing output information for creating the experimental excel input sheet
-    solventvolume=rdf['Reagent1 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-    stockAvolume=rdf['Reagent2 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-    stockFormicAcid6=rdf['Reagent6 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-    stockFormicAcid7=rdf['Reagent7 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-
-    PbI2mol=(stockAvolume/1000/1000*rxndict['reag2_target_conc_chemical2'])
-    PbI2mass=(PbI2mol*float(chemdf.loc["PbI2", "Molecular Weight (g/mol)"]))
-    StockAAminePercent=(rxndict['reag2_target_conc_chemical3']/rxndict['reag2_target_conc_chemical2'])
-    aminemassA=(stockAvolume/1000/1000*rxndict['reag2_target_conc_chemical2']*StockAAminePercent*float(chemdf.loc[rxndict['chem3_abbreviation'], "Molecular Weight (g/mol)"]))
-    stockBvolume=rdf['Reagent3 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-    Aminemol=(stockBvolume/1000/1000*rxndict['reag3_target_conc_chemical3'])
-    aminemassB=(Aminemol*float(chemdf.loc[rxndict['chem3_abbreviation'], "Molecular Weight (g/mol)"]))
-
-    #The following section handles and output dataframes to the format required by the robot.xls file.  File type is very picky about white space and formatting.  
-    FinalAmountArray_hold={}
-    FinalAmountArray_hold['solvent_volume']=((solventvolume/1000).round(2))
-    FinalAmountArray_hold['pbi2mass']=(PbI2mass.round(2))
-    FinalAmountArray_hold['Aaminemass']=((aminemassA.round(2)))
-    FinalAmountArray_hold['Afinalvolume']=((stockAvolume/1000).round(2))
-    FinalAmountArray_hold['Baminemass']=(aminemassB.round(2))
-    FinalAmountArray_hold['Bfinalvolume']=((stockBvolume/1000).round(2))
-    FinalAmountArray_hold['FA6']=((stockFormicAcid6/1000).round(2))
-    FinalAmountArray_hold['FA7']=((stockFormicAcid7/1000).round(2))
-    return(FinalAmountArray_hold)
-
 #Defines what type of liquid class sample handler (pipette) will be needed for the run, these are hardcoded to the robot
 def volarray(rdf, maxr):
     hv='HighVolume_Water_DispenseJet_Empty'
@@ -67,7 +39,7 @@ def MakeWellList(rxndict):
     return(df_VialInfo)
 
 # Clean up the final volume dataframe so the robot doesn't die
-def postprocess(erdf, maxr):
+def cleanvolarray(erdf, maxr):
     columnlist = []
     templatelst = [0]*(len(erdf.iloc[0:]))
     for column in erdf.columns:
@@ -105,4 +77,4 @@ def preprobotfile(rxndict, vardict, erdf):
     outframe=pd.concat([df_Tray.iloc[:,0],erdf,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
     robotfile = ("localfiles/%s_RobotInput.xls" %rxndict['RunID'])
     outframe.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
-    return(robotfile)
+    return(robotfile) 

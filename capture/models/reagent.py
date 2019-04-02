@@ -1,6 +1,9 @@
-#custom function built to parse the current version of the runme.py script.
-#This function operates specifcially to move the information from the initial user input into the reagent class for later use
+
 def buildreagents(rxndict, chemdf):
+    ''' builds dictionary of reagents based on user specifications of formulas and chemicals 
+
+    parses initial user input and generates a dictionary of reagents with relevant properties
+    '''
     reagentlist=[]
     reagentdict={}
     #find all of the reagents constructured in the run
@@ -23,11 +26,12 @@ def buildreagents(rxndict, chemdf):
     return(reagentdict)
 
 
-    #Building the reaction classes for containing the relevant variables
-#designed specifically for use with workflow 2.0 of the code generator
-#Idea with the reagent class is to ensure that the values calculated for a single reagent remain together with the reagent object
 class perovskitereagent:
-    # attributes all of the properties of the reagent to a single object
+    ''' Reaction class containing user specified and calculated variables 
+
+    numerically order reagents specified by the user are associated with calculated values 
+    attributes all of the properties of the reagent should be contained within this object
+    '''
     def __init__(self, reactantinfo, rxndict, entry, chemdf):
         self.name = entry # reag1, reag2, etc
         self.chemicals = reactantinfo['chemicals'] # list of the chemicals in this reagent

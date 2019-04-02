@@ -72,8 +72,10 @@ if __name__ == "__main__":
     vardict['RoboVersion'] = devconfig.RoboVersion
     vardict['challengeproblem'] = challengeproblem
     vardict['debug'] = debug
+    vardict['volspacing'] = devconfig.volspacing
 
     rxndict = readvars(devconfig.rxnvarfile)
+    rxndict['challengeproblem'] = challengeproblem
 
     if args.escalation == None:
         pass

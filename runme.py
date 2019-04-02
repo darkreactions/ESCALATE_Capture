@@ -7,10 +7,7 @@ import argparse as ap
 
 from log import init
 from capture import specify
-
-## Development flags
-max_robot_reagents = 7
-RoboVersion = 2.1
+from capture import devconfig
 
 def escalatecapture(rxndict,vardict):
     ''' Subsequent calls to each portion of the escalate_capture pipeline
@@ -53,7 +50,6 @@ Gather variables input into the XLS form, developer code, and CLI
 '''
 if __name__ == "__main__":
     vardict={}
-    rxnvarfile = "WF1_template.xlsx"
 
     parser = ap.ArgumentParser(description='Generate experimental run data')
     parser.add_argument('--cp', default=0, type=int, choices=[0,1], 
@@ -70,21 +66,21 @@ if __name__ == "__main__":
     args = parser.parse_args()
     challengeproblem = args.cp
     debug = args.debug
-    vardict['exefilename'] = rxnvarfile
-    vardict['max_robot_reagents'] = max_robot_reagents
-    vardict['RoboVersion'] = RoboVersion
+
+    vardict['exefilename'] = devconfig.rxnvarfile
+    vardict['max_robot_reagents'] = devconfig.max_robot_reagents
+    vardict['RoboVersion'] = devconfig.RoboVersion
+    vardict['challengeproblem'] = challengeproblem
+    vardict['debug'] = debug
+    vardict['volspacing'] = devconfig.volspacing
+
+    rxndict = readvars(devconfig.rxnvarfile)
+    rxndict['challengeproblem'] = challengeproblem
 
     if args.escalation == None:
         pass
     else:
         linkfile = str(args.escalation) + '.link.csv'
-
-    rxndict = readvars(rxnvarfile)
-    vardict['debug'] = debug
-
-    # include the challenge problem flag in both variable spaces until fully resolved
-    vardict['challengeproblem'] = challengeproblem
-    rxndict['challengeproblem'] = challengeproblem
 
     if not os.path.exists('localfiles'):
         os.mkdir('localfiles')
@@ -92,5 +88,7 @@ if __name__ == "__main__":
     loggerfile=init.buildlogger(rxndict)
     rxndict['logfile']=loggerfile
     init.initialize(rxndict, vardict) #logs all variables
+
     # >>>  Should insert variable tests here <<<<  #
+
     escalatecapture(rxndict,vardict)

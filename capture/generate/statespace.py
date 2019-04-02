@@ -16,7 +16,7 @@ def mmolextension(reagentdf, rdict, experiment, reagent):
     return(portionmmoldf)
 
 ##generate a state set from the volume constraints of the experimental system ensuring that the limits are met, return the full df of volumes as well as the idealized conc df
-def statedataframe(expoverview, vollimits, rdict, experiment):
+def statedataframe(expoverview, vollimits, rdict, experiment, volspacing):
     portionnum = 0
     prdf = pd.DataFrame()
     prmmoldf = pd.DataFrame()
@@ -27,7 +27,7 @@ def statedataframe(expoverview, vollimits, rdict, experiment):
         reagentvols=[]
         # generate the list of possible volumes for each reagent and the associated mmol calculated values (for parsing later)
         for reagent in portion:
-            reagentvols.append((list(range(0, vollimits[portionnum][1]+1, 10)))) #Take the maximum volume limit and generate a list of all possible volumes from 0 to the max
+            reagentvols.append((list(range(0, vollimits[portionnum][1]+1, volspacing)))) #Take the maximum volume limit and generate a list of all possible volumes from 0 to the max
             reagentnamelist.append('Reagent%s (ul)'%reagent)
             fullreagentnamelist.append('Reagent%s (ul)'%reagent)
         #generate permutation of all of the volumes
@@ -86,7 +86,7 @@ def finalmmolsums(chemicals, mmoldf):
     finalsummedmmols.fillna(value=0, inplace=True) # Total mmmols added of each chemical in previous reagent additions
     return(finalsummedmmols)
 
-def statepreprocess(chemdf, rxndict, edict, rdict, climits):
+def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
     experiment = 1
     modlog.info('Making a total of %s unique experiments on the tray' %rxndict['totalexperiments'])
     erdf = pd.DataFrame() 
@@ -104,7 +104,7 @@ def statepreprocess(chemdf, rxndict, edict, rdict, climits):
                     pass
         modlog.info('Building reagent state space for experiment %s using reagents %s' %(experiment, edict[experimentname]))
         modlog.warning('Well count will be ignored for state space creation!  Please disable CP run if this incorrect')
-        prdf,prmmoldf = statedataframe(edict[experimentname], vollimits, rdict, experiment)
+        prdf,prmmoldf = statedataframe(edict[experimentname], vollimits, rdict, experiment, volspacing)
         erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
         ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
         # Return the reagent data frame with the volumes for that particular portion of the plate

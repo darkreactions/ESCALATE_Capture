@@ -53,11 +53,7 @@ To build the proper environment using anaconda (https://conda.io/docs/user-guide
    * xlutitls
    * matplotlib
    * argparse
-<<<<<<< HEAD
 3. Download or request access from ipendleton . at . haverford.edu or another member of the perovskite development team for access to the google drive folder of secure keys at: https://drive.google.com/drive/u/1/folders/1cN12AMZSvM5T5yVpFy9tkM_NEle7caQd
-=======
-3. Download or request access from ipendleton . at . haverford.edu or another member of the perovskite development team for access to the google drive folder of secure keys at: https://drive.google.com/drive/u/0/folders/1yet1CdQxJb4nG0uPCco8rMjqEwpZLeJM
->>>>>>> cae08763f6882a56168ee51c68c1434a06c17e66
 4. Unzip the keys and the client_secrets.json file in the main directory where the wf1runme.py script is located
 
 If during the installation process you encounter any issues, please submit a bug report / issue to the git repo or email ipendleton . at . haverford.edu
@@ -82,8 +78,4 @@ Running The Code
 8. Update the experimental data for the folder **only while the folder is in the ExpDev directory on Google Drive** (https://drive.google.com/drive/u/1/folders/1S6DLLphYBsB-s-HkFddYj1rtZZiyaE0o) during and after completion of the experiment.
   * Note: The Dev folder will be periodically cleared of old directories, ensure that data are not deleted by only inserting data into files/folders in the ExpDev directory
 9. Upon completing the experiment and all necessary record keeping, move the operating directory (current run folder) from the exp_dev directory to the "data" directory (https://drive.google.com/drive/u/1/folders/13xmOpwh-uCiSeJn8pSktzMlr7BaPDo7B)
-<<<<<<< HEAD
   * **_Never delete files from the Data folder, EVER_**
-=======
-  * **_Never delete files from the Data folder, EVER_**
->>>>>>> cae08763f6882a56168ee51c68c1434a06c17e66

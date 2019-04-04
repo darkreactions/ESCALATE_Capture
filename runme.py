@@ -52,10 +52,13 @@ if __name__ == "__main__":
     vardict={}
 
     parser = ap.ArgumentParser(description='Generate experimental run data')
+    parser.add_argument('Variables', type=str,
+        help='Target xls file containing run information specified by the user\
+             format should be "filename.xlsx"') 
     parser.add_argument('--cp', default=0, type=int, choices=[0,1], 
         help='1 - Generates state set for challenge problem, 0 - default \
             run generation') 
-    parser.add_argument('-d', '--debug', default=0, type=int, choices=[0,1],
+    parser.add_argument('-d', '--debug', default=0, type=int, choices=[0,1,2],
         help='1 - local debugging with no data upload, 0 - complete run\
             generation and upload to google drive') 
     parser.add_argument('-i', '--id', type=str,
@@ -67,14 +70,17 @@ if __name__ == "__main__":
     challengeproblem = args.cp
     debug = args.debug
 
-    vardict['exefilename'] = devconfig.rxnvarfile
+    vardict['exefilename'] = args.Variables
     vardict['max_robot_reagents'] = devconfig.max_robot_reagents
     vardict['RoboVersion'] = devconfig.RoboVersion
     vardict['challengeproblem'] = challengeproblem
     vardict['debug'] = debug
     vardict['volspacing'] = devconfig.volspacing
+    vardict['maxreagentchemicals'] = devconfig.maxreagentchemicals
+    vardict['solventlist'] = devconfig.solventlist
+    vardict['targetfolder'] = devconfig.targetfolder
 
-    rxndict = readvars(devconfig.rxnvarfile)
+    rxndict = readvars(vardict['exefilename'])
     rxndict['challengeproblem'] = challengeproblem
 
     if args.escalation == None:

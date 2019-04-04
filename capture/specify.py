@@ -5,38 +5,74 @@ import json
 import logging
 from pandas import ExcelWriter
 
+from capture.prepare import interface
 from capture.testing import inputvalidation
 from capture.generate import generator
 from capture.models import reagent
 from capture.models import chemical
 from capture.templates import expbuild
+from capture.googleapi import googleio
+
 
 # create logger
 modlog = logging.getLogger('capture.specify')
 
-## Prepares directory and relevant files, calls upon code to operate on those files to generate a new experimental run (workflow 1)
 def datapipeline(rxndict, vardict):
-    '''Gathers experimental environment from user (rxndict), dev (vardict), and googleapi for file handling
-
+    '''Main data pipeline for organizing ESCALATE funcationality
+    
+    Gathers experimental environment from user (rxndict), dev (vardict), 
+    and googleapi for file handling.  Prepares directory and relevant files, 
+    organizes function calls to orchestrate new experimental run
     '''
-    inputvalidation.prebuildvalidation(rxndict) # testing to ensure that the user defined parameters match code specs.  
-    chemdf=chemical.ChemicalData() #Dataframe containing all of the chemical information from gdrive
-    climits = chemical.chemicallimits(rxndict) #Dictionary with the user defined chemical limits for later use
-    rdict=reagent.buildreagents(rxndict, chemdf) 
-    for k,v in rdict.items(): 
-        modlog.info("%s : %s" %(k,vars(v)))
+    modlog = logging.getLogger('capture.specify.datapipeline')
+    inputvalidation.prebuildvalidation(rxndict)
+    chemdf=chemical.ChemicalData() #Dataframe with chemical information from gdrive
+    climits = chemical.chemicallimits(rxndict) #Dictionary of user defined chemical limits
+    rdict=reagent.buildreagents(rxndict, chemdf, vardict['solventlist']) 
     rxndict['totalexperiments'] = exptotal(rxndict, rdict)
     edict = exppartition(rxndict) 
-    inputvalidation.postbuildvalidation(rxndict,rdict,edict) # some basic in line code to make sure that the experiment and reagents have been correctly constructed by the user
-    #Send out all of the constraints and chemical information for run assembly (all experiments are returned)
-    generator.expgen(vardict, chemdf, rxndict, edict, rdict, climits)
+    inputvalidation.postbuildvalidation(rxndict,rdict,edict) 
+
+    #generate
+    if vardict['challengeproblem'] == 1:
+        (uploadlist, secfilelist) = generator.CPexpgen(vardict, chemdf, \
+            rxndict, edict, rdict, climits)
+        if vardict['debug'] == 1:
+            pass
+        else:
+            #prepare
+            interface.PrepareDirectoryCP(uploadlist, secfilelist, \
+                rxndict['RunID'], rxndict['logfile'],rdict, vardict['targetfolder'])
+
+    #generate
+    if vardict['challengeproblem'] == 0:
+        (erdf, robotfile, secfilelist) = generator.expgen(vardict, chemdf, \
+            rxndict, edict, rdict, climits)
+        # disable uploading if debug is activated 
+        if vardict['debug'] == 1:
+            pass
+        else:            
+            modlog.info('Starting file preparation for upload')
+            #prepare
+            (PriDir, secdir, filedict) = googleio.genddirectories(rxndict,vardict['targetfolder'])
+            (reagentinterfacetarget, gspreadauth) = googleio.gsheettarget(filedict)
+            interface.reagentupload(rxndict, vardict, erdf, rdict, chemdf,\
+                 gspreadauth, reagentinterfacetarget)
+            if vardict['debug'] == 2:
+                pass
+            else:
+                googleio.GupFile(PriDir, secdir, secfilelist, [robotfile], \
+                    rxndict['RunID'], rxndict['logfile'])
+                modlog.info('File upload completed successfully')
+    modlog.info("Job Creation Complete")
     print("Job Creation Complete")
 
 def exppartition(rxndict): 
     '''  Takes rxndict information and returns a dictionary of experiment templates 
     
-    separates each of the specified experiments into individual instances and stores the experiments,
-    associated, reagents, chemical information as dictionaries.  Dictionaries are reported to the log file
+    separates each of the specified experiments into individual instances and 
+    stores the experiments, associated, reagents, chemical information as 
+    dictionaries.  Dictionaries are reported to the log file
     '''
     edict = {}
     for k,v in rxndict.items():
@@ -47,47 +83,22 @@ def exppartition(rxndict):
     return(edict)
 
 def exptotal(rxndict, rdict):
-    ''' Counts the total number of unique experiment templates specified by the user from the xls interface ''' 
-    # pull out only the terms with exp in the name (just consider and manipulate user defined variables) this will break if user adds variables with no default processing, that breaking is intentional
+    ''' Counts total number of experiment templates specified by the xls interface
+
+    pull out only the terms with exp in the name (just consider and manipulate 
+    user defined variables) this will break if user adds variables with no default 
+    processing 
+    '''
     edict = {}
-    for k,v in rxndict.items(): #get out all of the information about experiments (the chemicals and the associated volumes and well counts)
+    #grab all of the information about experiments from rxndict (input XLS)
+    for k,v in rxndict.items(): 
         if 'exp' in k:
             edict[k] = v
-    #separate out the experimetnatl informatio nadn the volume information
+    #grab only exp identifiers from edict
     expnamelist = []
-    for entry,value in edict.items(): #isolate the information about experiments and the volumes, but keep them linked
+    for entry,value in edict.items(): 
         if len(entry) == 4:
             expnum = int(entry[-1:])
             expnamelist.append(expnum)
-    # Determine how many different xperiments are running on this tray
     totalexperiments = (len(expnamelist))
     return(totalexperiments)
-
-#old code, saving until confirmed that it isn't needed
-#def exppartition(rxndict): 
-#    '''  Takes rxndict information and returns a dictionary of experiment templates 
-#    
-#    separates each of the specified experiments into individual instances and stores the experiments,
-#    associated, reagents, chemical information as dictionaries.  Dictionaries are reported to the log file
-#    '''
-#    # pull out only the terms with exp in the name (just consider and manipulate user defined variables) this will break if user adds variables with no default processing, that breaking is intentional
-#    edict = {}
-#    for k,v in rxndict.items(): #get out all of the information about experiments (the chemicals and the associated volumes and well counts)
-#        if 'exp' in k:
-#            edict[k] = v
-##    exp = {}
-##    exp_vols = {}
-##    exp_wells = {}
-#    #separate out the experimetnatl informatio nadn the volume information
-##    for entry,value in edict.items(): #isolate the information about experiments and the volumes, but keep them linked
-##        if 'vol' in entry:
-##            updatedname = entry.split("_")
-##            print(updatedname)
-##            exp_vols[updatedname[0]] = value
-##        # some code to make sure that manually selected numbers of wells can be parsed and the remaining automatatically divided
-##        elif 'wells' in entry:
-##            exp_wells[entry] = value
-##        else:
-##            exp[entry] = value
-##    edict = expbuild.expdictbuild(rxndict, exp, exp_wells, edict)
-#    return(edict)

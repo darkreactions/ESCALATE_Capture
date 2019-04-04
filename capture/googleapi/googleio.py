@@ -6,12 +6,14 @@
 ### https://stackoverflow.com/questions/24419188/automating-pydrive-verification-process
 
 import logging
+import gspread
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+from oauth2client.service_account import ServiceAccountCredentials
+from capture.googleapi import googleio
 
 modlog = logging.getLogger('initialize.googleio')
-
 
 ##Authentication for pydrive, designed globally to minimally generate token (a slow process)
 gauth = GoogleAuth()
@@ -82,3 +84,21 @@ def GupFile(opdir, secdir, secfilelist, filelist, runID, eclogfile):
     for item in secfilelist:
         modlog.info('%s successfully uploaded to %s' %(item, swdir['title']))
     print('File Upload Complete')
+
+def genddirectories(rxndict, targetfolder):
+    tgt_folder_id=targetfolder
+    PriDir=googleio.DriveCreateFolder(rxndict['RunID'], tgt_folder_id)
+    file_dict=googleio.DriveAddTemplates(PriDir, rxndict['RunID'])
+    secfold_name = "%s_subdata" %rxndict['RunID']
+    secdir = googleio.DriveCreateFolder(secfold_name, PriDir)
+    return(PriDir, secdir, file_dict)
+
+
+def gsheettarget(file_dict):
+    scope= ['https://spreadsheets.google.com/feeds']
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
+    gc =gspread.authorize(credentials)
+    for key,val in file_dict.items(): 
+        if "ExpDataEntry" in key: #Experimentalsheet = gc.open_bysearches for ExpDataEntry Form to get id
+            reagentinterfacetarget = val
+    return(reagentinterfacetarget, gc)

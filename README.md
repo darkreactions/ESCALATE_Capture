@@ -41,7 +41,6 @@ To build the proper environment using anaconda (https://conda.io/docs/user-guide
 1. Create new python 3.7 environment in conda: `conda create -n my_new_env python=3.7`
 1. Execute the following command for each option `conda install <option>`
    * pandas
-   * openbabel -c openbabel
    * pip
    * cython
    * numpy
@@ -64,13 +63,13 @@ Running The Code
 ### How to prepare and run a single robot ready perovskite experiment at LBL:
 ##### Prepare and run a single experiment generation: #####
 1. Ensure that your computer local time is updated and accurate. If necessary look up how to syncronize your system with internet time.
-2. Open file "wf1runme.py"
-3. Update the operating variables in the wf1runme.py file 
-4. **Ensure that the conditions fall within the indicated ranges and are compatible with the workflow!!** 
+2. Open the variable container XLSX file of your choice (ex. WF_template.xlsx)
+3. Update the variables in the XLSX
+4. **Please ensure that the conditions fall within the indicated ranges and are compatible with the workflow (see solubility data tabs)** 
   * (https://docs.google.com/spreadsheets/d/1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg/edit?usp=sharing) 
 5. Follow additional guidelines for each variable as outlined in wf1runme.py
   * **Ensure experimental workflow version is correct at the time of script execution!**
-  * Feel free to create appropriately named copies of the execution script and upload to the shared folder for future use and sharing (https://drive.google.com/drive/u/1/folders/1kIrsIKe5bWV4PHWltFVyRh12TU-p9j0V)
+  * Feel free to create appropriately named copies of the variables.XLSX file and upload to the shared folder for future use (https://drive.google.com/drive/u/1/folders/1kIrsIKe5bWV4PHWltFVyRh12TU-p9j0V)
 6. Execute the script by running python3 wf1runme.py
 7. Script will generate files in the "Dev" folder of the shared google drive (https://drive.google.com/open?id=11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe)
   * Ensure that desired run information has been generated correctly

@@ -43,6 +43,13 @@ def expwellcount(rxndict):
     else: pass
     modlog.info("Only 1 experiment specified. Wellcount applies to only experiment")
 
+def userinterface(rxndict):
+    assert isinstance(rxndict['exp1'], list), 'exp1 in user XLS must be specified as a list of lists'
+
+def reagconcdefs(rxndict):
+    for k,v in rxndict.items():
+        pass
+
 def postbuildvalidation(rxndict,rdict,edict):
     modlog = logging.getLogger('capture.postbuildvalidation')
 #        modlog.error("Fatal error. Reagents and chemicals are over constrained. Recheck user options!")
@@ -55,8 +62,10 @@ def prebuildvalidation(rxndict):
     -- currently underdeveloped
     '''
     modlog = logging.getLogger('capture.prebuildvalidation')
+    userinterface(rxndict)
     expcount(rxndict)
     expwellcount(rxndict)
+    reagconcdefs(rxndict)
     modlog.info('User entry is configured correctly.  Proceeding with run')
 
 def reagenttesting(volmax, volmin):

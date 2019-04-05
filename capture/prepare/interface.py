@@ -89,7 +89,7 @@ def preparationdf(rxndict, chemicalnamedf, sumreagentsdict, solventlist, maxreag
             nominalsdf.loc[finalvolindex, "nominal_amount"] = formulavol.round(1)
             modlog.info((reagentname, "formula calculation complete"))
     nominalsdf.sort_index(inplace=True)
-    print(nominalsdf)
+#    print(nominalsdf)
     return(nominalsdf)
 #    for reagentname, totalvol in sumreagentsdict.items():
 #        reagentnamenum = (reagentname.split(' ')[0])
@@ -216,7 +216,7 @@ def PrepareDirectoryCP(uploadlist, secfilelist, runID, logfile, rdict, targetfol
     gc =gspread.authorize(credentials)
     tgt_folder_id= targetfolder
     PriDir=googleio.DriveCreateFolder(runID, tgt_folder_id)
-    file_dict=googleio.DriveAddTemplates(PriDir, runID, targetfolder)
+    file_dict=googleio.DriveAddTemplates(PriDir, runID)#, targetfolder)
     subfold_name = "%s_submissions" %runID
     subdir = googleio.DriveCreateFolder(subfold_name, PriDir)
     secfold_name = "%s_subdata" %runID

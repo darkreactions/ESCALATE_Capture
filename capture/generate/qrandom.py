@@ -216,7 +216,7 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                 # Returns datafram of volumes of each reagent added to each experiment
                 rdf = initialrdf(rvolmax, rvolmin, reagent, wellnum)
                 # Returns mmol specified dataframe for each experiment, reagent, and chemical (<-- values are in the header) have been generated for this portion of the experiment
-                mmoldf = mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 reagentcount+=1
                 pass
             #operate within the available ranges taken from the previous constraints
@@ -226,7 +226,7 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                 rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
                 # Since each volume maximum is different, need to sample the remaining reagents independently (thus different sampling) 
                 rdf = rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum)
-                mmoldf = mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 reagentcount+=1
                 pass
             # Ensure that the final round meets the lower bounds and upper bound total fill volume requirements of the user
@@ -236,12 +236,12 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                     rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
                     reagentname = "Reagent%s (ul)" %reagent
                     rdf = pd.DataFrame(rvolmaxdf, columns=[reagentname])
-                    mmoldf = mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                    mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 else:
                     rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
                     rvolmindf = ensuremin(rvolmindf, finalrdf, finalvolmin)
                     rdf = rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum)
-                    mmoldf = mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                    mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 reagentcount+=1
             else: 
                 modlog.error("Fatal error.  Unable to effectively parse reagent%s in portion %s.  Please make sure that the selected values make chemical sense!" %(reagent, portion))
@@ -258,13 +258,18 @@ def ensuremin(rvolmindf, finalrdf, finalvolmin):
     rvolmindf[rvolmindf < trumindf] = trumindf
     return(rvolmindf)
 
-def mmolextension(reagentdf, rdict, experiment, reagent):
+def mmolextension(rxndict, reagentdf, rdict, experiment, reagent):
     mmoldf = (pd.DataFrame(reagentdf))
     portionmmoldf = pd.DataFrame()
-    for chemical, conc in (rdict['%s' %reagent].concs.items()):
-        chemname = chemical.split('m')[1]
+    for chemlistlocator, conc in (rdict['%s' %reagent].concs.items()):
+        listposition = chemlistlocator.split('m')[1]
+        chemnameint = int(listposition)
+        truechemicallist = (rxndict['Reagent%s_chemical_list'%reagent])
+        truechemname = truechemicallist[chemnameint-1]
         newmmoldf = mmoldf * conc / 1000
-        newmmoldf.rename(columns={'Reagent%s (ul)'%reagent:'mmol_experiment%s_reagent%s_chemical%s' %(experiment, reagent, chemname)}, inplace=True)
+        newmmoldf.rename\
+            (columns={'Reagent%s (ul)'%reagent:'mmol_experiment%s_reagent%s_chemical%s' \
+                %(experiment, reagent, truechemname)}, inplace=True)
         portionmmoldf = pd.concat([portionmmoldf, newmmoldf], axis=1)
     return(portionmmoldf)
 

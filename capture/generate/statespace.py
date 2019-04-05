@@ -5,18 +5,23 @@ import itertools
 modlog = logging.getLogger('capture.generate.statespace')
 
 
-def mmolextension(reagentdf, rdict, experiment, reagent):
+def mmolextension(rxndict, reagentdf, rdict, experiment, reagent):
     mmoldf = (pd.DataFrame(reagentdf))
     portionmmoldf = pd.DataFrame()
-    for chemical, conc in (rdict['%s' %reagent].concs.items()):
-        chemname = chemical.split('m')[1]
+    for chemlistlocator, conc in (rdict['%s' %reagent].concs.items()):
+        listposition = chemlistlocator.split('m')[1]
+        chemnameint = int(listposition)
+        truechemicallist = (rxndict['Reagent%s_chemical_list'%reagent])
+        truechemname = truechemicallist[chemnameint-1]
         newmmoldf = mmoldf * conc / 1000
-        newmmoldf.rename(columns={'Reagent%s (ul)'%reagent:'mmol_experiment%s_reagent%s_chemical%s' %(experiment, reagent, chemname)}, inplace=True)
+        newmmoldf.rename\
+            (columns={'Reagent%s (ul)'%reagent:'mmol_experiment%s_reagent%s_chemical%s' \
+                %(experiment, reagent, truechemname)}, inplace=True)
         portionmmoldf = pd.concat([portionmmoldf, newmmoldf], axis=1)
     return(portionmmoldf)
 
 ##generate a state set from the volume constraints of the experimental system ensuring that the limits are met, return the full df of volumes as well as the idealized conc df
-def statedataframe(expoverview, vollimits, rdict, experiment, volspacing):
+def statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
     portionnum = 0
     prdf = pd.DataFrame()
     prmmoldf = pd.DataFrame()
@@ -51,13 +56,14 @@ def statedataframe(expoverview, vollimits, rdict, experiment, volspacing):
     for multivol in fullpermlist:
         finalfulllist.append(list(itertools.chain.from_iterable(multivol)))
     prdf = pd.DataFrame(finalfulllist)
+    prdf = prdf.drop_duplicates()
     prdf.columns = fullreagentnamelist
-    prdf.astype(int)
+    prdf.astype(float)
     finalmmoldf = pd.DataFrame()
     for reagentname in fullreagentnamelist:
         if "Reagent" in reagentname:
             reagentnum = reagentname.split('t')[1].split(' ')[0]
-            mmoldf = mmolextension(prdf[reagentname], rdict, experiment, reagentnum)
+            mmoldf = mmolextension(rxndict, prdf[reagentname], rdict, experiment, reagentnum)
             finalmmoldf = pd.concat([finalmmoldf,mmoldf], axis=1)
         else:
             pass
@@ -84,6 +90,7 @@ def finalmmolsums(chemicals, mmoldf):
         summedmmols.columns = [coutname]
         finalsummedmmols = pd.concat([finalsummedmmols, summedmmols], axis=1)
     finalsummedmmols.fillna(value=0, inplace=True) # Total mmmols added of each chemical in previous reagent additions
+#    print(finalsummedmmols)
     return(finalsummedmmols)
 
 def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
@@ -104,11 +111,11 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
                     pass
         modlog.info('Building reagent state space for experiment %s using reagents %s' %(experiment, edict[experimentname]))
         modlog.warning('Well count will be ignored for state space creation!  Please disable CP run if this incorrect')
-        prdf,prmmoldf = statedataframe(edict[experimentname], vollimits, rdict, experiment, volspacing)
+        prdf,prmmoldf = statedataframe(rxndict, edict[experimentname], vollimits, rdict, experiment, volspacing)
         erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
         ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
         # Return the reagent data frame with the volumes for that particular portion of the plate
-        modlog.info('Succesfully built experiment %s which returned.... ' %(experiment))
+        modlog.info('Succesfully built experiment %s stateset' %(experiment))
         experiment+=1
     #Final reagent volumes dataframe
     erdf.fillna(value=0, inplace=True)

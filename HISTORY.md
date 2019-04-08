@@ -43,5 +43,15 @@ RELEASE HISTORY
 2.2 (2019-03-27)
 ----------------------------
   * Reorganized code for easier modification
-  * Clarified valiable usage from dictionaries
+  * Clarified variable usage from dictionaries
+  * Clarified variables -- no hidden hardcodes
   * Linearized code
+  * Redesigned UI and improved descriptions
+  * Added development template which includes all relevant variables
+  * Updated Readme, History, and templates.xls for end users
+  * Extended code to function with any combination of 7 reagent solutions
+  * Developer template and multiple user templates produced
+  * Generalized reagent interface JSON file for 7 reagents
+  * JSON generator updated for 7 reagents
+  * Debugged multiple amines / tray (including with report functionality)
+  * WARNING -- plotter is currently broken

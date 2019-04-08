@@ -18,8 +18,8 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
     ermmoldf.to_csv(ermmolcsv)
     emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
     emsumdf.to_csv(emsumcsv)
-    statesetfile = ('%sstateset.csv' %rxndict['chem3_abbreviation'])
-    prerun = ('%sstateset.link.csv' %rxndict['chem3_abbreviation'])
+    statesetfile = ('localfiles/%sstateset.csv' %rxndict['chem3_abbreviation'])
+    prerun = ('localfiles/%sstateset.link.csv' %rxndict['chem3_abbreviation'])
     # Hardcode the inchikey lookup for the "amine" aka chemical 3 for the time being, though there must be a BETTER WAY!
     # Hardcode the inchikey lookup for the "amine" aka chemical 3 for the time being, though there must be a BETTER WAY!
     inchilist = [(chemdf.loc[rxndict['chem3_abbreviation'], "InChI Key (ID)"])]*erdfrows

@@ -8,40 +8,6 @@ from capture.googleapi import googleio
 
 modlog = logging.getLogger('capture.prepare.interface')
 
-def conreag(rxndict, rdf, chemdf, rdict):
-    #Constructing output information for creating the experimental excel input sheet
-    for reagentnum, reagentobject in rdict.items():
-        if reagentobject.ispurebool == 1:
-            pass
-            #(reagentobject.chemicals)
-        else:
-            pass
-
-    solventvolume=rdf['Reagent1 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-    stockAvolume=rdf['Reagent2 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-    stockFormicAcid6=rdf['Reagent6 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-    stockFormicAcid7=rdf['Reagent7 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-
-    PbI2mol=(stockAvolume/1000/1000*rxndict['Reagent2_item1_formulaconc'])
-    PbI2mass=(PbI2mol*float(chemdf.loc["PbI2", "Molecular Weight (g/mol)"]))
-    StockAAminePercent=(rxndict['Reagent2_item2_formulaconc']/rxndict['Reagent2_item1_formulaconc'])
-    aminemassA=(stockAvolume/1000/1000*rxndict['Reagent2_item1_formulaconc']*StockAAminePercent*float(chemdf.loc[rxndict['chem3_abbreviation'], "Molecular Weight (g/mol)"]))
-    stockBvolume=rdf['Reagent3 (ul)'].sum()+rxndict['reagent_dead_volume']*1000 #Total volume of the stock solution needed for the robot run
-    Aminemol=(stockBvolume/1000/1000*rxndict['Reagent3_item1_formulaconc'])
-    aminemassB=(Aminemol*float(chemdf.loc[rxndict['chem3_abbreviation'], "Molecular Weight (g/mol)"]))
-
-    #The following section handles and output dataframes to the format required by the robot.xls file.  File type is very picky about white space and formatting.  
-    FinalAmountArray_hold={}
-    FinalAmountArray_hold['solvent_volume']=((solventvolume/1000).round(2))
-    FinalAmountArray_hold['pbi2mass']=(PbI2mass.round(2))
-    FinalAmountArray_hold['Aaminemass']=((aminemassA.round(2)))
-    FinalAmountArray_hold['Afinalvolume']=((stockAvolume/1000).round(2))
-    FinalAmountArray_hold['Baminemass']=(aminemassB.round(2))
-    FinalAmountArray_hold['Bfinalvolume']=((stockBvolume/1000).round(2))
-    FinalAmountArray_hold['FA6']=((stockFormicAcid6/1000).round(2))
-    FinalAmountArray_hold['FA7']=((stockFormicAcid7/1000).round(2))
-    return(FinalAmountArray_hold)
-    
 def sumreagents(erdf, deadvolume):
     reagent_volume_dict = {}
     for header in erdf.columns:
@@ -50,29 +16,41 @@ def sumreagents(erdf, deadvolume):
         reagent_volume_dict[reagentname] = reagent_volume
     return(reagent_volume_dict)
 
-def preparationdf(rxndict, chemicalnamedf, sumreagentsdict, solventlist, maxreagentchemicals, chemdf):
+def preparationdf(rxndict, chemicalnamedf, sumreagentsdict, liquidlist, maxreagentchemicals, chemdf):
     ''' calculate the mass of each chemical return dataframe
 
+    :param chemdf:  Chemical data frame from google drive.  
+
+    :returns: a dataframe sized for export to version:: 3.0 interface
     ''' 
     nominalsdf = pd.DataFrame()
     itemcount = 1
+    chemicalnamedf.sort_index(inplace=True)
     for index, row in chemicalnamedf.iterrows():
         reagentname = row['reagentnames']
         chemabbr = row['chemabbr']
         if row['chemabbr'] ==  'Final Volume = ':
+            formulavollist = []
+            formulavol = 'null'
             itemcount = 1
             finalvolindex = index
             pass
         else:
-            if chemabbr in solventlist:
+            #stock solutions should be summed for final total volume
+            if chemabbr in liquidlist:
                 formulavol = (sumreagentsdict[reagentname]/1000).round(2)
+                formulavollist.append(formulavol)
                 nominalsdf.loc[index, "nominal_amount"] = formulavol
+                nominalsdf.loc[index, "Unit"] = 'milliliter'
                 itemcount+=1
             elif chemabbr == 'null':
                 nominalsdf.loc[index, "nominal_amount"] =  'null'
+                nominalsdf.loc[index, "Unit"] = 'null'
+                nominalsdf.loc[index, "actualsnull"] = 'null'
                 itemcount+=1
                 pass
             else:
+                #calculate reagent amounts from formula
                 modlog.info(('Formula target was', chemabbr, reagentname, \
                     rxndict['%s_item%s_formulaconc' %(reagentname, itemcount)]))
                 modlog.info((index, 'calc value = ', sumreagentsdict[reagentname]/1000/1000 * \
@@ -84,48 +62,64 @@ def preparationdf(rxndict, chemicalnamedf, sumreagentsdict, solventlist, maxreag
                     float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])
                     ).round(2)
                 nominalsdf.loc[index, "nominal_amount"] =  nominalamount
+                nominalsdf.loc[index, "Unit"] = 'gram'
                 itemcount+=1
-        if itemcount == maxreagentchemicals:
-            nominalsdf.loc[finalvolindex, "nominal_amount"] = formulavol.round(1)
+        if itemcount == (maxreagentchemicals+1):
+            if len(formulavollist) > 0:
+                nominalsdf.loc[finalvolindex, "nominal_amount"] = sum(formulavollist)
+                nominalsdf.loc[finalvolindex, "Unit"] = 'milliliter'
+            else: 
+                nominalsdf.loc[finalvolindex, "nominal_amount"] = formulavol
+                nominalsdf.loc[finalvolindex, "Unit"] = 'null'
+                nominalsdf.loc[finalvolindex, "actualsnull"] = 'null'
             modlog.info((reagentname, "formula calculation complete"))
     nominalsdf.sort_index(inplace=True)
-#    print(nominalsdf)
     return(nominalsdf)
 #    for reagentname, totalvol in sumreagentsdict.items():
 #        reagentnamenum = (reagentname.split(' ')[0])
 
 
 
-def chemicalnames(rxndict, rdict, chemdf, maxreagentchemicals):
-    '''generates a list of chemical names for reagent interface
+def chemicalnames(rxndict, rdict, chemdf, maxreagentchemicals, maxreagents):
+    '''generates a dataframe of chemical names for reagent interface
 
     :param chemdf:  Chemical data frame from google drive.  
 
-    :returns: a list sized for export to version:: 3.0 interface
+    :returns: a dataframe sized for export to version:: 3.0 interface
     '''
     chemicalnamelist = []
     reagentnamelist = []
+    holdreagentnum = 1
     for reagentnum, reagentobject in rdict.items():
-        count=0
-        chemicalnamelist.append('Final Volume = ')
-        reagentnamelist.append('Reagent%s' %reagentnum)
-        for chemical in reagentobject.chemicals:
-            chemicalname = rxndict['chem%s_abbreviation' %chemical]
+        #ensure any reagents not used have placeholders
+        while int(reagentnum) > holdreagentnum:
+            chemicalnamelist.append('Final Volume = ')
+            chemicalnamelist.extend(['null'] * maxreagentchemicals)
+            maxinterfaceslots = maxreagentchemicals + 1
+            reagentnamelist.extend(['Reagent%s' %holdreagentnum] * maxinterfaceslots)
+            holdreagentnum = holdreagentnum+1
+        else:
+            count=0
+            holdreagentnum = int(reagentnum)+1
+            chemicalnamelist.append('Final Volume = ')
             reagentnamelist.append('Reagent%s' %reagentnum)
-            chemicalnamelist.append(chemicalname)
-            count+=1
-        while count < maxreagentchemicals:
-            chemicalnamelist.append('null')
-            reagentnamelist.append('Reagent%s' %reagentnum)
-            count+=1
-        else: pass
+            for chemical in reagentobject.chemicals:
+                chemicalname = rxndict['chem%s_abbreviation' %chemical]
+                reagentnamelist.append('Reagent%s' %reagentnum)
+                chemicalnamelist.append(chemicalname)
+                count+=1
+            while count < maxreagentchemicals:
+                chemicalnamelist.append('null')
+                reagentnamelist.append('Reagent%s' %reagentnum)
+                count+=1
+            else: pass
 #    chemicalnamedf = pd.DataFrame(chemicalnamelist, columns=['Chemical Abbreviation (In order of addition)'])
     chemicalnamedf = pd.DataFrame(chemicalnamelist, columns=['chemabbr'])
     reagentnamedf = pd.DataFrame(reagentnamelist, columns=['reagentnames'])
     chemicalnamedf = pd.concat([chemicalnamedf, reagentnamedf], axis=1)
     return(chemicalnamedf)
 
-def reagentupload(rxndict, vardict, erdf, rdict, chemdf, gc, val):
+def reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf):
     ''' uploads information to google sheets reagent interface template
 
     requires all components of the experiment prep in order to calculate
@@ -139,13 +133,20 @@ def reagentupload(rxndict, vardict, erdf, rdict, chemdf, gc, val):
 #    cell_list = sheetobject.range('B15:C30')
 #    for cell in cell_list:
 #        print(cell.label)
-    # Reaction information
-    chemicalnamedf = chemicalnames(rxndict, rdict, chemdf, vardict['maxreagentchemicals'])
+    # Prepare the dataframe for export to the gsheets interface 
+    chemicalnamedf = chemicalnames(rxndict, rdict, chemdf, vardict['maxreagentchemicals'], \
+        vardict['max_robot_reagents'])
     sumreagentsdict = sumreagents(erdf, rxndict['reagent_dead_volume']*1000)
     nominalsdf = preparationdf(rxndict, chemicalnamedf, sumreagentsdict, vardict['solventlist'], \
         vardict['maxreagentchemicals'], chemdf)
-    
-    prepdict =  conreag(rxndict, erdf, chemdf, rdict)
+    finalexportdf = (pd.concat([chemicalnamedf, nominalsdf], axis=1))
+    return(finalexportdf)
+
+def reagent_interface_upload(rxndict, vardict, finalexportdf, gc, val):
+    ''' upload rxndict, finalexportdf to gc target, returns the used gsheets object 
+
+    '''
+    #begin export of the dataframe
     sheetobject = gc.open_by_key(val).sheet1
     sheetobject.update_acell('B2', rxndict['date']) #row, column, replacement in experimental data entry form
     sheetobject.update_acell('B3', rxndict['time'])
@@ -160,55 +161,122 @@ def reagentupload(rxndict, vardict, erdf, rdict, chemdf, gc, val):
     sheetobject.update_acell('B11', 'null')
     sheetobject.update_acell('B12', 'null')
 
-    # Reagent preparation
-     #Reagent 2
-    sheetobject.update_acell('D4', rdict['2'].preptemperature)
-    sheetobject.update_acell('E4', rdict['2'].prepstirrate)
-    sheetobject.update_acell('F4', rdict['2'].prepduration)
-     #Reagent 3
-    sheetobject.update_acell('D5', rdict['3'].preptemperature)
-    sheetobject.update_acell('E5', rdict['3'].prepstirrate)
-    sheetobject.update_acell('F5', rdict['3'].prepduration)
+    #adaptive row specification (easier updates)
+    rowend = len(finalexportdf.index) + 14
+
+    # Chemical abbreviations
+    chemlabeltarget = sheetobject.range('B15:B%s'%rowend)
+    chemlabeldf = finalexportdf['chemabbr']
+    chemlabellist = chemlabeldf.values.tolist()
+    count = 0
+    for cell in chemlabeltarget:
+        cell.value = chemlabellist[count]
+        count+=1
+    sheetobject.update_cells(chemlabeltarget)
+
+    #Formula amounts of materials to generate the objects
+    amounttarget = sheetobject.range('C15:C%s'%rowend)
+    amountdf = finalexportdf['nominal_amount']
+    amountlist = amountdf.values.tolist()
+    count = 0
+    for cell in amounttarget:
+        cell.value = amountlist[count]
+        count+=1
+    sheetobject.update_cells(amounttarget)
+
+    # export unit labels
+    unittarget = sheetobject.range('E15:E%s'%rowend)
+    unitdf = finalexportdf['Unit']
+    unitlist = unitdf.values.tolist()
+    count = 0
+    for cell in unittarget:
+        cell.value = unitlist[count]
+        count+=1
+    sheetobject.update_cells(unittarget)
+
+    #correctly send out nulls for "actuals" column
+    nulltarget = sheetobject.range('D15:D%s'%rowend)
+    nulldf = finalexportdf['actualsnull']
+    nulllist = nulldf.values.tolist()
+    nlsexport = [x if x == 'null' else '' for x in nulllist]
+    count = 0
+    for cell in nulltarget:
+        cell.value = nlsexport[count]
+        count+=1
+    sheetobject.update_cells(nulltarget)
+
+    return(sheetobject)
+
+
+def reagent_prep_pipeline(rdict, sheetobject, maxreagents):
+    uploadtarget = sheetobject.range('D3:F9')
+    uploadlist = []
+    reagentcount = 1
+    for reagentnum, reagentobject in rdict.items():
+        while int(reagentnum) > reagentcount:
+            uploadlist.append('null')
+            uploadlist.append('null')
+            uploadlist.append('null')
+            reagentcount += 1
+        if int(reagentnum) == reagentcount:
+            uploadlist.append(reagentobject.preptemperature)
+            uploadlist.append(reagentobject.prepstirrate)
+            uploadlist.append(reagentobject.prepduration)
+            reagentcount += 1
+        #else:
+        #    uploadlist.append('null')
+        #    uploadlist.append('null')
+        #    uploadlist.append('null')
+        #    reagentcount += 1
+#    for reagentnum, reagentobject in rdict.items():
+#    for reagentnum, reagentobject in rdict.items():
+    count = 0
+    for cell in uploadtarget:
+        cell.value = uploadlist[count]
+        count+=1
+    sheetobject.update_cells(uploadtarget)
+
     # Reagent 1 - use all values present if possible
-    sheetobject.update_acell('B16', rxndict['chem%s_abbreviation'%rdict['1'].chemicals[0]])
-    sheetobject.update_acell('C15', prepdict['solvent_volume']) #nominal final
-    sheetobject.update_acell('C16', prepdict['solvent_volume']) #chemical added
-    sheetobject.update_acell('E16', 'milliliter') #label for volume based measurements, units for GBL
-    sheetobject.update_acell('H15', rdict['1'].prerxntemp)
-    # Reagent 2 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-    sheetobject.update_acell('C19', prepdict['Afinalvolume']) # final nominal
-    sheetobject.update_acell('B20', rxndict['chem%s_abbreviation'%rdict['2'].chemicals[0]])
-    sheetobject.update_acell('B21', rxndict['chem%s_abbreviation'%rdict['2'].chemicals[1]])
-    sheetobject.update_acell('B22', rxndict['chem%s_abbreviation'%rdict['2'].chemicals[2]])
-    sheetobject.update_acell('C20', prepdict['pbi2mass'])
-    sheetobject.update_acell('E20', 'gram') #label for solid based measurements, units for pbi2
-    sheetobject.update_acell('C21', prepdict['Aaminemass'])
-    sheetobject.update_acell('E21', 'gram') #label for solid based measurements, units for pbi2
-    sheetobject.update_acell('C22', prepdict['Afinalvolume'])
-    sheetobject.update_acell('E22', 'milliliter') #label for volume based measurements, units for GBL
-    sheetobject.update_acell('H19', rdict['2'].prerxntemp)
-    # Reagent 3 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-    sheetobject.update_acell('C23', prepdict['Bfinalvolume'])
-    sheetobject.update_acell('B24', rxndict['chem%s_abbreviation'%rdict['3'].chemicals[0]])
-    sheetobject.update_acell('B25', rxndict['chem%s_abbreviation'%rdict['3'].chemicals[1]])
-    sheetobject.update_acell('C24', prepdict['Baminemass'])
-    sheetobject.update_acell('E24', 'gram') #label for solid based measurements, units for pbi2
-    sheetobject.update_acell('C25', prepdict['Bfinalvolume'])
-    sheetobject.update_acell('E25', 'milliliter') #label for volume based measurements, units for GBL
-    sheetobject.update_acell('H23', rdict['3'].prerxntemp)
-    # Reagent 4 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-    # Reagent 6 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-    sheetobject.update_acell('B36', rxndict['chem%s_abbreviation'%rdict['6'].chemicals[0]])
-    sheetobject.update_acell('C35', prepdict['FA6'])
-    sheetobject.update_acell('C36', prepdict['FA6'])
-    sheetobject.update_acell('E36', 'milliliter') #label for volume based measurements, units for GBL
-    sheetobject.update_acell('H35', rdict['6'].prerxntemp)
-    # Reagent 7 - Use all values present if possible (i.e. if a reagent has information make sure to encode it!)
-    sheetobject.update_acell('B40', rxndict['chem%s_abbreviation'%rdict['7'].chemicals[0]])
-    sheetobject.update_acell('C39', prepdict['FA7'])
-    sheetobject.update_acell('C40', prepdict['FA7'])
-    sheetobject.update_acell('E40', 'milliliter') #label for volume based measurements, units for GBL
-    sheetobject.update_acell('H39', rdict['7'].prerxntemp)
+    try:
+        sheetobject.update_acell('H15', rdict['1'].prerxntemp)
+    except Exception:
+        sheetobject.update_acell('H15', 'null')
+
+    #Reagent 2
+    try:
+        sheetobject.update_acell('H19', rdict['2'].prerxntemp)
+    except Exception:
+        sheetobject.update_acell('H19', 'null')
+
+    #Reagent 3
+    try:
+        sheetobject.update_acell('H23', rdict['3'].prerxntemp)
+    except Exception:
+        sheetobject.update_acell('H23', 'null')
+
+    # Reagent 4
+    try:
+        sheetobject.update_acell('H27', rdict['4'].prerxntemp)
+    except Exception:
+        sheetobject.update_acell('H27', 'null')
+
+    # Reagent 5 
+    try:
+        sheetobject.update_acell('H31', rdict['4'].prerxntemp)
+    except Exception:
+        sheetobject.update_acell('H31', 'null')
+
+    # Reagent 6 
+    try:
+        sheetobject.update_acell('H35', rdict['6'].prerxntemp)
+    except Exception:
+        sheetobject.update_acell('H35', 'null')
+
+    # Reagent 7 
+    try:
+        sheetobject.update_acell('H39', rdict['7'].prerxntemp)
+    except Exception:
+        sheetobject.update_acell('H39', 'null')
 
 def PrepareDirectoryCP(uploadlist, secfilelist, runID, logfile, rdict, targetfolder):
     scope= ['https://spreadsheets.google.com/feeds']

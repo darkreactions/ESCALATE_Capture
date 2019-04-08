@@ -1,5 +1,6 @@
 #Copyright (c) 2018 Ian Pendleton - MIT License
 import os
+import sys
 import logging
 import json
 import logging
@@ -32,17 +33,21 @@ def datapipeline(rxndict, vardict):
     rxndict['totalexperiments'] = exptotal(rxndict, rdict)
     edict = exppartition(rxndict) 
     inputvalidation.postbuildvalidation(rxndict,rdict,edict) 
-
     #generate
     if vardict['challengeproblem'] == 1:
-        (uploadlist, secfilelist) = generator.CPexpgen(vardict, chemdf, \
-            rxndict, edict, rdict, climits)
-        if vardict['debug'] == 1:
-            pass
+        if rxndict['totalexperiments'] > 1:
+            modlog.error('Only 1 experiment for stateset generation is supported,\
+                user selected %s experiments.' %rxndict['totalexperiments'])
+            sys.exit()
         else:
-            #prepare
-            interface.PrepareDirectoryCP(uploadlist, secfilelist, \
-                rxndict['RunID'], rxndict['logfile'],rdict, vardict['targetfolder'])
+            (uploadlist, secfilelist) = generator.CPexpgen(vardict, chemdf, \
+                rxndict, edict, rdict, climits)
+            if vardict['debug'] == 1:
+                pass
+            else:
+                #prepare
+                interface.PrepareDirectoryCP(uploadlist, secfilelist, \
+                    rxndict['RunID'], rxndict['logfile'],rdict, vardict['targetfolder'])
 
     #generate
     if vardict['challengeproblem'] == 0:
@@ -56,8 +61,10 @@ def datapipeline(rxndict, vardict):
             #prepare
             (PriDir, secdir, filedict) = googleio.genddirectories(rxndict,vardict['targetfolder'])
             (reagentinterfacetarget, gspreadauth) = googleio.gsheettarget(filedict)
-            interface.reagentupload(rxndict, vardict, erdf, rdict, chemdf,\
-                 gspreadauth, reagentinterfacetarget)
+            finalexportdf = interface.reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf)
+            sheetobject = interface.reagent_interface_upload(rxndict, vardict, finalexportdf, \
+                gspreadauth, reagentinterfacetarget)
+            interface.reagent_prep_pipeline(rdict, sheetobject, vardict['max_robot_reagents'])
             if vardict['debug'] == 2:
                 pass
             else:

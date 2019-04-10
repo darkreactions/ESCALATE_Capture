@@ -13,10 +13,11 @@ Google API and may require debugging for operation on other operating systems an
 
 To build the proper environment using anaconda (https://conda.io/docs/user-guide/install/index.html) do the following:
 
-1. Create new python 3.7 environment in conda: `conda create -n myenv python=3.7`
-2. Execute the following additional command: `pip install -r requirements.txt`
-3. Download or request access from ipendleton . at . haverford.edu for access to the google drive folder of secure keys at: https://drive.google.com/drive/u/1/folders/1cN12AMZSvM5T5yVpFy9tkM_NEle7caQd
-4. Place the keys in the operating directory of the ESCALATE_Capture code.
+1. Deactivate any current conda instance: `conda deactivate`
+2. Create new python 3.7 environment in conda: `conda create -n myenv python=3.7`
+3. Execute the following additional command: `pip install -r requirements.txt`
+4. Download or request access from ipendleton . at . haverford.edu for access to the google drive folder of secure keys at: https://drive.google.com/drive/u/1/folders/1cN12AMZSvM5T5yVpFy9tkM_NEle7caQd
+5. Place the keys in main folder of the ESCALATE_Capture code.
 
 If during the installation process you encounter any issues, please submit a bug report / issue to https://github.com/darkreactions/ESCALATE_Capture
 

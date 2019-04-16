@@ -8,7 +8,7 @@ class perovskitechemical:
     def __init__(self, rxndict, chemdf):
         pass
 
-def ChemicalData():
+def ChemicalData(chemsheetid, chemsheetworkbook):
     ### General Setup Information ###
     ##GSpread Authorization information
     print('Obtaining chemical information from Google Drive.. \n', end='')
@@ -17,7 +17,7 @@ def ChemicalData():
     gc =gspread.authorize(credentials)
     chemsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
     ChemicalBook = gc.open_by_key(chemsheetid)
-    chemicalsheet = ChemicalBook.get_worksheet(0)
+    chemicalsheet = ChemicalBook.get_worksheet(chemsheetworkbook)
     chemical_list = chemicalsheet.get_all_values()
     chemdf=pd.DataFrame(chemical_list, columns=chemical_list[0])
     chemdf=chemdf.iloc[1:]

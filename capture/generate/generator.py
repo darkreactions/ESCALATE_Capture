@@ -5,7 +5,7 @@ from capture.inspect import plotter
 from capture.generate import qrandom
 from capture.generate import statespace
 from capture.prepare import stateset
-from capture.prepare import interface_NIMBUS4 as intnim
+from capture.prepare import experiment_interface as expint
 
 modlog = logging.getLogger('capture.generate.generator')
 
@@ -13,7 +13,7 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
     (erdf, ermmoldf, emsumdf) =statespace.statepreprocess(chemdf, rxndict, edict, rdict, volspacing) 
     # Clean up dataframe for robot file -> create xls --> upload 
     erdfrows = erdf.shape[0]
-    erdf = intnim.cleanvolarray(erdf, vardict['max_robot_reagents'])
+    erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
     ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
     ermmoldf.to_csv(ermmolcsv)
     emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
@@ -33,7 +33,6 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
     #hidden toggle to prevent state space from having all of the features added
 #    stateset_df = emsumdf
     prerun_df.to_csv(prerun)
-    prerun_df.to_csv(prerun)
     stateset_df.to_csv(statesetfile)
     uploadlist = [prerun, statesetfile]
     secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
@@ -42,7 +41,7 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
 def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
     (erdf, ermmoldf, emsumdf) = qrandom.preprocess(chemdf, rxndict, edict, rdict, climits) 
     # Clean up dataframe for robot file -> create xls --> upload 
-    erdf = intnim.cleanvolarray(erdf, vardict['max_robot_reagents'])
+    erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
     # Export additional information files for later use / storage 
     ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
     ermmoldf.to_csv(ermmolcsv)
@@ -80,9 +79,9 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
 
     # Generate a different robot file depending on the user specified lab
     if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
-        robotfile = intnim.LBLrobotfile(rxndict, vardict, erdf)
+        robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
     elif rxndict['lab'] == "ECL": 
-        robotfile = intnim.ECLrobotfile(rxndict, vardict, erdf)
+        robotfile = expint.ECLrobotfile(rxndict, vardict, erdf)
     else:
         modlog.warning('User did not specify a supported lab. No robot file will be generated.')
     return(erdf, robotfile, secfilelist)

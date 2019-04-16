@@ -55,19 +55,20 @@ if __name__ == "__main__":
     parser.add_argument('Variables', type=str,
         help='Target xls file containing run information specified by the user\
              format should be "filename.xlsx"') 
-    parser.add_argument('--cp', default=0, type=int, choices=[0,1], 
-        help='1 - Generates state set for challenge problem, 0 - default \
-            run generation') 
-    parser.add_argument('-d', '--debug', default=0, type=int, choices=[0,1,2],
-        help='1 - local debugging with no data upload, 0 - complete run\
-            generation and upload to google drive') 
-    parser.add_argument('-i', '--id', type=str,
-        help='User is able to specify a runID for the generated run')
-    parser.add_argument('-e', '--escalation', type=str,
-        help="User specifies challenge problem crank number for run generation")
+    parser.add_argument('-s', '--ss', default=0, type=int, choices=[0,1,2], 
+        help='0 - quasi-random experiments generate, 1 - Generates stateset\
+             for exp_1 user specified reagents, 2 - generate prototype run for\
+             exp_1 user specified reagents') 
+    parser.add_argument('-d', '--debug', default=0, type=int, choices=[0,1],
+        help='0 - complete run generation and upload to google drive,\
+             1 - local debugging with no data upload,') 
+#    parser.add_argument('-i', '--id', type=str,
+#        help='User is able to specify a runID for the generated run')
+#    parser.add_argument('-e', '--escalation', type=str,
+#        help="User specifies challenge problem crank number for run generation")
 
     args = parser.parse_args()
-    challengeproblem = args.cp
+    challengeproblem = args.ss
     debug = args.debug
 
     vardict['exefilename'] = args.Variables
@@ -79,14 +80,18 @@ if __name__ == "__main__":
     vardict['maxreagentchemicals'] = devconfig.maxreagentchemicals
     vardict['solventlist'] = devconfig.solventlist
     vardict['targetfolder'] = devconfig.targetfolder
+    vardict['chemsheetid'] = devconfig.chemsheetid
+    vardict['chem_workbook_index'] = devconfig.chem_workbook_index
+    vardict['reagent_workbook_index'] = int(devconfig.reagent_workbook_index)
+    vardict['reagentsheetid'] = devconfig.reagentsheetid
 
     rxndict = readvars(vardict['exefilename'])
     rxndict['challengeproblem'] = challengeproblem
 
-    if args.escalation == None:
-        pass
-    else:
-        linkfile = str(args.escalation) + '.link.csv'
+    #if args.escalation == None:
+    #    pass
+    #else:
+    #    linkfile = str(args.escalation) + '.link.csv'
 
     if not os.path.exists('localfiles'):
         os.mkdir('localfiles')

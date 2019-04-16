@@ -1,31 +1,68 @@
 import logging
+import pandas as pd
 
+import gspread
+from capture.googleapi import googleio
+from oauth2client.service_account import ServiceAccountCredentials
 
-def buildreagents(rxndict, chemdf, solventlist):
+def ReagentData(reagsheetid, reagsheetworkbook):
+    ### General Setup Information ###
+    ##GSpread Authorization information
+    scope= ['https://spreadsheets.google.com/feeds']
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
+    gc =gspread.authorize(credentials)
+    reagsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+    ReagentBook = gc.open_by_key(reagsheetid)
+    reagentsheet = ReagentBook.get_worksheet(reagsheetworkbook)
+    reagent_list = reagentsheet.get_all_values()
+    reagdf=pd.DataFrame(reagent_list, columns=reagent_list[0])
+    reagdf=reagdf.iloc[1:]
+    reagdf=reagdf.reset_index(drop=True)
+    reagdf=reagdf.set_index('ECL_Model_ID')
+    return(reagdf)
+
+def buildreagents(rxndict, chemdf, reagentdf, solventlist):
     modlog = logging.getLogger('capture.models.reagent.buildreagents')
     ''' builds dictionary of reagents based on user specifications of formulas and chemicals 
 
     parses initial user input and generates a dictionary of reagents with relevant properties
     '''
-    reagentlist=[]
+    print(reagentdf)
     reagentdict={}
     #find all of the reagents constructured in the run
     for item in rxndict:
+        #parse user specifications from user interface
         if 'Reagent' in item and "chemical_list" in item:
-            reagentname=(item.split('_'))
-            reagentlist.append(reagentname[0])
-    #Turn all of those reagents into class objects
-    for entry in reagentlist:
-        reagentvariables={}
-        reagentvariables['reagent']=entry
-        entry_num = entry.split('t')
-        for variable,value in rxndict.items(): 
-            if entry in variable:
-                variable=(variable.split('_',1))
-                reagentvariables[variable[1]]=value
-        reagent=perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)  # should scale nicely, class can be augmented without breaking the code
-        #return the class objects in a new dictionary for later use!
-        reagentdict[entry_num[1]]=reagent
+            reagentname=(item.split('_'))[0]
+            reagentvariables={}
+            reagentvariables['reagent']=reagentname
+            entry_num = reagentname.split('t')
+            for variable,value in rxndict.items(): 
+                if reagentname in variable:
+                    variable=(variable.split('_',1))
+                    reagentvariables[variable[1]]=value
+            reagent=perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)  # should scale nicely, class can be augmented without breaking the code
+            #return the class objects in a new dictionary for later use!
+            reagentdict[entry_num[1]]=reagent
+        #parse specifications from reagent dictionary (gsheets dictionary)
+        elif "Reagent" in item and "_ID" in item:
+            reagentname=(item.split('_'))[0]
+            reagentid=rxndict[item]
+            reagentvariables={}
+            reagentvariables['reagent']=reagentname
+            entry_num = reagentname.split('t')
+            reagentvariables['%s_chemical_list'%reagentname]= reagentdf.loc["%s" %reagentid, "chem1_abbreviation"]
+            reagentvariables['%s_chemical_list'%reagentname]= reagentdf.loc["%s" %reagentid, "chem2_abbreviation"]
+            reagentvariables['%s_chemical_list'%reagentname]= reagentdf.loc["%s" %reagentid, "chem3_abbreviation"]
+            reagentvariables['%s_item1_formulaconc'%reagentname]=  reagentdf.loc["%s" %reagentid, "chem2_formulaconc"]
+            Reagent2_ECL_ID
+            
+            Reagent2_item2_formulaconc
+            Reagent2_prep_temperature
+            Reagent2_prep_stirrate
+            Reagent2_prep_duration
+            reagent=perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)  # should scale nicely, class can be augmented without breaking the code
+
     for k,v in reagentdict.items(): 
         modlog.info("%s : %s" %(k,vars(v)))
     return(reagentdict)
@@ -37,8 +74,8 @@ class perovskitereagent:
     numerically order reagents specified by the user are associated with calculated values 
     attributes all of the properties of the reagent should be contained within this object
     '''
-    def __init__(self, reactantinfo, rxndict, entry, chemdf, solventlist):
-        self.name = entry # reag1, reag2, etc
+    def __init__(self, reactantinfo, rxndict, reagentnumber, chemdf, solventlist):
+        self.name = reagentnumber # reag1, reag2, etc
         self.chemicals = reactantinfo['chemical_list'] # list of the chemicals in this reagent
         self.concs = self.concentrations(reactantinfo, chemdf, rxndict) 
         self.ispurebool = self.ispure()

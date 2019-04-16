@@ -15,4 +15,5 @@ __pycache__/
 *.log
 *.ipynb_checkpoints
 !WF1_template.xlsx
+!WF1_ECL_template.xlsx
 !WF1_DevTemplate.xlsx

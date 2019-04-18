@@ -55,3 +55,9 @@ RELEASE HISTORY
   * JSON generator updated for 7 reagents
   * Debugged multiple amines / tray (including with report functionality)
   * WARNING -- plotter is currently broken
+
+2.3 (2019-04-16)
+----------------------------
+  * Added ECL support
+  * Reagents can be specified by model OR user input (not both)
+  * Added additional input testing

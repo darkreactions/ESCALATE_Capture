@@ -1,7 +1,7 @@
 # devconfig.py
 
 #version control
-RoboVersion = 2.2
+RoboVersion = 2.3
 
 # Hard coded limits
 max_robot_reagents = 7
@@ -19,5 +19,6 @@ chemsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
 chem_workbook_index = 0
 reagentsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
 reagent_workbook_index = 1
+reagent_interface_amount_startrow = 15
 
 

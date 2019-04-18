@@ -21,48 +21,52 @@ def ReagentData(reagsheetid, reagsheetworkbook):
     reagdf=reagdf.set_index('ECL_Model_ID')
     return(reagdf)
 
+
 def buildreagents(rxndict, chemdf, reagentdf, solventlist):
     modlog = logging.getLogger('capture.models.reagent.buildreagents')
     ''' builds dictionary of reagents based on user specifications of formulas and chemicals 
 
     parses initial user input and generates a dictionary of reagents with relevant properties
     '''
-    print(reagentdf)
     reagentdict={}
     #find all of the reagents constructured in the run
     for item in rxndict:
         #parse user specifications from user interface
         if 'Reagent' in item and "chemical_list" in item:
             reagentname=(item.split('_'))[0]
-            reagentvariables={}
-            reagentvariables['reagent']=reagentname
-            entry_num = reagentname.split('t')
-            for variable,value in rxndict.items(): 
-                if reagentname in variable:
-                    variable=(variable.split('_',1))
-                    reagentvariables[variable[1]]=value
-            reagent=perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)  # should scale nicely, class can be augmented without breaking the code
-            #return the class objects in a new dictionary for later use!
-            reagentdict[entry_num[1]]=reagent
-        #parse specifications from reagent dictionary (gsheets dictionary)
+            ## ensure that the reagent definition is not being defined in two different ways
+            idflag = reagentname+"_ID" 
+            if idflag in rxndict:
+                print('too many %s' %reagentname)
+            else:
+                reagentvariables={}
+                reagentvariables['reagent']=reagentname
+                entry_num = reagentname.split('t')
+                for variable,value in rxndict.items(): 
+                    if reagentname in variable:
+                        variable=(variable.split('_',1))
+                        reagentvariables[variable[1]]=value
+                reagent=perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist) 
+                reagentdict[entry_num[1]]=reagent
+        #parse specifications from reagent model ID
         elif "Reagent" in item and "_ID" in item:
-            reagentname=(item.split('_'))[0]
-            reagentid=rxndict[item]
             reagentvariables={}
-            reagentvariables['reagent']=reagentname
+            reagentname=(item.split('_'))[0]
             entry_num = reagentname.split('t')
-            reagentvariables['%s_chemical_list'%reagentname]= reagentdf.loc["%s" %reagentid, "chem1_abbreviation"]
-            reagentvariables['%s_chemical_list'%reagentname]= reagentdf.loc["%s" %reagentid, "chem2_abbreviation"]
-            reagentvariables['%s_chemical_list'%reagentname]= reagentdf.loc["%s" %reagentid, "chem3_abbreviation"]
-            reagentvariables['%s_item1_formulaconc'%reagentname]=  reagentdf.loc["%s" %reagentid, "chem2_formulaconc"]
-            Reagent2_ECL_ID
-            
-            Reagent2_item2_formulaconc
-            Reagent2_prep_temperature
-            Reagent2_prep_stirrate
-            Reagent2_prep_duration
-            reagent=perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)  # should scale nicely, class can be augmented without breaking the code
-
+            reagentid=rxndict[item]
+            reagentvariables['reagent']=reagentname
+            chemical_list = []
+            for columnheader in reagentdf.columns:
+                if "item" and "abbreviation" in columnheader:
+                    chemicalname = (reagentdf.loc["%s" %reagentid, columnheader])
+                    if chemicalname == 'null':
+                        pass
+                    else:
+                        chemical_list.append(chemicalname)
+                reagentvariables[columnheader] = (reagentdf.loc["%s" %reagentid, columnheader])
+            reagentvariables['chemical_list'] = chemical_list
+            reagent=perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)  
+            reagentdict[entry_num[1]]=reagent
     for k,v in reagentdict.items(): 
         modlog.info("%s : %s" %(k,vars(v)))
     return(reagentdict)
@@ -144,27 +148,30 @@ class perovskitereagent:
 
     def concentrations(self, reactantinfo, chemdf, rxndict):
         concdict = {}
+        chemicalitem = 1
         for chemical in self.chemicals:
-            variablename = 'conc_chemical%s' %chemical
+            variablename = 'item%s_formulaconc' %chemical
             updatedname = 'conc_chem%s' %chemical
-            for key, value in reactantinfo.items():
-                if 'chemical' in key:
-                    if variablename in key:
-                        concdict[updatedname] = value
-            #Some string that happened to work which only prints key, value pairs of single chemicals as long as they lack a "target_conc" description
-            #likely brittle
+#            for key, value in reactantinfo.items():
+#                if 'chemical' in key:
+#                    if variablename in key:
+#                        concdict[updatedname] = value
+#                print(concdict)
             if len(self.chemicals) == 1:
                 itemlabel = 'conc_item1' 
                 if [key for key,value in reactantinfo.items() if variablename in key] == []:
                         #density / molecular weight function returns mol / L of the chemical
-                        concdict[itemlabel] = (float(chemdf.loc[rxndict['chem%s_abbreviation'%chemical],"Density            (g/mL)"])/ \
-                            float(chemdf.loc[rxndict['chem%s_abbreviation' %chemical],"Molecular Weight (g/mol)"]) * 1000)
+                        concdict[itemlabel] = (float(chemdf.loc[self.chemicals[0],"Density            (g/mL)"])/ \
+                            float(chemdf.loc[self.chemicals[0],"Molecular Weight (g/mol)"]) * 1000)
             else:
                 try:
-                    itemlabel = 'conc_item%s' %chemical 
-                    itemname = 'item%s_formulaconc' %chemical
-                    concdict[itemlabel] = reactantinfo[itemname]
+                    itemlabel = 'conc_item%s' %chemicalitem 
+                    itemname = 'item%s_formulaconc' %chemicalitem
+                    if reactantinfo[itemname] == 'null':
+                        pass
+                    else:
+                        concdict[itemlabel] = float(reactantinfo[itemname])
+                    chemicalitem+=1
                 except Exception:
                     pass
         return(concdict)
-    

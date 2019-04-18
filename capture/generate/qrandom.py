@@ -5,16 +5,10 @@ import random
 import sys
 
 from capture.testing import inputvalidation
+from capture.models import chemical
+from capture.generate import calcs
 
 modlog = logging.getLogger('capture.generate.qrandom')
-
-def chemicallist(rxndict):
-    chemicallist = []
-    for k,v in rxndict.items():
-        if 'abbreviation' in k:
-            name = k.split('m')[1].split('_')[0]
-            chemicallist.append(name)
-    return(chemicallist)
 
 def rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum):
     count = 0 
@@ -168,7 +162,7 @@ def calcvollimitdf(rdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, r
     # Look at each chemical in the chemical list of the reagent
     for chemical in chemicals:
         try: #Potentially could be an if statement, but the search for the chem#_molarmax or chem#_molarmin will fail if no value is set a workaround could be to set hard coded far limits and flag errors
-            header = 'mmol_chemical%s' %chemical
+            header = 'mmol_%s' %chemical
             chemconc = rdata.concs['conc_chem%s' %chemical]
             # calculate the remaining mmols of the chemical  based on the user set limits
             volmaxdf = ((rxndict['chem%s_molarmax' %chemical]*rvolmax/1000)-finalsummedmmols[header]) / chemconc * 1000
@@ -177,7 +171,7 @@ def calcvollimitdf(rdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, r
             pass
     # do it all again for the minimums, ensure that the user set minimums are met if this is the final reagent with a particular chemical
         try:
-            header = 'mmol_chemical%s' %chemical
+            header = 'mmol_%s' %chemical
             chemconc = rdata.concs['conc_chem%s' %chemical]
             volmindf = ((rxndict['chem%s_molarmin' %chemical]*rvolmax/1000)-finalsummedmmols[header]) / chemconc * 1000
             volmindf[volmindf < 0] = 0
@@ -216,7 +210,7 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                 # Returns datafram of volumes of each reagent added to each experiment
                 rdf = initialrdf(rvolmax, rvolmin, reagent, wellnum)
                 # Returns mmol specified dataframe for each experiment, reagent, and chemical (<-- values are in the header) have been generated for this portion of the experiment
-                mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 reagentcount+=1
                 pass
             #operate within the available ranges taken from the previous constraints
@@ -226,7 +220,7 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                 rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
                 # Since each volume maximum is different, need to sample the remaining reagents independently (thus different sampling) 
                 rdf = rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum)
-                mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 reagentcount+=1
                 pass
             # Ensure that the final round meets the lower bounds and upper bound total fill volume requirements of the user
@@ -236,12 +230,12 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                     rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
                     reagentname = "Reagent%s (ul)" %reagent
                     rdf = pd.DataFrame(rvolmaxdf, columns=[reagentname])
-                    mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                    mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 else:
                     rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
                     rvolmindf = ensuremin(rvolmindf, finalrdf, finalvolmin)
                     rdf = rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum)
-                    mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                    mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 reagentcount+=1
             else: 
                 modlog.error("Fatal error.  Unable to effectively parse reagent%s in portion %s.  Please make sure that the selected values make chemical sense!" %(reagent, portion))
@@ -258,26 +252,11 @@ def ensuremin(rvolmindf, finalrdf, finalvolmin):
     rvolmindf[rvolmindf < trumindf] = trumindf
     return(rvolmindf)
 
-def mmolextension(rxndict, reagentdf, rdict, experiment, reagent):
-    mmoldf = (pd.DataFrame(reagentdf))
-    portionmmoldf = pd.DataFrame()
-    for chemlistlocator, conc in (rdict['%s' %reagent].concs.items()):
-        listposition = chemlistlocator.split('m')[1]
-        chemnameint = int(listposition)
-        truechemicallist = (rxndict['Reagent%s_chemical_list'%reagent])
-        truechemname = truechemicallist[chemnameint-1]
-        newmmoldf = mmoldf * conc / 1000
-        newmmoldf.rename\
-            (columns={'Reagent%s (ul)'%reagent:'mmol_experiment%s_reagent%s_chemical%s' \
-                %(experiment, reagent, truechemname)}, inplace=True)
-        portionmmoldf = pd.concat([portionmmoldf, newmmoldf], axis=1)
-    return(portionmmoldf)
-
 def finalmmolsums(chemicals, mmoldf):
     finalsummedmmols = pd.DataFrame()
     for chemical in chemicals:
-        cname = 'chemical%s' %chemical
-        coutname = 'chemical%s [M]' %chemical  # The technical output of this function is a mmol, simplier to rename the columns here
+        cname = '%s' %chemical
+        coutname = '%s [M]' %chemical  # The technical output of this function is a mmol, simplier to rename the columns here
         tempdf = pd.DataFrame()
         for header in mmoldf.columns:
             if cname in header:
@@ -321,7 +300,7 @@ def preprocess(chemdf, rxndict, edict, rdict, climits):
     erdf.fillna(value=0, inplace=True)
     #Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
-    clist = (chemicallist(rxndict))
+    clist = chemical.exp_chem_list(rdict)
     # Final nominal molarity for each reagent in each well
     # Final nominal molarity for each reagent in each well
     emsumdf = finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units

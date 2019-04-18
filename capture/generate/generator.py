@@ -81,7 +81,7 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
     if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
         robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
     elif rxndict['lab'] == "ECL": 
-        robotfile = expint.ECLrobotfile(rxndict, vardict, erdf)
+        robotfile = expint.ECLrobotfile(rxndict, vardict, rdict, erdf)
     else:
         modlog.warning('User did not specify a supported lab. No robot file will be generated.')
     return(erdf, robotfile, secfilelist)

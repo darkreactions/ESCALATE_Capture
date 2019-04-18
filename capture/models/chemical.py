@@ -33,3 +33,14 @@ def chemicallimits(rxndict):
         if "chem" in k and "molarmax" in k:
             climits[k] = v
     return(climits)
+
+def exp_chem_list(rdict):
+    chemicalslist = []
+    for reagentnum, reagentobject in rdict.items():
+        for chemical in reagentobject.chemicals:
+            if chemical in chemicalslist:
+                pass
+            else:
+                chemicalslist.append(chemical)
+    return(chemicalslist)
+        

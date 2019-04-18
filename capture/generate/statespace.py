@@ -2,23 +2,10 @@ import logging
 import pandas as pd
 import itertools
 
+from capture.generate import calcs
+
 modlog = logging.getLogger('capture.generate.statespace')
 
-
-def mmolextension(rxndict, reagentdf, rdict, experiment, reagent):
-    mmoldf = (pd.DataFrame(reagentdf))
-    portionmmoldf = pd.DataFrame()
-    for chemlistlocator, conc in (rdict['%s' %reagent].concs.items()):
-        listposition = chemlistlocator.split('m')[1]
-        chemnameint = int(listposition)
-        truechemicallist = (rxndict['Reagent%s_chemical_list'%reagent])
-        truechemname = truechemicallist[chemnameint-1]
-        newmmoldf = mmoldf * conc / 1000
-        newmmoldf.rename\
-            (columns={'Reagent%s (ul)'%reagent:'mmol_experiment%s_reagent%s_chemical%s' \
-                %(experiment, reagent, truechemname)}, inplace=True)
-        portionmmoldf = pd.concat([portionmmoldf, newmmoldf], axis=1)
-    return(portionmmoldf)
 
 ##generate a state set from the volume constraints of the experimental system ensuring that the limits are met, return the full df of volumes as well as the idealized conc df
 def statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
@@ -63,7 +50,7 @@ def statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacin
     for reagentname in fullreagentnamelist:
         if "Reagent" in reagentname:
             reagentnum = reagentname.split('t')[1].split(' ')[0]
-            mmoldf = mmolextension(rxndict, prdf[reagentname], rdict, experiment, reagentnum)
+            mmoldf = calcs.mmolextension(prdf[reagentname], rdict, experiment, reagentnum)
             finalmmoldf = pd.concat([finalmmoldf,mmoldf], axis=1)
         else:
             pass

@@ -84,6 +84,8 @@ if __name__ == "__main__":
     vardict['chem_workbook_index'] = devconfig.chem_workbook_index
     vardict['reagent_workbook_index'] = int(devconfig.reagent_workbook_index)
     vardict['reagentsheetid'] = devconfig.reagentsheetid
+    vardict['reagent_interface_amount_startrow'] = devconfig.reagent_interface_amount_startrow
+
 
     rxndict = readvars(vardict['exefilename'])
     rxndict['challengeproblem'] = challengeproblem

@@ -18,15 +18,19 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
     ermmoldf.to_csv(ermmolcsv)
     emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
     emsumdf.to_csv(emsumcsv)
-    statesetfile = ('localfiles/%sstateset.csv' %rxndict['chem3_abbreviation'])
-    prerun = ('localfiles/%sstateset.link.csv' %rxndict['chem3_abbreviation'])
+    statesetfile = ('localfiles/%sstateset.csv' %rxndict['Reagent2_chemical_list'])
+    prerun = ('localfiles/%sstateset.link.csv' %rxndict['Reagent2_chemical_list'])
     # Hardcode the inchikey lookup for the "amine" aka chemical 3 for the time being, though there must be a BETTER WAY!
-    # Hardcode the inchikey lookup for the "amine" aka chemical 3 for the time being, though there must be a BETTER WAY!
-    inchilist = [(chemdf.loc[rxndict['chem3_abbreviation'], "InChI Key (ID)"])]*erdfrows
+    inchilist = [(chemdf.loc[rxndict['Reagent2_chemical_list'][1], "InChI Key (ID)"])]*erdfrows
     inchidf = pd.DataFrame(inchilist, columns=['_rxn_organic-inchikey'])
-    #highly specific curation for the wf1 cp dataflow # drops GBL column
-    emsumdf.drop(columns=['chemical1 [M]'], inplace=True)
-    emsumdf.rename(columns={"chemical2 [M]":"_rxn_M_inorganic", "chemical3 [M]":"_rxn_M_organic", "chemical5 [M]":"_rxn_M_acid"}, inplace=True)
+    #highly specific curation for the wf1 cp dataflow # drops solvent column
+    for chemical in emsumdf.columns:
+        chemicalname = chemical.split(' ')[0]
+        if chemicalname in vardict['solventlist'] and chemicalname != "FAH":
+            solventheader = chemical
+    emsumdf.drop(columns=[solventheader], inplace=True)
+    emsumdf.rename(columns={"%s [M]"%rxndict['Reagent2_chemical_list'][0]:"_rxn_M_inorganic", \
+        "%s [M]"%rxndict['Reagent2_chemical_list'][1]:"_rxn_M_organic", "%s [M]"%rxndict['Reagent7_chemical_list'][0]:"_rxn_M_acid"}, inplace=True)
     ddf = stateset.augdescriptors(inchidf, rxndict, erdfrows)
     prerun_df = pd.concat([erdf, emsumdf, ddf], axis=1)
     stateset_df = pd.concat([emsumdf,ddf], axis=1)

@@ -60,4 +60,9 @@ RELEASE HISTORY
 ----------------------------
   * Added ECL support
   * Reagents can be specified by model OR user input (not both)
-  * Added additional input testing
+  * Simplified chemical specification through inclusion in reagent list
+  * Updated templates to reflect new interface architecture 
+
+2.3.1 (2019-04-19)
+----------------------------
+  * Added additional input testing - ensure that user entries are valid

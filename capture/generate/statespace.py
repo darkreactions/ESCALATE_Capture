@@ -3,6 +3,7 @@ import pandas as pd
 import itertools
 
 from capture.generate import calcs
+from capture.models import chemical
 
 modlog = logging.getLogger('capture.generate.statespace')
 
@@ -64,22 +65,6 @@ def chemicallist(rxndict):
             chemicallist.append(name)
     return(chemicallist)
 
-def finalmmolsums(chemicals, mmoldf):
-    finalsummedmmols = pd.DataFrame()
-    for chemical in chemicals:
-        cname = 'chemical%s' %chemical
-        coutname = 'chemical%s [M]' %chemical  # The technical output of this function is a mmol, simplier to rename the columns here
-        tempdf = pd.DataFrame()
-        for header in mmoldf.columns:
-            if cname in header:
-                tempdf = pd.concat([tempdf, mmoldf[header]], axis=1)
-        summedmmols = pd.DataFrame(tempdf.sum(axis=1))
-        summedmmols.columns = [coutname]
-        finalsummedmmols = pd.concat([finalsummedmmols, summedmmols], axis=1)
-    finalsummedmmols.fillna(value=0, inplace=True) # Total mmmols added of each chemical in previous reagent additions
-#    print(finalsummedmmols)
-    return(finalsummedmmols)
-
 def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
     experiment = 1
     modlog.info('Making a total of %s unique experiments on the tray' %rxndict['totalexperiments'])
@@ -108,10 +93,10 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
     erdf.fillna(value=0, inplace=True)
     #Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
-    clist = (chemicallist(rxndict))
+    clist = chemical.exp_chem_list(rdict)
     # Final nominal molarity for each reagent in each well
     # Final nominal molarity for each reagent in each well
-    emsumdf = finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
+    emsumdf = calcs.finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
     emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
 #    plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
     #combine the experiments for the tray into one full set of volumes for all the wells on the plate

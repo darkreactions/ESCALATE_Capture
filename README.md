@@ -37,8 +37,6 @@ Running The Code
   * Move the validated directory to the ExpDev directory (https://drive.google.com/drive/u/1/folders/1S6DLLphYBsB-s-HkFddYj1rtZZiyaE0o)
   * Note: The Dev folder will be periodically cleared of old directories, ensure that data are not deleted by only inserting data into files/folders in the ExpDev directory
 
-**_Never delete files from the Data folder, EVER_**
-
 #### Possible useful links
 * Specific pydrive API information: https://stackoverflow.com/questions/43865016/python-copy-a-file-in-google-drive-into-a-specific-folder
 * Documentation on pydrive: https://github.com/gsuitedevs/PyDrive

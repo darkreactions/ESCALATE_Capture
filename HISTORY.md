@@ -63,6 +63,6 @@ RELEASE HISTORY
   * Simplified chemical specification through inclusion in reagent list
   * Updated templates to reflect new interface architecture 
 
-2.3.1 (2019-04-19)
+2.3.1 (ongoing)
 ----------------------------
   * Added additional input testing - ensure that user entries are valid

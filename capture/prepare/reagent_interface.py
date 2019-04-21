@@ -280,14 +280,12 @@ def reagent_prep_pipeline(rdict, sheetobject, maxreagents):
         sheetobject.update_acell('H39', 'null')
 
 def PrepareDirectoryCP(uploadlist, secfilelist, runID, logfile, rdict, targetfolder):
-    scope= ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc =gspread.authorize(credentials)
+#    scope= ['https://spreadsheets.google.com/feeds']
+#    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
+#    gc =gspread.authorize(credentials)
     tgt_folder_id= targetfolder
     PriDir=googleio.DriveCreateFolder(runID, tgt_folder_id)
-    file_dict=googleio.DriveAddTemplates(PriDir, runID)#, targetfolder)
-    subfold_name = "%s_submissions" %runID
-    subdir = googleio.DriveCreateFolder(subfold_name, PriDir)
+    googleio.DriveAddTemplates(PriDir, runID, []) # copies metadata from current template (leaves the rest)
     secfold_name = "%s_subdata" %runID
     secdir = googleio.DriveCreateFolder(secfold_name, PriDir)
     googleio.GupFile(PriDir, secdir, secfilelist, uploadlist, runID, logfile)

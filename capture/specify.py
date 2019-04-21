@@ -60,21 +60,26 @@ def datapipeline(rxndict, vardict):
             pass
         else:            
             modlog.info('Starting file preparation for upload')
-            #prepare
-            (PriDir, secdir, filedict) = googleio.genddirectories(rxndict,vardict['targetfolder'])
-            (reagentinterfacetarget, gspreadauth) = googleio.gsheettarget(filedict)
-            #abstract experiment data to reagent level (generate reagent preparation based on user requests)
-            finalexportdf = interface.reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf)
-            sheetobject = interface.reagent_interface_upload(rxndict, vardict, finalexportdf, \
-                gspreadauth, reagentinterfacetarget)
-            interface.reagent_prep_pipeline(rdict, sheetobject, vardict['max_robot_reagents'])
-            if vardict['debug'] == 2:
+            # Lab specific handling - different labs require different files for tracking
+            if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
+                (PriDir, secdir, filedict) = googleio.genddirectories(rxndict,vardict['targetfolder'], vardict['filereqs'])
+                (reagentinterfacetarget, gspreadauth) = googleio.gsheettarget(filedict)
+                #abstract experiment data to reagent level (generate reagent preparation based on user requests)
+                finalexportdf = interface.reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf)
+                sheetobject = interface.reagent_interface_upload(rxndict, vardict, finalexportdf, \
+                    gspreadauth, reagentinterfacetarget)
+                interface.reagent_prep_pipeline(rdict, sheetobject, vardict['max_robot_reagents'])
+            elif rxndict['lab'] == "ECL": 
+                (PriDir, secdir, filedict) = googleio.genddirectories(rxndict,vardict['targetfolder'], vardict['filereqs'])
+                modlog.warn('User selected ECL run, no reagent interface generated.  Please ensure the JSON is exported from ECL!')
                 pass
             else:
-                logfile = '%s/%s'%(os.getcwd(),rxndict['logfile'])
-                googleio.GupFile(PriDir, secdir, secfilelist, [robotfile], \
-                    rxndict['RunID'], logfile)
-                modlog.info('File upload completed successfully')
+                modlog.error('User selected a lab that was not supported.  Closing run')
+                sys.exit()
+        logfile = '%s/%s'%(os.getcwd(),rxndict['logfile'])
+        googleio.GupFile(PriDir, secdir, secfilelist, [robotfile], \
+            rxndict['RunID'], logfile)
+        modlog.info('File upload completed successfully')
     modlog.info("Job Creation Complete")
     print("Job Creation Complete")
 

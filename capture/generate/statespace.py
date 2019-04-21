@@ -2,23 +2,11 @@ import logging
 import pandas as pd
 import itertools
 
+from capture.generate import calcs
+from capture.models import chemical
+
 modlog = logging.getLogger('capture.generate.statespace')
 
-
-def mmolextension(rxndict, reagentdf, rdict, experiment, reagent):
-    mmoldf = (pd.DataFrame(reagentdf))
-    portionmmoldf = pd.DataFrame()
-    for chemlistlocator, conc in (rdict['%s' %reagent].concs.items()):
-        listposition = chemlistlocator.split('m')[1]
-        chemnameint = int(listposition)
-        truechemicallist = (rxndict['Reagent%s_chemical_list'%reagent])
-        truechemname = truechemicallist[chemnameint-1]
-        newmmoldf = mmoldf * conc / 1000
-        newmmoldf.rename\
-            (columns={'Reagent%s (ul)'%reagent:'mmol_experiment%s_reagent%s_chemical%s' \
-                %(experiment, reagent, truechemname)}, inplace=True)
-        portionmmoldf = pd.concat([portionmmoldf, newmmoldf], axis=1)
-    return(portionmmoldf)
 
 ##generate a state set from the volume constraints of the experimental system ensuring that the limits are met, return the full df of volumes as well as the idealized conc df
 def statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
@@ -63,7 +51,7 @@ def statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacin
     for reagentname in fullreagentnamelist:
         if "Reagent" in reagentname:
             reagentnum = reagentname.split('t')[1].split(' ')[0]
-            mmoldf = mmolextension(rxndict, prdf[reagentname], rdict, experiment, reagentnum)
+            mmoldf = calcs.mmolextension(prdf[reagentname], rdict, experiment, reagentnum)
             finalmmoldf = pd.concat([finalmmoldf,mmoldf], axis=1)
         else:
             pass
@@ -76,22 +64,6 @@ def chemicallist(rxndict):
             name = k.split('m')[1].split('_')[0]
             chemicallist.append(name)
     return(chemicallist)
-
-def finalmmolsums(chemicals, mmoldf):
-    finalsummedmmols = pd.DataFrame()
-    for chemical in chemicals:
-        cname = 'chemical%s' %chemical
-        coutname = 'chemical%s [M]' %chemical  # The technical output of this function is a mmol, simplier to rename the columns here
-        tempdf = pd.DataFrame()
-        for header in mmoldf.columns:
-            if cname in header:
-                tempdf = pd.concat([tempdf, mmoldf[header]], axis=1)
-        summedmmols = pd.DataFrame(tempdf.sum(axis=1))
-        summedmmols.columns = [coutname]
-        finalsummedmmols = pd.concat([finalsummedmmols, summedmmols], axis=1)
-    finalsummedmmols.fillna(value=0, inplace=True) # Total mmmols added of each chemical in previous reagent additions
-#    print(finalsummedmmols)
-    return(finalsummedmmols)
 
 def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
     experiment = 1
@@ -121,10 +93,10 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
     erdf.fillna(value=0, inplace=True)
     #Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
-    clist = (chemicallist(rxndict))
+    clist = chemical.exp_chem_list(rdict)
     # Final nominal molarity for each reagent in each well
     # Final nominal molarity for each reagent in each well
-    emsumdf = finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
+    emsumdf = calcs.finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
     emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
 #    plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
     #combine the experiments for the tray into one full set of volumes for all the wells on the plate

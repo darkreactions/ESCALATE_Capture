@@ -5,16 +5,10 @@ import random
 import sys
 
 from capture.testing import inputvalidation
+from capture.models import chemical
+from capture.generate import calcs
 
 modlog = logging.getLogger('capture.generate.qrandom')
-
-def chemicallist(rxndict):
-    chemicallist = []
-    for k,v in rxndict.items():
-        if 'abbreviation' in k:
-            name = k.split('m')[1].split('_')[0]
-            chemicallist.append(name)
-    return(chemicallist)
 
 def rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum):
     count = 0 
@@ -31,24 +25,25 @@ def rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum):
     rdf = pd.DataFrame({reagentname:reagentlist}).astype(int)
     return(rdf)
 
-# Determine the maximum concentration for a particular chemical in a reagent
-def maxconcdet(rdata, rnum, currchemical):
-    maxconc = 0
-    chemname = 'conc_chem%s' %currchemical
-    for chemid,conc in rdata['%s' %rnum].concs.items():
-        if chemname in chemid:
-            if conc > maxconc:
-                maxconc = conc
-    return(maxconc)
-
-# Determine the absolute maximum concentration for a particular chemical across all reagents in a portion of the experiment
-def absmaxcondet(rdata, rnum, currchemical, reagentlist):
-    maxconc = 0 
-    for reagent in reagentlist:
-        conc = (maxconcdet(rdata, reagent, currchemical))
-        if conc > maxconc:
-            maxconc =  conc
-    return(maxconc)
+## Determine the maximum concentration for a particular chemical in a reagent
+#def maxconcdet(rdata, rnum, currchemical):
+#    maxconc = 0
+#    for chemid,conc in rdata['%s' %rnum].concs.items():
+#        itemnum = chemid.split('m')[1]
+#        chemical_list_name = rdata['%s'%rnum].chemicals[itemnum]
+#        if currchemical in chemical_list_name:
+#            if conc > maxconc:
+#                maxconc = conc
+#    return(maxconc)
+#
+## Determine the absolute maximum concentration for a particular chemical across all reagents in a portion of the experiment
+#def absmaxcondet(rdata, rnum, currchemical, reagentlist):
+#    maxconc = 0 
+#    for reagent in reagentlist:
+#        conc = (maxconcdet(rdata, reagent, currchemical))
+#        if conc > maxconc:
+#            maxconc =  conc
+#    return(maxconc)
 
 def f(x1):
     return 0.0
@@ -65,47 +60,47 @@ def initialrdf(volmax, volmin, reagent, wellnum):
 #very similar to vollimtcont
 def calcvollimit(userlimits, rdict, volmax, volmin, experiment, reagentlist, reagent, wellnum): 
     rdata = rdict['%s'%reagent]
-    chemicals = rdata.chemicals
+#    chemicals = rdata.chemicals
     possiblemaxvolumes = []
     possiblemaxvolumes.append(volmax)
     possibleminvolumes = []
     possibleminvolumes.append(volmin)
     # Determine if any user constraints override the maximum concentrations dependent on the volume limits
-    for chemical in chemicals:
-        #The code will update the maximum volume to meet the upper bound set by the user
-        try: 
-            maxconc = maxconcdet(rdict, reagent, chemical)
-            absmaxconc = absmaxcondet(rdict, reagent, chemical, reagentlist)
-            userdefinedmax = (userlimits['chem%s_molarmax'%chemical])
-            # Update the constraints / limits on the total volume of this reagent to fit within the restrictions that the user might have set
-            if userdefinedmax <= maxconc:
-                volmaxnew = userdefinedmax / maxconc * volmax
-                possiblemaxvolumes.append(int(volmaxnew))
-            # If other reagents in the portion of the reaction can access higher concentrations, don't error out
-            elif userdefinedmax <= absmaxconc:
-               pass
-            else: 
-                #In the case where this upperbound cannot be met the user has overconstrained the system
-                modlog.error("User defined concentration greater than physically possible for chemical%s in experiment %s" %(chemical, experiment))
-                sys.exit()
-        except Exception:
-            pass
-        #The code will update the minimum volume to meet the lower bound set by the user
-        try: 
-            reagconc = (rdata.concs['conc_chem%s' %chemical])
-            userdefinedmin = (userlimits['chem%s_molarmin'%chemical])
-            absmaxconc = absmaxcondet(rdict, reagent, chemical, reagentlist)
-            if userdefinedmin >= 0:
-                if reagconc < absmaxconc: 
-                    pass
-                else:
-                    volminnew = userdefinedmin / reagconc * volmax
-                    possibleminvolumes.append(int(volminnew))
-            elif userdefinedmax <= absmaxconc:
-                pass
-            else: pass
-        except Exception:
-            pass
+#    for chemical in chemicals:
+#        #The code will update the maximum volume to meet the upper bound set by the user
+#        try: 
+#            maxconc = maxconcdet(rdict, reagent, chemical)
+#            absmaxconc = absmaxcondet(rdict, reagent, chemical, reagentlist)
+#            userdefinedmax = (userlimits['chem%s_molarmax'%chemical])
+#            # Update the constraints / limits on the total volume of this reagent to fit within the restrictions that the user might have set
+#            if userdefinedmax <= maxconc:
+#                volmaxnew = userdefinedmax / maxconc * volmax
+#                possiblemaxvolumes.append(int(volmaxnew))
+#            # If other reagents in the portion of the reaction can access higher concentrations, don't error out
+#            elif userdefinedmax <= absmaxconc:
+#               pass
+#            else: 
+#                #In the case where this upperbound cannot be met the user has overconstrained the system
+#                modlog.error("User defined concentration greater than physically possible for chemical%s in experiment %s" %(chemical, experiment))
+#                sys.exit()
+#        except Exception:
+#            pass
+#        #The code will update the minimum volume to meet the lower bound set by the user
+#        try: 
+#            reagconc = (rdata.concs['conc_chem%s' %chemical])
+#            userdefinedmin = (userlimits['chem%s_molarmin'%chemical])
+#            absmaxconc = absmaxcondet(rdict, reagent, chemical, reagentlist)
+#            if userdefinedmin >= 0:
+#                if reagconc < absmaxconc: 
+#                    pass
+#                else:
+#                    volminnew = userdefinedmin / reagconc * volmax
+#                    possibleminvolumes.append(int(volminnew))
+#            elif userdefinedmax <= absmaxconc:
+#                pass
+#            else: pass
+#        except Exception:
+#            pass
     # Take the values determined from the user constraints and pass along the relevant value to the calling function
     if (min(possiblemaxvolumes)) != volmax:
         # Flag that there are constraints so that the user is aware they are limiting the total physical space artificially
@@ -168,7 +163,7 @@ def calcvollimitdf(rdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, r
     # Look at each chemical in the chemical list of the reagent
     for chemical in chemicals:
         try: #Potentially could be an if statement, but the search for the chem#_molarmax or chem#_molarmin will fail if no value is set a workaround could be to set hard coded far limits and flag errors
-            header = 'mmol_chemical%s' %chemical
+            header = 'mmol_%s' %chemical
             chemconc = rdata.concs['conc_chem%s' %chemical]
             # calculate the remaining mmols of the chemical  based on the user set limits
             volmaxdf = ((rxndict['chem%s_molarmax' %chemical]*rvolmax/1000)-finalsummedmmols[header]) / chemconc * 1000
@@ -177,7 +172,7 @@ def calcvollimitdf(rdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, r
             pass
     # do it all again for the minimums, ensure that the user set minimums are met if this is the final reagent with a particular chemical
         try:
-            header = 'mmol_chemical%s' %chemical
+            header = 'mmol_%s' %chemical
             chemconc = rdata.concs['conc_chem%s' %chemical]
             volmindf = ((rxndict['chem%s_molarmin' %chemical]*rvolmax/1000)-finalsummedmmols[header]) / chemconc * 1000
             volmindf[volmindf < 0] = 0
@@ -216,7 +211,7 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                 # Returns datafram of volumes of each reagent added to each experiment
                 rdf = initialrdf(rvolmax, rvolmin, reagent, wellnum)
                 # Returns mmol specified dataframe for each experiment, reagent, and chemical (<-- values are in the header) have been generated for this portion of the experiment
-                mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 reagentcount+=1
                 pass
             #operate within the available ranges taken from the previous constraints
@@ -226,7 +221,7 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                 rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
                 # Since each volume maximum is different, need to sample the remaining reagents independently (thus different sampling) 
                 rdf = rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum)
-                mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 reagentcount+=1
                 pass
             # Ensure that the final round meets the lower bounds and upper bound total fill volume requirements of the user
@@ -236,12 +231,12 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                     rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
                     reagentname = "Reagent%s (ul)" %reagent
                     rdf = pd.DataFrame(rvolmaxdf, columns=[reagentname])
-                    mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                    mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 else:
                     rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
                     rvolmindf = ensuremin(rvolmindf, finalrdf, finalvolmin)
                     rdf = rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum)
-                    mmoldf = mmolextension(rxndict, (rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                    mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
                 reagentcount+=1
             else: 
                 modlog.error("Fatal error.  Unable to effectively parse reagent%s in portion %s.  Please make sure that the selected values make chemical sense!" %(reagent, portion))
@@ -257,36 +252,6 @@ def ensuremin(rvolmindf, finalrdf, finalvolmin):
     trumindf = finalvolmin - currvoldf
     rvolmindf[rvolmindf < trumindf] = trumindf
     return(rvolmindf)
-
-def mmolextension(rxndict, reagentdf, rdict, experiment, reagent):
-    mmoldf = (pd.DataFrame(reagentdf))
-    portionmmoldf = pd.DataFrame()
-    for chemlistlocator, conc in (rdict['%s' %reagent].concs.items()):
-        listposition = chemlistlocator.split('m')[1]
-        chemnameint = int(listposition)
-        truechemicallist = (rxndict['Reagent%s_chemical_list'%reagent])
-        truechemname = truechemicallist[chemnameint-1]
-        newmmoldf = mmoldf * conc / 1000
-        newmmoldf.rename\
-            (columns={'Reagent%s (ul)'%reagent:'mmol_experiment%s_reagent%s_chemical%s' \
-                %(experiment, reagent, truechemname)}, inplace=True)
-        portionmmoldf = pd.concat([portionmmoldf, newmmoldf], axis=1)
-    return(portionmmoldf)
-
-def finalmmolsums(chemicals, mmoldf):
-    finalsummedmmols = pd.DataFrame()
-    for chemical in chemicals:
-        cname = 'chemical%s' %chemical
-        coutname = 'chemical%s [M]' %chemical  # The technical output of this function is a mmol, simplier to rename the columns here
-        tempdf = pd.DataFrame()
-        for header in mmoldf.columns:
-            if cname in header:
-                tempdf = pd.concat([tempdf, mmoldf[header]], axis=1)
-        summedmmols = pd.DataFrame(tempdf.sum(axis=1))
-        summedmmols.columns = [coutname]
-        finalsummedmmols = pd.concat([finalsummedmmols, summedmmols], axis=1)
-    finalsummedmmols.fillna(value=0, inplace=True) # Total mmmols added of each chemical in previous reagent additions
-    return(finalsummedmmols)
 
 def preprocess(chemdf, rxndict, edict, rdict, climits):
     ''' generates a set of random reactions within given reagent and user constraints
@@ -321,10 +286,9 @@ def preprocess(chemdf, rxndict, edict, rdict, climits):
     erdf.fillna(value=0, inplace=True)
     #Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
-    clist = (chemicallist(rxndict))
+    clist = chemical.exp_chem_list(rdict)
     # Final nominal molarity for each reagent in each well
-    # Final nominal molarity for each reagent in each well
-    emsumdf = finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
+    emsumdf = calcs.finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
     emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
 #    plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
     #combine the experiments for the tray into one full set of volumes for all the wells on the plate

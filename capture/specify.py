@@ -6,7 +6,7 @@ import json
 import logging
 from pandas import ExcelWriter
 
-from capture.prepare import interface
+from capture.prepare import reagent_interface as interface
 from capture.testing import inputvalidation
 from capture.generate import generator
 from capture.models import reagent
@@ -27,9 +27,10 @@ def datapipeline(rxndict, vardict):
     '''
     modlog = logging.getLogger('capture.specify.datapipeline')
     inputvalidation.prebuildvalidation(rxndict)
-    chemdf=chemical.ChemicalData() #Dataframe with chemical information from gdrive
+    chemdf=chemical.ChemicalData(vardict['chemsheetid'],vardict['chem_workbook_index']) #Dataframe with chemical information from gdrive
+    reagentdf = reagent.ReagentData(vardict['reagentsheetid'], vardict['reagent_workbook_index'])
     climits = chemical.chemicallimits(rxndict) #Dictionary of user defined chemical limits
-    rdict=reagent.buildreagents(rxndict, chemdf, vardict['solventlist']) 
+    rdict=reagent.buildreagents(rxndict, chemdf, reagentdf, vardict['solventlist']) 
     rxndict['totalexperiments'] = exptotal(rxndict, rdict)
     edict = exppartition(rxndict) 
     inputvalidation.postbuildvalidation(rxndict,rdict,edict) 
@@ -51,6 +52,7 @@ def datapipeline(rxndict, vardict):
 
     #generate
     if vardict['challengeproblem'] == 0:
+        #Create experiment file and relevant experiment associated data
         (erdf, robotfile, secfilelist) = generator.expgen(vardict, chemdf, \
             rxndict, edict, rdict, climits)
         # disable uploading if debug is activated 
@@ -58,19 +60,26 @@ def datapipeline(rxndict, vardict):
             pass
         else:            
             modlog.info('Starting file preparation for upload')
-            #prepare
-            (PriDir, secdir, filedict) = googleio.genddirectories(rxndict,vardict['targetfolder'])
-            (reagentinterfacetarget, gspreadauth) = googleio.gsheettarget(filedict)
-            finalexportdf = interface.reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf)
-            sheetobject = interface.reagent_interface_upload(rxndict, vardict, finalexportdf, \
-                gspreadauth, reagentinterfacetarget)
-            interface.reagent_prep_pipeline(rdict, sheetobject, vardict['max_robot_reagents'])
-            if vardict['debug'] == 2:
+            # Lab specific handling - different labs require different files for tracking
+            if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
+                (PriDir, secdir, filedict) = googleio.genddirectories(rxndict,vardict['targetfolder'], vardict['filereqs'])
+                (reagentinterfacetarget, gspreadauth) = googleio.gsheettarget(filedict)
+                #abstract experiment data to reagent level (generate reagent preparation based on user requests)
+                finalexportdf = interface.reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf)
+                sheetobject = interface.reagent_interface_upload(rxndict, vardict, finalexportdf, \
+                    gspreadauth, reagentinterfacetarget)
+                interface.reagent_prep_pipeline(rdict, sheetobject, vardict['max_robot_reagents'])
+            elif rxndict['lab'] == "ECL": 
+                (PriDir, secdir, filedict) = googleio.genddirectories(rxndict,vardict['targetfolder'], vardict['filereqs'])
+                modlog.warn('User selected ECL run, no reagent interface generated.  Please ensure the JSON is exported from ECL!')
                 pass
             else:
-                googleio.GupFile(PriDir, secdir, secfilelist, [robotfile], \
-                    rxndict['RunID'], rxndict['logfile'])
-                modlog.info('File upload completed successfully')
+                modlog.error('User selected a lab that was not supported.  Closing run')
+                sys.exit()
+        logfile = '%s/%s'%(os.getcwd(),rxndict['logfile'])
+        googleio.GupFile(PriDir, secdir, secfilelist, [robotfile], \
+            rxndict['RunID'], logfile)
+        modlog.info('File upload completed successfully')
     modlog.info("Job Creation Complete")
     print("Job Creation Complete")
 

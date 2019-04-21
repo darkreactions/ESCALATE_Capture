@@ -1,7 +1,7 @@
 # devconfig.py
 
 #version control
-RoboVersion = 2.2
+RoboVersion = 2.3
 
 # Hard coded limits
 max_robot_reagents = 7
@@ -13,8 +13,21 @@ volspacing = 10 #reagent microliter (uL) spacing between points in the stateset
 # assumes only 1 liquid / reagent
 solventlist = ['GBL', 'DMSO', 'DMF', 'FAH'] #ya, I know FAH isn't a solvent, but it makes programming easier
 
-# Gdrive target folder for rendering
-targetfolder = '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe'
+# lab file requirements list
 
+# Gdrive target folder for rendering
+targetfolder = '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe' #target folder for run generation
+chemsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+chem_workbook_index = 0
+reagentsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+reagent_workbook_index = 1
+reagent_interface_amount_startrow = 15
+
+def labfiles(lab):
+    if lab == "LBL" or lab == "HC":
+        filereq = ['CrystalScoring','ExpDataEntry',]
+    if lab == 'ECL':
+        filereq = ['CrystalScoring']
+    return(filereq)
 
 

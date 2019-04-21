@@ -16,7 +16,7 @@ def sumreagents(erdf, deadvolume):
         reagent_volume_dict[reagentname] = reagent_volume
     return(reagent_volume_dict)
 
-def preparationdf(rxndict, chemicalnamedf, sumreagentsdict, liquidlist, maxreagentchemicals, chemdf):
+def preparationdf(rdict, chemicalnamedf, sumreagentsdict, liquidlist, maxreagentchemicals, chemdf):
     ''' calculate the mass of each chemical return dataframe
 
     :param chemdf:  Chemical data frame from google drive.  
@@ -51,14 +51,16 @@ def preparationdf(rxndict, chemicalnamedf, sumreagentsdict, liquidlist, maxreage
                 pass
             else:
                 #calculate reagent amounts from formula
+                reagentnum = str(reagentname.split('t')[1])
+#                print(rdict[reagentnum].concs['conc_item%s'%(itemcount)])
                 modlog.info(('Formula target was', chemabbr, reagentname, \
-                    rxndict['%s_item%s_formulaconc' %(reagentname, itemcount)]))
-                modlog.info((index, 'calc value = ', sumreagentsdict[reagentname]/1000/1000 * \
-                    rxndict['%s_item%s_formulaconc' %(reagentname, itemcount)] * \
+                    rdict[reagentnum].concs['conc_item%s' %(itemcount)]))
+                modlog.info(('row index =', index, 'calc value = ', sumreagentsdict[reagentname]/1000/1000 * \
+                    rdict[reagentnum].concs['conc_item%s' %(itemcount)] * \
                     float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])
                     ))
                 nominalamount = (sumreagentsdict[reagentname]/1000/1000 * \
-                    rxndict['%s_item%s_formulaconc' %(reagentname, itemcount)] * \
+                    rdict[reagentnum].concs['conc_item%s' %(itemcount)] * \
                     float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])
                     ).round(2)
                 nominalsdf.loc[index, "nominal_amount"] =  nominalamount
@@ -104,16 +106,14 @@ def chemicalnames(rxndict, rdict, chemdf, maxreagentchemicals, maxreagents):
             chemicalnamelist.append('Final Volume = ')
             reagentnamelist.append('Reagent%s' %reagentnum)
             for chemical in reagentobject.chemicals:
-                chemicalname = rxndict['chem%s_abbreviation' %chemical]
+                chemicalnamelist.append(chemical)
                 reagentnamelist.append('Reagent%s' %reagentnum)
-                chemicalnamelist.append(chemicalname)
                 count+=1
             while count < maxreagentchemicals:
                 chemicalnamelist.append('null')
                 reagentnamelist.append('Reagent%s' %reagentnum)
                 count+=1
             else: pass
-#    chemicalnamedf = pd.DataFrame(chemicalnamelist, columns=['Chemical Abbreviation (In order of addition)'])
     chemicalnamedf = pd.DataFrame(chemicalnamelist, columns=['chemabbr'])
     reagentnamedf = pd.DataFrame(reagentnamelist, columns=['reagentnames'])
     chemicalnamedf = pd.concat([chemicalnamedf, reagentnamedf], axis=1)
@@ -137,7 +137,7 @@ def reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf):
     chemicalnamedf = chemicalnames(rxndict, rdict, chemdf, vardict['maxreagentchemicals'], \
         vardict['max_robot_reagents'])
     sumreagentsdict = sumreagents(erdf, rxndict['reagent_dead_volume']*1000)
-    nominalsdf = preparationdf(rxndict, chemicalnamedf, sumreagentsdict, vardict['solventlist'], \
+    nominalsdf = preparationdf(rdict, chemicalnamedf, sumreagentsdict, vardict['solventlist'], \
         vardict['maxreagentchemicals'], chemdf)
     finalexportdf = (pd.concat([chemicalnamedf, nominalsdf], axis=1))
     return(finalexportdf)
@@ -162,10 +162,11 @@ def reagent_interface_upload(rxndict, vardict, finalexportdf, gc, val):
     sheetobject.update_acell('B12', 'null')
 
     #adaptive row specification (easier updates)
-    rowend = len(finalexportdf.index) + 14
+    rowstart = vardict['reagent_interface_amount_startrow']
+    rowend = len(finalexportdf.index) + rowstart-1
 
     # Chemical abbreviations
-    chemlabeltarget = sheetobject.range('B15:B%s'%rowend)
+    chemlabeltarget = sheetobject.range('B%s:B%s'%(rowstart, rowend))
     chemlabeldf = finalexportdf['chemabbr']
     chemlabellist = chemlabeldf.values.tolist()
     count = 0
@@ -175,7 +176,7 @@ def reagent_interface_upload(rxndict, vardict, finalexportdf, gc, val):
     sheetobject.update_cells(chemlabeltarget)
 
     #Formula amounts of materials to generate the objects
-    amounttarget = sheetobject.range('C15:C%s'%rowend)
+    amounttarget = sheetobject.range('C%s:C%s'%(rowstart, rowend))
     amountdf = finalexportdf['nominal_amount']
     amountlist = amountdf.values.tolist()
     count = 0
@@ -185,7 +186,7 @@ def reagent_interface_upload(rxndict, vardict, finalexportdf, gc, val):
     sheetobject.update_cells(amounttarget)
 
     # export unit labels
-    unittarget = sheetobject.range('E15:E%s'%rowend)
+    unittarget = sheetobject.range('E%s:E%s'%(rowstart, rowend))
     unitdf = finalexportdf['Unit']
     unitlist = unitdf.values.tolist()
     count = 0
@@ -195,7 +196,7 @@ def reagent_interface_upload(rxndict, vardict, finalexportdf, gc, val):
     sheetobject.update_cells(unittarget)
 
     #correctly send out nulls for "actuals" column
-    nulltarget = sheetobject.range('D15:D%s'%rowend)
+    nulltarget = sheetobject.range('D%s:D%s'%(rowstart, rowend))
     nulldf = finalexportdf['actualsnull']
     nulllist = nulldf.values.tolist()
     nlsexport = [x if x == 'null' else '' for x in nulllist]
@@ -279,14 +280,12 @@ def reagent_prep_pipeline(rdict, sheetobject, maxreagents):
         sheetobject.update_acell('H39', 'null')
 
 def PrepareDirectoryCP(uploadlist, secfilelist, runID, logfile, rdict, targetfolder):
-    scope= ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc =gspread.authorize(credentials)
+#    scope= ['https://spreadsheets.google.com/feeds']
+#    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
+#    gc =gspread.authorize(credentials)
     tgt_folder_id= targetfolder
     PriDir=googleio.DriveCreateFolder(runID, tgt_folder_id)
-    file_dict=googleio.DriveAddTemplates(PriDir, runID)#, targetfolder)
-    subfold_name = "%s_submissions" %runID
-    subdir = googleio.DriveCreateFolder(subfold_name, PriDir)
+    googleio.DriveAddTemplates(PriDir, runID, []) # copies metadata from current template (leaves the rest)
     secfold_name = "%s_subdata" %runID
     secdir = googleio.DriveCreateFolder(secfold_name, PriDir)
     googleio.GupFile(PriDir, secdir, secfilelist, uploadlist, runID, logfile)

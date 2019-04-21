@@ -1,7 +1,7 @@
 # devconfig.py
 
 #version control
-RoboVersion = 2.3
+RoboVersion = 2.4
 
 # Hard coded limits
 max_robot_reagents = 7

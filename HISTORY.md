@@ -62,7 +62,10 @@ RELEASE HISTORY
   * Reagents can be specified by model OR user input (not both)
   * Simplified chemical specification through inclusion in reagent list
   * Updated templates to reflect new interface architecture 
+  * Cleaned up files dumping to google drive
 
-2.3.1 (ongoing)
+2.4 (2019-04-20)
 ----------------------------
-  * Added additional input testing - ensure that user entries are valid
+  * Meta data patch
+  * Updated versioning 
+  * updated templates

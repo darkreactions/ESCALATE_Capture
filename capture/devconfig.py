@@ -1,7 +1,7 @@
 # devconfig.py
 
 #version control
-RoboVersion = 2.3
+RoboVersion = 2.4
 
 # Hard coded limits
 max_robot_reagents = 7
@@ -25,9 +25,9 @@ reagent_interface_amount_startrow = 15
 
 def labfiles(lab):
     if lab == "LBL" or lab == "HC":
-        filereq = ['CrystalScoring','ExpDataEntry',]
+        filereq = ['CrystalScoring','ExpDataEntry','metadata.json']
     if lab == 'ECL':
-        filereq = ['CrystalScoring']
+        filereq = ['CrystalScoring','metadata.json']
     return(filereq)
 
 

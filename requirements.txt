@@ -51,7 +51,6 @@ tornado==5.1.1
 typed-ast==1.1.0
 typing==3.6.4
 uritemplate==3.0.0
-urllib3==1.23
 websocket-client==0.54.0
 wrapt==1.11.1
 xlrd==1.2.0

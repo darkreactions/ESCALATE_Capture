@@ -8,6 +8,7 @@
 *.json
 *.xls
 *.xlsx
+.idea/*
 mycred.txt
 creds.json
 client_secrets.json

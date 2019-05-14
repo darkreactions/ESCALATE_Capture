@@ -17,7 +17,7 @@ modlog = logging.getLogger('initialize.googleio')
 
 ##Authentication for pydrive, designed globally to minimally generate token (a slow process)
 gauth = GoogleAuth()
-gauth.LoadCredentialsFile("localfiles/mycred.txt")
+gauth.LoadCredentialsFile("./capture/localfiles/mycred.txt")
 if gauth.credentials is None:
     gauth.LocalWebserverAuth() #Creates local webserver and auto handles authentication.
 elif gauth.access_token_expired:

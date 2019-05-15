@@ -106,7 +106,7 @@ def calcvollimit(userlimits, rdict, volmax, volmin, experiment, reagentlist, rea
         # Flag that there are constraints so that the user is aware they are limiting the total physical space artificially
         modlog.warning("User has constrained the maximum search space by lowering the maximum value for a chemical in experiment %s reagent %s, be sure this is intentional" % (experiment, reagent))
         volmax = min(possiblemaxvolumes)
-    if (max(possibleminvolumes)) != 0:
+    if (max(possibleminvolumes)) != volmin:
         modlog.warning("User has constrained the maximum search space by raising the minimum value for a chemical in experiment %s reagent %s, be sure this is intentional" % (experiment, reagent))
         volmin = max(possibleminvolumes)
     else: pass
@@ -204,8 +204,13 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
         for reagent in portion:
             finalvolmin = vollimits[portionnum][0]
             volmin = 0
-            # Unique set of requirements for the first entry
             if reagentcount == 1:
+                if len(portion) == 1:
+                    volmin = vollimits[portionnum][0]
+                    volmax = vollimits[portionnum][1]+0.00001
+                    print(volmin)
+                else:
+                    print(volmin)
                 # since all of the volume limits for the first draw are the same these can be treated as a bounded search sequence
                 rvolmax, rvolmin = calcvollimit(userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum)
                 # Returns datafram of volumes of each reagent added to each experiment

@@ -77,7 +77,7 @@ def datapipeline(rxndict, vardict):
                 modlog.error('User selected a lab that was not supported.  Closing run')
                 sys.exit()
         logfile = '%s/%s'%(os.getcwd(),rxndict['logfile'])
-        googleio.GupFile(PriDir, secdir, secfilelist, [robotfile], \
+        googleio.GupFile(PriDir, secdir, secfilelist, robotfile, \
             rxndict['RunID'], logfile)
         modlog.info('File upload completed successfully')
     modlog.info("Job Creation Complete")

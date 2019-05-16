@@ -203,14 +203,12 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
         finalmmoldf = pd.DataFrame()
         for reagent in portion:
             finalvolmin = vollimits[portionnum][0]
-            volmin = 0
             if reagentcount == 1:
                 if len(portion) == 1:
                     volmin = vollimits[portionnum][0]
                     volmax = vollimits[portionnum][1]+0.00001
-                    print(volmin)
                 else:
-                    print(volmin)
+                    volmin = 0
                 # since all of the volume limits for the first draw are the same these can be treated as a bounded search sequence
                 rvolmax, rvolmin = calcvollimit(userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum)
                 # Returns datafram of volumes of each reagent added to each experiment

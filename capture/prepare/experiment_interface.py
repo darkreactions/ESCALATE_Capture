@@ -73,6 +73,29 @@ def MakeWellList(platecontainer, wellcount):
     df_VialInfo = df_VialInfo.truncate(after=(wellcount-1))
     return(df_VialInfo)
 
+def MakeWellList_WF3(platecontainer, wellcount):
+    wellorder=['A', 'C', 'E', 'G'] 
+    wellorder2=['B', 'D', 'F', 'H'] 
+    VialList=[]
+    welllimit=wellcount/4+1
+    count=1
+    while count<welllimit:
+        for item in wellorder:
+            countstr=str(count)
+            Viallabel=item+countstr
+            VialList.append(Viallabel)
+        count+=1
+        for item in wellorder2:
+            countstr=str(count)
+            Viallabel=item+countstr
+            VialList.append(Viallabel)
+        count+=1
+    df_VialInfo=pd.DataFrame(VialList)
+    df_VialInfo.columns=['Vial Site']
+    df_VialInfo['Labware ID:']=platecontainer 
+    df_VialInfo = df_VialInfo.truncate(after=(wellcount-1))
+    return(df_VialInfo)
+
 def WF3_split(erdf, splitreagents):
     new_rows = len(erdf)*2
     new_cols = len(erdf.columns)
@@ -148,11 +171,13 @@ def LBLrobotfile(rxndict, vardict, erdf):
     df_conditions=pd.DataFrame(data=Conditions)
     robotfiles = []
     if rxndict['ExpWorkflowVer'] == 3:
-        df_Tray=MakeWellList(rxndict['plate_container'], rxndict['wellcount']*2)
+        # For WF3 tray implementation to work
+        df_Tray2=MakeWellList_WF3(rxndict['plate_container'], rxndict['wellcount']*2)
         erdf_new = WF3_split(erdf,rxndict['exp1_split'])
-        df_Tray=MakeWellList(rxndict['plate_container'], rxndict['wellcount']*1)
-        outframe1=pd.concat([df_Tray.iloc[:,0],erdf_new,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
+        outframe1=pd.concat([df_Tray2.iloc[:,0],erdf_new,df_Tray2.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
         robotfile = ("localfiles/%s_RUNME_RobotFile.xls" %rxndict['RunID'])
+        ## For report code to work
+        df_Tray=MakeWellList(rxndict['plate_container'], rxndict['wellcount']*1)
         outframe2=pd.concat([df_Tray.iloc[:,0],erdf,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
         robotfile2 = ("localfiles/%s_RobotInput.xls" %rxndict['RunID'])
         outframe1.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)

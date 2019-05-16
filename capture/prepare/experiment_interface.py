@@ -1,7 +1,9 @@
 import pandas as pd
+import numpy as np
 import logging
+import sys
 
-modlog = logging.getLogger('capture.prepare.interface_nimbus4')
+modlog = logging.getLogger('capture.prepare.experiment_model_out')
 
 #Defines what type of liquid class sample handler (pipette) will be needed for the run, these are hardcoded to the robot
 def volarray(rdf, maxr):
@@ -54,10 +56,10 @@ def ecl_temp(rdict):
 #Future versions could do better at controlling the specific location on the tray that reagents are dispensed.  This would be place to start
 # that code overhaul
 # will not work for workflow 3
-def MakeWellList(rxndict):
+def MakeWellList(platecontainer, wellcount):
     wellorder=['A', 'C', 'E', 'G', 'B', 'D', 'F', 'H'] #order is set by how the robot draws from the solvent wells
     VialList=[]
-    welllimit=rxndict['wellcount']/8+1
+    welllimit=wellcount/8+1
     count=1
     while count<welllimit:
         for item in wellorder:
@@ -67,9 +69,59 @@ def MakeWellList(rxndict):
         count+=1
     df_VialInfo=pd.DataFrame(VialList)
     df_VialInfo.columns=['Vial Site']
-    df_VialInfo['Labware ID:']=rxndict['plate_container'] 
-    df_VialInfo = df_VialInfo.truncate(after=(rxndict['wellcount']-1))
+    df_VialInfo['Labware ID:']=platecontainer 
+    df_VialInfo = df_VialInfo.truncate(after=(wellcount-1))
     return(df_VialInfo)
+
+def MakeWellList_WF3(platecontainer, wellcount):
+    wellorder=['A', 'C', 'E', 'G'] 
+    wellorder2=['B', 'D', 'F', 'H'] 
+    VialList=[]
+    welllimit=wellcount/4+1
+    count=1
+    while count<welllimit:
+        for item in wellorder:
+            countstr=str(count)
+            Viallabel=item+countstr
+            VialList.append(Viallabel)
+        count+=1
+        for item in wellorder2:
+            countstr=str(count)
+            Viallabel=item+countstr
+            VialList.append(Viallabel)
+        count+=1
+    df_VialInfo=pd.DataFrame(VialList)
+    df_VialInfo.columns=['Vial Site']
+    df_VialInfo['Labware ID:']=platecontainer 
+    df_VialInfo = df_VialInfo.truncate(after=(wellcount-1))
+    return(df_VialInfo)
+
+def WF3_split(erdf, splitreagents):
+    new_rows = len(erdf)*2
+    new_cols = len(erdf.columns)
+    erdf_new = pd.DataFrame(np.zeros((new_rows, new_cols)), columns=erdf.columns)
+    splitcols = []
+    normalcols = []
+    for column in erdf.columns:
+        if any(item in column for item in splitreagents):
+            splitcols.append(column)
+        else:
+            normalcols.append(column)
+    count = 0
+    count2 = 0
+    erdf_normals = erdf[normalcols]
+    erdf_splits = erdf[splitcols]
+    for index, row in erdf.iterrows():
+        erdf_new.loc[count2] = erdf_normals.loc[index]
+        erdf_new.loc[count2+4] = erdf_splits.loc[index]
+        count2 +=1
+        count+=1
+        if count == 4:
+            count2+=4
+            count=0
+    erdf_new2 = (erdf_new.fillna(value=0))
+    return(erdf_new2)
+
 
 def cleanvolarray(erdf, maxr):
     ''' converts reagent volume dataframe to returns dataframe compatible with max reagents supported by nimbus4
@@ -105,7 +157,6 @@ def LBLrobotfile(rxndict, vardict, erdf):
     reagent in each experiment to be performed.  The rxndict and vardict should be identical to what was
     created in the original input files.  
     '''
-    df_Tray=MakeWellList(rxndict)
     vol_ar=volarray(erdf, vardict['max_robot_reagents'])
     Parameters={
     'Reaction Parameters':['Temperature (C):','Stir Rate (rpm):','Mixing time1 (s):','Mixing time2 (s):', 'Reaction time (s):',""], 
@@ -118,10 +169,27 @@ def LBLrobotfile(rxndict, vardict, erdf):
     'Reagent Temperature':[rxndict['reagents_prerxn_temperature']]*len(vol_ar)}
     df_parameters=pd.DataFrame(data=Parameters)
     df_conditions=pd.DataFrame(data=Conditions)
-    outframe=pd.concat([df_Tray.iloc[:,0],erdf,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
-    robotfile = ("localfiles/%s_RobotInput.xls" %rxndict['RunID'])
-    outframe.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
-    return(robotfile) 
+    robotfiles = []
+    if rxndict['ExpWorkflowVer'] == 3:
+        # For WF3 tray implementation to work
+        df_Tray2=MakeWellList_WF3(rxndict['plate_container'], rxndict['wellcount']*2)
+        erdf_new = WF3_split(erdf,rxndict['exp1_split'])
+        outframe1=pd.concat([df_Tray2.iloc[:,0],erdf_new,df_Tray2.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
+        robotfile = ("localfiles/%s_RUNME_RobotFile.xls" %rxndict['RunID'])
+        ## For report code to work
+        df_Tray=MakeWellList(rxndict['plate_container'], rxndict['wellcount']*1)
+        outframe2=pd.concat([df_Tray.iloc[:,0],erdf,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
+        robotfile2 = ("localfiles/%s_RobotInput.xls" %rxndict['RunID'])
+        outframe1.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
+        outframe2.to_excel(robotfile2, sheet_name='NIMBUS_reaction', index=False)
+        robotfiles.append(robotfile)
+        robotfiles.append(robotfile2)
+    else:
+        outframe=pd.concat([df_Tray.iloc[:,0],erdf,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
+        robotfile = ("./capture/localfiles/%s_RobotInput.xls" %rxndict['RunID'])
+        robotfiles.append(robotfile)
+        outframe.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
+    return(robotfiles) 
 
 def reagent_id_list(rxndict):
     reagentidlist=[]
@@ -142,7 +210,7 @@ def ECLrobotfile(rxndict, vardict, rdict, erdf):
 
     Reagent identity in rxndict must be specified as and ECL model ID
     '''
-    df_Tray=MakeWellList(rxndict)
+    df_Tray=MakeWellList(rxndict['plate_container'], rxndict['wellcount'])
     Parameters={
     'Reaction Parameters':['Temperature (C):','Stir Rate (rpm):','Mixing time1 (s):','Mixing time2 (s):', 'Reaction time (s):',""], 
     'Parameter Values':[rxndict['temperature2_nominal'], rxndict['stirrate'], rxndict['duratation_stir1'], rxndict['duratation_stir2'], rxndict['duration_reaction'] ,''],

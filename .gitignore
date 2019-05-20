@@ -9,7 +9,7 @@
 *.xls
 *.xlsx
 .idea/*
-mycred.txt
+**/mycred.txt
 creds.json
 client_secrets.json
 __pycache__/

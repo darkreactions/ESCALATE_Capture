@@ -94,8 +94,9 @@ if __name__ == "__main__":
     #else:
     #    linkfile = str(args.escalation) + '.link.csv'
 
-    if not os.path.exists('localfiles'):
-        os.mkdir('localfiles')
+    # if not os.path.exists('localfiles'):
+    #     os.mkdir('localfiles')
+
     rxndict, vardict = init.runuidgen(rxndict, vardict) 
     loggerfile=init.buildlogger(rxndict)
     rxndict['logfile']=loggerfile

@@ -6,8 +6,9 @@
 ### https://stackoverflow.com/questions/24419188/automating-pydrive-verification-process
 
 import logging
-import gspread
+import os
 
+import gspread
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from oauth2client.service_account import ServiceAccountCredentials
@@ -15,17 +16,31 @@ from capture.googleapi import googleio
 
 modlog = logging.getLogger('initialize.googleio')
 
-##Authentication for pydrive, designed globally to minimally generate token (a slow process)
+##############################################################################################
+### Authentication for pydrive, designed globally to minimally generate token (a slow process)
+##  TODO discuss where this should happen or if this google auth really should be global
+
 gauth = GoogleAuth()
-gauth.LoadCredentialsFile("./capture/localfiles/mycred.txt")
-if gauth.credentials is None:
-    gauth.LocalWebserverAuth() #Creates local webserver and auto handles authentication.
-elif gauth.access_token_expired:
-    gauth.LocalWebserverAuth() #Creates local webserver and auto handles authentication.
+
+# We have to check this path here, rather than in runme.py, if this is global because
+# global code gets executed when a module is imported
+if not os.path.exists('./capture/localfiles'):
+    os.mkdir('./capture/localfiles')
+
+# TODO put this in a config
+GOOGLE_CRED_FILE = "./capture/localfiles/mycred.txt"
+if not os.path.exists(GOOGLE_CRED_FILE):
+    open(GOOGLE_CRED_FILE, 'w+').close()
+
+gauth.LoadCredentialsFile(GOOGLE_CRED_FILE)
+if gauth.credentials is None or gauth.access_token_expired:
+    gauth.LocalWebserverAuth()  # Creates local webserver and auto handles authentication.
 else:
-    gauth.Authorize() #Just run because everything is loaded properly
-gauth.SaveCredentialsFile("./capture/localfiles/mycred.txt")
-drive=GoogleDrive(gauth)
+    gauth.Authorize()  # Just run because everything is loaded properly
+gauth.SaveCredentialsFile(GOOGLE_CRED_FILE)
+drive = GoogleDrive(gauth)
+
+##############################################################################################
 
 ##Creating template directory for later copying of relevant files
 def DriveCreateFolder(title1, tgt_folder_id):

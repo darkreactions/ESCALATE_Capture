@@ -18,22 +18,34 @@ from capture.googleapi import googleio
 # create logger
 modlog = logging.getLogger('capture.specify')
 
+
 def datapipeline(rxndict, vardict):
-    '''Main data pipeline for organizing ESCALATE funcationality
+    """Main data pipeline for organizing ESCALATE functionality
     
     Gathers experimental environment from user (rxndict), dev (vardict), 
     and googleapi for file handling.  Prepares directory and relevant files, 
     organizes function calls to orchestrate new experimental run
-    '''
+    """
+
     modlog = logging.getLogger('capture.specify.datapipeline')
+
     inputvalidation.prebuildvalidation(rxndict)
-    chemdf=chemical.ChemicalData(vardict['chemsheetid'],vardict['chem_workbook_index']) #Dataframe with chemical information from gdrive
+
+    # Dataframes with chemical/reagent information from gdrive
+    chemdf = chemical.ChemicalData(vardict['chemsheetid'], vardict['chem_workbook_index'])
     reagentdf = reagent.ReagentData(vardict['reagentsheetid'], vardict['reagent_workbook_index'])
-    climits = chemical.chemicallimits(rxndict) #Dictionary of user defined chemical limits
-    rdict=reagent.buildreagents(rxndict, chemdf, reagentdf, vardict['solventlist']) 
+
+    # dictionary of user defined chemical limits
+    climits = chemical.chemicallimits(rxndict)
+
+    # dictionary of perovskitereagent objects
+    rdict = reagent.buildreagents(rxndict, chemdf, reagentdf, vardict['solventlist'])
     rxndict['totalexperiments'] = exptotal(rxndict, rdict)
-    edict = exppartition(rxndict) 
-    inputvalidation.postbuildvalidation(rxndict,rdict,edict) 
+
+    # dictionary of experiments
+    edict = exppartition(rxndict)
+
+    inputvalidation.postbuildvalidation(rxndict, rdict, edict)
     #generate
     if vardict['challengeproblem'] == 1:
         if rxndict['totalexperiments'] > 1:

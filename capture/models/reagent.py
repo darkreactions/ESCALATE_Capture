@@ -6,56 +6,74 @@ from capture.googleapi import googleio
 from oauth2client.service_account import ServiceAccountCredentials
 
 def ReagentData(reagsheetid, reagsheetworkbook):
-    ### General Setup Information ###
-    ##GSpread Authorization information
-    scope= ['https://spreadsheets.google.com/feeds']
+    """Read the reagents workbook from Google Drive and return a pandas DataFrame
+
+    :param reagsheetid: TODO will this function ever need this? it is currently overwritten internally
+    :param reagsheetworkbook:  TODO Ian, is this an integer index of the worksheet? Unclear usage of book/sheet
+    :return reagdf: pandas DF representation of the reagent worksheet
+    """
+
+    # Setup google drive connection
+    scope = ['https://spreadsheets.google.com/feeds']
     credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc =gspread.authorize(credentials)
+    gc = gspread.authorize(credentials)
     reagsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+
+    # open sheet, or book? todo notice the inconsistencies in nomenclature here
     ReagentBook = gc.open_by_key(reagsheetid)
     reagentsheet = ReagentBook.get_worksheet(reagsheetworkbook)
     reagent_list = reagentsheet.get_all_values()
-    reagdf=pd.DataFrame(reagent_list, columns=reagent_list[0])
-    reagdf=reagdf.iloc[1:]
-    reagdf=reagdf.reset_index(drop=True)
-    reagdf=reagdf.set_index('ECL_Model_ID')
-    return(reagdf)
+
+    # Parse sheet to df
+    reagdf = pd.DataFrame(reagent_list, columns=reagent_list[0])
+    reagdf = reagdf.iloc[1:]
+    reagdf = reagdf.reset_index(drop=True)
+    reagdf = reagdf.set_index('ECL_Model_ID')
+    return reagdf
 
 
 def buildreagents(rxndict, chemdf, reagentdf, solventlist):
-    modlog = logging.getLogger('capture.models.reagent.buildreagents')
-    ''' builds dictionary of reagents based on user specifications of formulas and chemicals 
+    """
+    TODO cleanup this docstring: in one sentence _why_ do we want a reagent dict?
+    #>>> What is the structure of the k => v mapping? We might want a writeup on ALL of the dicts like this
+    #>>> See issue #46
 
+    builds dictionary of reagents based on user specifications of formulas and chemicals
     parses initial user input and generates a dictionary of reagents with relevant properties
-    '''
-    reagentdict={}
-    #find all of the reagents constructured in the run
+    """
+
+    modlog = logging.getLogger('capture.models.reagent.buildreagents')
+    reagentdict = {}
+
+    # find all of the reagents constructured in the run
     for item in rxndict:
-        #parse user specifications from user interface
+
+        # parse user specifications from user interface
         if 'Reagent' in item and "chemical_list" in item:
-            reagentname=(item.split('_'))[0]
-            ## ensure that the reagent definition is not being defined in two different ways
-            idflag = reagentname+"_ID" 
+            reagentname = (item.split('_'))[0]
+
+            # ensure that the reagent definition is not being defined in two different ways
+            idflag = reagentname + "_ID"
             if idflag in rxndict:
-                print('too many %s' %reagentname)
+                print('too many %s' % reagentname)
             else:
-                reagentvariables={}
-                reagentvariables['reagent']=reagentname
+                reagentvariables = {}
+                reagentvariables['reagent'] = reagentname
                 entry_num = reagentname.split('t')
-                for variable,value in rxndict.items(): 
+                for variable, value in rxndict.items():
                     if reagentname in variable:
-                        variable=(variable.split('_',1))
-                        reagentvariables[variable[1]]=value
+                        variable = variable.split('_', 1)
+                        reagentvariables[variable[1]] = value
                 reagent = perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)
-                # print(reagent.component_dict)
-                reagentdict[entry_num[1]]=reagent
-        #parse specifications from reagent model ID
+                reagentdict[entry_num[1]] = reagent
+
+        # parse specifications from reagent model ID
         elif "Reagent" in item and "_ID" in item:
-            reagentvariables={}
-            reagentname=(item.split('_'))[0]
+            reagentvariables = {}
+            reagentname = (item.split('_'))[0]
             entry_num = reagentname.split('t')
-            reagentid=rxndict[item]
-            reagentvariables['reagent']=reagentname
+            reagentid = rxndict[item]
+            reagentvariables['reagent'] = reagentname
             chemical_list = []
             for columnheader in reagentdf.columns:
                 if "item" and "abbreviation" in columnheader:
@@ -66,11 +84,11 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
                         chemical_list.append(chemicalname)
                 reagentvariables[columnheader] = (reagentdf.loc["%s" %reagentid, columnheader])
             reagentvariables['chemical_list'] = chemical_list
-            reagent=perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)  
-            reagentdict[entry_num[1]]=reagent
-    for k,v in reagentdict.items(): 
-        modlog.info("%s : %s" %(k,vars(v)))
-    return(reagentdict)
+            reagent = perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)
+            reagentdict[entry_num[1]] = reagent
+    for k, v in reagentdict.items():
+        modlog.info("%s : %s" % (k, vars(v)))
+    return reagentdict
 
 
 class perovskitereagent:

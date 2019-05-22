@@ -6,6 +6,7 @@ import platform
 
 #  version control
 RoboVersion = 2.5
+# TODO clearly document what all of these variables are _and why we need them_
 
 # Hard coded limits
 max_robot_reagents = 7
@@ -50,7 +51,7 @@ def labfiles(lab):
         filereq = ['CrystalScoring', 'ExpDataEntry', 'metadata.json']
     if lab == 'ECL':
         filereq = ['CrystalScoring', 'metadata.json']
-    return(filereq)
+    return filereq
 
 ######################################
 # Sampler

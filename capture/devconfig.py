@@ -7,7 +7,6 @@ import platform
 #  version control
 RoboVersion = 2.5
 # TODO clearly document what all of these variables are _and why we need them_
-
 # Hard coded limits
 max_robot_reagents = 7
 maxreagentchemicals = 3
@@ -59,3 +58,4 @@ def labfiles(lab):
 # must be 'default' or 'wolfram'
 # 'wolfram' is currently experimental and unsupported
 sampler = 'default'
+

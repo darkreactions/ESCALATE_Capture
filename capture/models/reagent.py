@@ -60,7 +60,6 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
                 reagentvariables = {}
                 reagentvariables['reagent'] = reagentname
                 entry_num = reagentname.split('t')[1]
-
                 for variable, value in rxndict.items():
                     if reagentname in variable:
                         variable = variable.split('_', 1)
@@ -89,7 +88,6 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
 
             reagentvariables['chemical_list'] = chemical_list
             reagent = perovskitereagent(reagentvariables, rxndict, entry_num, chemdf, solventlist)
-
             reagentdict[entry_num] = reagent
 
     for k, v in reagentdict.items():

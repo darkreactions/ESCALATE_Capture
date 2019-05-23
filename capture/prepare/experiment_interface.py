@@ -185,6 +185,7 @@ def LBLrobotfile(rxndict, vardict, erdf):
         robotfiles.append(robotfile)
         robotfiles.append(robotfile2)
     else:
+        df_Tray=MakeWellList(rxndict['plate_container'], rxndict['wellcount']*1)
         outframe=pd.concat([df_Tray.iloc[:,0],erdf,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
         robotfile = ("./capture/localfiles/%s_RobotInput.xls" %rxndict['RunID'])
         robotfiles.append(robotfile)

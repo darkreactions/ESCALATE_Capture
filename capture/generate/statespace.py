@@ -16,7 +16,6 @@ modlog = logging.getLogger('capture.generate.statespace')
 def default_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
     """generate a state set from the volume constraints of the experimental system ensuring that the limits are met,
     return the full df of volumes as well as the idealized conc df
-
     :param rxndict:
     :param expoverview:
     :param vollimits:
@@ -90,6 +89,7 @@ def default_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, v
 
     return prdf, finalmmoldf
 
+
 def wolfram_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
     ws = WolframSampler()
 
@@ -120,6 +120,7 @@ def wolfram_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, v
 
     ws.terminate()
     return voldf, concdf
+
 
 def chemicallist(rxndict):
 

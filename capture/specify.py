@@ -50,23 +50,21 @@ def datapipeline(rxndict, vardict):
     if vardict['challengeproblem'] == 1:
         if rxndict['totalexperiments'] > 1:
             modlog.error('Only 1 experiment for stateset generation is supported,\
-                user selected %s experiments.' %rxndict['totalexperiments'])
+                user selected %s experiments.' % rxndict['totalexperiments'])
             sys.exit()
         else:
-            (uploadlist, secfilelist) = generator.CPexpgen(vardict, chemdf, \
-                rxndict, edict, rdict, climits)
+            uploadlist, secfilelist = generator.CPexpgen(vardict, chemdf, rxndict, edict, rdict, climits)
             if vardict['debug'] == 1:
                 pass
             else:
                 #prepare
-                interface.PrepareDirectoryCP(uploadlist, secfilelist, \
+                interface.PrepareDirectoryCP(uploadlist, secfilelist,
                     rxndict['RunID'], rxndict['logfile'],rdict, vardict['targetfolder'])
 
     #generate
     if vardict['challengeproblem'] == 0:
         #Create experiment file and relevant experiment associated data
-        (erdf, robotfile, secfilelist) = generator.expgen(vardict, chemdf, \
-            rxndict, edict, rdict, climits)
+        (erdf, robotfile, secfilelist) = generator.expgen(vardict, chemdf, rxndict, edict, rdict, climits)
         # disable uploading if debug is activated 
         if vardict['debug'] == 1:
             pass

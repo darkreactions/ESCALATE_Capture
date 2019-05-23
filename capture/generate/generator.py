@@ -11,7 +11,8 @@ from capture.prepare import experiment_interface as expint
 modlog = logging.getLogger('capture.generate.generator')
 
 def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
-    (erdf, ermmoldf, emsumdf) =statespace.statepreprocess(chemdf, rxndict, edict, rdict, volspacing) 
+    """TODO What is this?"""
+    erdf, ermmoldf, emsumdf = statespace.statepreprocess(chemdf, rxndict, edict, rdict, volspacing)
     # Clean up dataframe for robot file -> create xls --> upload 
     erdfrows = erdf.shape[0]
     erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
@@ -62,7 +63,7 @@ def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
 def CPexpgen(vardict, chemdf, rxndict, edict, rdict, climits):
     '''Generate stateset and associated files
     '''
-    (emsumdf, uploadlist, secfilelist, rdict) = statepipe(vardict, chemdf, rxndict, edict, rdict, vardict['volspacing'])
+    emsumdf, uploadlist, secfilelist, rdict = statepipe(vardict, chemdf, rxndict, edict, rdict, vardict['volspacing'])
  #   if rxndict['plotter_on'] == 1:
  #       if 1 <= rxndict['ExpWorkflowVer'] < 2:
  #           plotter.plotmewf1(emsumdf, rxndict)

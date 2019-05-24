@@ -24,7 +24,9 @@ class WolframSampler:
         self.session = WolframLanguageSession()
         self.session.evaluate('<<./capture/generate/generateExperiments.wls')
         self._generateExperiments = self.session.function('generateExperiments')
+        print("\nFunctions defined in Wolfram session:")
         print(self.session.evaluate(wlexpr('Names["Global`*"]')))
+        print()
 
     def generateExperiments(self, reagentVectors, nExpt=96, maxMolarity=9., finalVolume=500.):
         """Randomly sample possible experiments in the convex hull of concentration space defined by the reagentVectors
@@ -283,7 +285,7 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
         from pprint import pprint
         print('Reagent vectors:')
         pprint(reagent_vectors)
-        print('\n"Wolfram output:"')
+        print('\nWolfram output:')
         pprint(experiments)
 
         import sys

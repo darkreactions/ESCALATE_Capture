@@ -35,6 +35,10 @@ def chemicallimits(rxndict):
     return(climits)
 
 def exp_chem_list(rdict):
+    """ extract the chemicals that were used.
+    :param rdict: see DataStructures_README.md
+    :return: a set of the chemicals used in all the experiments
+    """
     chemicalslist = []
     for reagentnum, reagentobject in rdict.items():
         for chemical in reagentobject.chemicals:

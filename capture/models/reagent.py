@@ -59,22 +59,25 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
             else:
                 reagentvariables = {}
                 reagentvariables['reagent'] = reagentname
-                entry_num = reagentname.split('t')
+                entry_num = reagentname.split('t')[1]
+
                 for variable, value in rxndict.items():
                     if reagentname in variable:
                         variable = variable.split('_', 1)
                         reagentvariables[variable[1]] = value
-                reagent = perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)
-                reagentdict[entry_num[1]] = reagent
+
+                reagent = perovskitereagent(reagentvariables, rxndict, entry_num, chemdf, solventlist)
+                reagentdict[entry_num] = reagent
 
         # parse specifications from reagent model ID
         elif "Reagent" in item and "_ID" in item:
             reagentvariables = {}
             reagentname = (item.split('_'))[0]
-            entry_num = reagentname.split('t')
+            entry_num = reagentname.split('t')[1]
             reagentid = rxndict[item]
             reagentvariables['reagent'] = reagentname
             chemical_list = []
+
             for columnheader in reagentdf.columns:
                 if "item" and "abbreviation" in columnheader:
                     chemicalname = (reagentdf.loc["%s" %reagentid, columnheader])
@@ -83,9 +86,12 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
                     else:
                         chemical_list.append(chemicalname)
                 reagentvariables[columnheader] = (reagentdf.loc["%s" %reagentid, columnheader])
+
             reagentvariables['chemical_list'] = chemical_list
-            reagent = perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)
-            reagentdict[entry_num[1]] = reagent
+            reagent = perovskitereagent(reagentvariables, rxndict, entry_num, chemdf, solventlist)
+
+            reagentdict[entry_num] = reagent
+
     for k, v in reagentdict.items():
         modlog.info("%s : %s" % (k, vars(v)))
     return reagentdict

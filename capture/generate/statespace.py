@@ -144,6 +144,7 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
     modlog.info('Making a total of %s unique experiments on the tray' %rxndict['totalexperiments'])
     erdf = pd.DataFrame() 
     ermmoldf = pd.DataFrame()
+
     while experiment < rxndict['totalexperiments'] + 1:
         modlog.info('Initializing dataframe construction for experiment %s' %experiment)
         experimentname = 'exp%s' % experiment
@@ -153,7 +154,6 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
                     wellnum = int(v)
                 if 'vols' in k:
                     vollimits = v
-
 
         modlog.info('Building reagent state space for experiment %s using reagents %s' %(experiment, edict[experimentname]))
         modlog.warning('Well count will be ignored for state space creation!  Please disable CP run if this incorrect')
@@ -165,11 +165,13 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
         else:
             modlog.error('Unexpected sampler in devconfig: {}. Quitting.'.format(config.sampler))
             sys.exit(1)
+
         erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
         ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
         # Return the reagent data frame with the volumes for that particular portion of the plate
         modlog.info('Succesfully built experiment %s stateset' %(experiment))
         experiment+=1
+
     #Final reagent volumes dataframe
     erdf.fillna(value=0, inplace=True)
     #Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
@@ -186,4 +188,5 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
     modlog.info('Begin combining the experimental volume dataframes')
 #    for chemical in rdict['2'].chemicals:
 #        print(rxndict['chem%s_abbreviation' %chemical])
-    return(erdf,ermmoldf,emsumdf)
+
+    return erdf, ermmoldf, emsumdf

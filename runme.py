@@ -108,6 +108,7 @@ if __name__ == "__main__":
 
     # TODO these interdependencies are sloppy, separate concerns
     # >>> also, what is lab? I'm not sure what this label is referencing...
+    #  It is reference which lab is this experiment going to be run at. LBL, HC, etc.
     vardict['filereqs'] = devconfig.labfiles(rxndict['lab'])
 
     # TODO dicts can be modified in place

@@ -46,7 +46,8 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
                     if reagentname in variable:
                         variable=(variable.split('_',1))
                         reagentvariables[variable[1]]=value
-                reagent=perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist) 
+                reagent = perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)
+                # print(reagent.component_dict)
                 reagentdict[entry_num[1]]=reagent
         #parse specifications from reagent model ID
         elif "Reagent" in item and "_ID" in item:
@@ -78,12 +79,13 @@ class perovskitereagent:
     numerically order reagents specified by the user are associated with calculated values 
     attributes all of the properties of the reagent should be contained within this object
     '''
-    def __init__(self, reactantinfo, rxndict, reagentnumber, chemdf, solventlist):
+    def __init__(self, reactantinfo, rxndict, reagentnumber, chemdf, solvent_list):
         self.name = reagentnumber # reag1, reag2, etc
         self.chemicals = reactantinfo['chemical_list'] # list of the chemicals in this reagent
         self.concs = self.concentrations(reactantinfo, chemdf, rxndict) 
         self.ispurebool = self.ispure()
-        self.solventnum = self.solvent(solventlist)
+        self.solventnum = self.solvent(solvent_list)
+        self.solvent_list = solvent_list
 
         #passes the reaction preparation step if a pure chemical 
         if len(self.chemicals) > 1:
@@ -99,7 +101,21 @@ class perovskitereagent:
         self.prepstirunits = "rpm"
         self.prepdurunits = "seconds"
 
-    #checks for user specified values, if none, returns default 
+    @property
+    def component_dict(self):
+        """
+        :return: a dict mapping: chemical_names => concentrations
+        """
+        out = {}
+        for item_i, conc in self.concs.items():
+            i = int(item_i[-1]) - 1  # zero index the chemical names
+            chemical_name = self.chemicals[i]
+            if chemical_name not in self.solvent_list:
+                out[chemical_name] = conc
+
+        return out
+
+    #checks for user specified values, if none, returns default
     def prerxn(self, reactantinfo, rxndict):
         try:
             self.prerxntemp = reactantinfo['prerxn_temperature']

@@ -3,7 +3,7 @@
 
 (* <jschrier@fordham.edu> 24 May 2019 *)
 
-Clear[allowedExperiments, sampleConcentrations, convertConcentrationsToVolumes, x, generateExperiments]
+Clear[allowedExperiments, sampleConcentrations, convertConcentrationsToVolumes, x, dropZeroColumns,generateExperiments]
 
 (*define the convex hull of allowed experiments*)
 allowedExperiments[reagents_Association, {minConcentration_List, maxConcentration_List}]:=With[
@@ -48,6 +48,13 @@ convertConcentrationsToVolumes[reagentDefs_Association,experiments_?MatrixQ]:=Mo
 convertConcentrationsToVolumes[reagentDefs_Association,experiments_?VectorQ]:=
   First /@ convertConcentrationsToVolumes[reagentDefs,{experiments}]
 
+(*handle the case where there is a column of zeros in the reagentDictionary*)
+dropZeroColumns[reagents_Association]:=With[
+  {nonzeroSpeciesColumns=Flatten@Position[
+    Max/@Transpose@Values@reagents,
+     _?Positive]},
+  #[[nonzeroSpeciesColumns]]&/@reagents]
+
 (*main interface from python*)
 (*return a dictionary of lists (pandas dataframe format) of dispense volumes*)
 (*use wl.Identity from Python (instead of wl.Round) to change final processing step*)
@@ -58,66 +65,17 @@ generateExperiments[
   maxMolarity_Real:9., (*maximum concentrations for all species*)
   finalVolume_Real:500.,(*scale up the unit volumes to this total volume*)
   processValues_Symbol:Round (*optional function to apply to volumes*)
-  ]:=With[
-    {hull=allowedExperiments[reagentDefs,maxMolarity]},
+  ]:=With[{nonzeroReagentDefs=dropZeroColumns[reagentDefs]},
+    With[
+    {hull=allowedExperiments[nonzeroReagentDefs,maxMolarity]},
     Map[
 	processValues, (*level 2 map on to each entry in the lists to round to int*)
 	finalVolume*(*scale up volume*)
-	convertConcentrationsToVolumes[reagentDefs,sampleConcentrations[hull,nExpt]],
+	convertConcentrationsToVolumes[nonzeroReagentDefs,sampleConcentrations[hull,nExpt]],
 	{2}]
-  ](*returns a dictionary (keys=reagent names, values=lists of dispense volumes*)
+  ]](*returns a dictionary (keys=reagent names, values=lists of dispense volumes*)
 
 
 
 
-(* ::Section:: *)
-(*Usage demos*)
 
-
-(* ::Input:: *)
-(*reagents=<|*)
-(*"reagent1"->{0.75,0.38,0}, *)
-(*"reagent2"->{0,5.84,0}, *)
-(*"GBL"->{0,0,0}, *)
-(*"FAH"->{0,0,26.5}|>; *)
-(**)
-(*(*use default settings values*)*)
-(*RepeatedTiming[*)
-(*o1=generateExperiments[reagents]; *)
-(*]*)
-(**)
-(*(*10 experiments, maximum of 9M concentration on any species, 500 unit final volume*)*)
-(**)
-(*RepeatedTiming[*)
-(*o2=generateExperiments[reagents, 10, 9., 500.];*)
-(*]*)
-
-
-(* ::Section:: *)
-(*Visualization of the results*)
-
-
-(* ::Input:: *)
-(*Total[o1]*)
-
-
-(* ::Input:: *)
-(*Histogram[o1,ChartLayout->"Stacked",ChartLegends->Automatic]*)
-
-
-(* ::Input:: *)
-(*y=Table[*)
-(*prop->reagents[prop]*#/500&/@o1[prop],*)
-(*{prop,Keys[o1]}]//Transpose;*)
-
-
-(* ::Input:: *)
-(*Show[*)
-(*Graphics3D[Point[Plus@@Values[#]&/@y]],*)
-(*RegionPlot3D[allowedExperiments[reagents,9],PlotStyle->Opacity[0.2]]]*)
-
-
-(* ::Input:: *)
-(*Show[*)
-(*ConvexHullMesh[(Values@reagents)[[All,;;2]]],*)
-(*Graphics@ Point@(Plus@@Values[#]&/@y)[[All,;;2]]]*)

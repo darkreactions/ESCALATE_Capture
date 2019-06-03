@@ -1,43 +1,51 @@
-## Big Terms:
+# ESCALATE Data Structures
 
-- Template:
+A quick reference for the dictionaries, DataFrames, and classes that are defined inside of ESCALATE.
 
-    - This is the excel file that gets specified by the scientist and passed into `runme.py` to kick off the entire process
-    
-    - `Entity`
-        - software version
-        - Lab 
-            - e.g. LBL
-        - plotter
-    
-    - `Experiment` contains: 
+### Template
+**Templates** are Excel spreadsheets used by scientists to specify experiments for ESCALATE. 
+Many of the data structures in ESCALATE are defined based on the **Template** of a given run. 
+
+A **Template** is composed of the following sections:
+
+* **Entity** contains:
+    - software version
+    - Lab 
+        - e.g. LBL
+    - plotter
+
+- **Experiment** contains:
+    - `wellcount`
+    - for each exp in [1..Max Experiments]: 
         - list of `portions`:
             - [[2, 3, 1], [6, 7]]
             - see `expOverView`
-            
         - list of min/max volumes for each `portion`
             - [[500, 500], [0, 250]]
-        - n_wells, number of wells in this experiment
-            - n
-        - a template can have many experiments.
-            - the sum of n_wells for all experiments == 96
-            
-    - `Materials` contains: 
-        - Chemicals
-            - not implemented yet
-        - Reagents
-            - Reagent_ID_NUMBER 
-                - e.g. `Reagent4`
-                - list of chemicals used in reagent_ID_NUMBER
-                    - ['PbI2','EtNH3I','GBL']
+        - `n_wells`: number of wells in this exp. 
+          The sum of `n_wells` over the expriments must equal wellcount
+
+- **Materials** contains: 
+    - Chemicals
+        - *not implemented yet*
+    - Reagents:
+        - Format: `Reagent_<i>` (e.g Reagent1)
+        - Reagent1 should be solvent. 
+        - Can be specified in *one* of two (mutually exclusive) ways:
+            - `Reagent_<i>_ID`
+                - an ECL Model ID. 
+                - see [Reagents worksheet](https://docs.google.com/spreadsheets/d/1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg/edit#gid=1755798808)
+             - `Reagent_<i>_checmical_list`
+                 - list of chemicals used in reagent_ID_NUMBER
+                        - ['PbI2','EtNH3I','GBL']
                 - concentrations for reagents in the list above
                     - will have 1 - len(above list)
-        - Actions
-            - stirrate
-            - temperature of plate
-            - etc
+- **Actions**
+    - stirrate
+    - temperature of plate
+    - etc
     
-----  
+----
 
 
 - class `PerovskiteReagent`
@@ -152,4 +160,4 @@ e.g. rdict[] maps to an instanciated Reagent class. However, edict is simply map
     - Final nominal molarity for each reagent in each well
     
 - `expOverVIew`
-    - List of `portions` -- see above
+    - List of `s` -- see above

@@ -1,14 +1,24 @@
-# ESCALATE Data Structures
+# ESCALATE Variables and Data Structures
 
-A quick reference for the dictionaries, DataFrames, and classes that are defined inside of ESCALATE.
+A quick reference for the dictionaries, DataFrames, and classes that are defined inside of ESCALATE, as well
+as the tables and config files that ESCALATE reads from at runtime.
 
-### Template
+## Devconfig.py
+
+Devconfig.py exposes the following variables for configuration **Todo: Ian write this part, we can also just document
+that file inline and point to it here after generally describing the types of variables that devconfig exposes**
+
+## Tables (Excel + GoogleSheets)
+
+ESCALATE reads from Excel and GoogleSheets files during its execution. They are documented here.
+
+### Template (Excel file)
 **Templates** are Excel spreadsheets used by scientists to specify experiments for ESCALATE. 
 Many of the data structures in ESCALATE are defined based on the **Template** of a given run. 
 
 A **Template** is composed of the following sections:
 
-* **Entity** contains:
+- **Entity** contains:
     - software version
     - Lab 
         - e.g. LBL
@@ -44,9 +54,20 @@ A **Template** is composed of the following sections:
     - stirrate
     - temperature of plate
     - etc
-    
-----
 
+### Chemical Inventory (GoogleSheets Workbook)
+
+The Chemical Inventory maintains information on all chemicals and reagents used in ESCALATE. 
+
+It contains two key worksheets: 
+- Chemicals
+- Reagents
+    
+Which maintain **TODO: Ian flesh out this section**
+
+
+    
+### Classes
 
 - class `PerovskiteReagent`
     - init Args:
@@ -94,44 +115,22 @@ A **Template** is composed of the following sections:
     - Member Methods
 
 
-
-
-### Implementation Structures:
-
-- `Vardict`
-    - This contains the computer-science related information used in the program. 
-      Information from the CLI and devconfig file. 
+### Dictionaries
 
 - `Rxndict`
-    - Parses a user-supplied reaction spreadsheet into a dict.
+    - A dict representation of the run's **Template**.
+    - The k -> v mapping is of the form Variable -> Value where Variable and Value are columns of the 
+    **Template** XLS file.   
     - See: WF1_DevTemplate.xlsx for an example
-    - contains the above info
-
-These two dicts also contain meta-data information specific to each run of the code so that the batches 
-  may be uniquely identified
-
----- 
 
 
-- `chemdf`
-    - Dataframe with chemical information from gdrive
-    - https://docs.google.com/spreadsheets/d/1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg/edit#gid=734961316
-    
-- `reagentdf`
-    - DataFrame with reagent informatin from gdrive
-    - 
- 
-- `climits`
-    - pulls Min and Max for each chemical.
-    - saves into dict the min and max for each chemical
-    - dict of user defined chemical limits (concentrations?)
-    - defined in the template excel file for each portion of rxndict
-    
-- `solventList`
-    - defined in devconfig
-    
-----  
+- `Vardict`
+    - Mostly the software engineering related information:  
+    i.e. variables defined at the CLI and in the devconfig file. 
 
+The two above dicts also contain meta-data information specific to each run of the code so that the batches 
+may be uniquely identified
+   
 - `rdict`
     - reagent dict
         - e.g. rdict[2] = PerovskiteReagent(...)
@@ -143,21 +142,43 @@ These two dicts also contain meta-data information specific to each run of the c
         
 Regarding the above two dicts: We should have the internal structure of these match.  
 e.g. rdict[] maps to an instanciated Reagent class. However, edict is simply mapping to a subset of rxndict. 
- Specifically, the subset of k/v pairs in rxn dict whose key's have 'exp' in the key-string.
- 
- ----  
- 
- - `erdf`
-    - (e)xperiment (r)eagent dataframe
-    - Final reagent volumes dataframe
+Specifically, the subset of k/v pairs in rxn dict whose key's have 'exp' in the key-string.
+
+- `reagentvariables`
+    - local to capture.reagent.buildreagents
+    - a subset of rxndict defining a particular reagent
+    - keys are things like `item_<i>_formula` or `prep_stirrate`
+    - defined for an *individual* reagent and passed to `perovskitereagent.__init__()` as `reactantinfo`
     
- - `ermmoldf`
-    - (e)xperiment (r)eagent milli-mol dataframe
-    - Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
+
+- `climits`
+    - pulls Min and Max for each chemical.
+    - saves into dict the min and max for each chemical
+    - dict of user defined chemical limits (concentrations?)
+    - defined in the template excel file for each portion of rxndict 
+    - **TODO: I don't see any limits in any of the example XLS files... how is this intended to be used?**
+
+### DataFrames
+
+- `chemdf`
+    - DataFrame representation of the Chemical Inventory -> Chemicals GoogleSheet.
+    - an example can be seen [here](https://docs.google.com/spreadsheets/d/1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg/edit#gid=73496131)
     
- - `emsumdf`
-    - (e)xperiment (r)eagent dataframe
-    - Final nominal molarity for each reagent in each well
+- `reagentdf`
+    - DataFrame representation of the Chemical Inventory -> Reagents GoogleSheet
+    - an example can be seen [here](https://docs.google.com/spreadsheets/d/1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg/edit#gid=203471557)
+    
+- `erdf`
+   - (e)xperiment (r)eagent dataframe
+   - Final reagent volumes dataframe
+    
+- `ermmoldf`
+   - (e)xperiment (r)eagent milli-mol dataframe
+   - Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
+    
+- `emsumdf`
+   - (e)xperiment (r)eagent dataframe
+   - Final nominal molarity for each reagent in each well
     
 - `expOverVIew`
     - List of `s` -- see above

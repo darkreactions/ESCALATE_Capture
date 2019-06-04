@@ -1,3 +1,6 @@
+"""
+
+"""
 #Copyright (c) 2018 Ian Pendleton - MIT License
 import os
 import sys
@@ -94,12 +97,12 @@ def datapipeline(rxndict, vardict):
     print("Job Creation Complete")
 
 def exppartition(rxndict): 
-    '''  Takes rxndict information and returns a dictionary of experiment templates 
+    """Takes rxndict information and returns a dictionary of experiment templates
     
     separates each of the specified experiments into individual instances and 
     stores the experiments, associated, reagents, chemical information as 
     dictionaries.  Dictionaries are reported to the log file
-    '''
+    """
     edict = {}
     for k,v in rxndict.items():
         if 'exp' in k:
@@ -109,22 +112,23 @@ def exppartition(rxndict):
     return(edict)
 
 def exptotal(rxndict, rdict):
-    ''' Counts total number of experiment templates specified by the xls interface
+    """Counts total number of experiment templates specified by the xls interface
 
     pull out only the terms with exp in the name (just consider and manipulate 
     user defined variables) this will break if user adds variables with no default 
     processing 
-    '''
+    """
     edict = {}
-    #grab all of the information about experiments from rxndict (input XLS)
-    for k,v in rxndict.items(): 
+
+    # grab all of the information about experiments from rxndict (input XLS)
+    for k, v in rxndict.items():
         if 'exp' in k:
             edict[k] = v
-    #grab only exp identifiers from edict
+    # grab only exp identifiers from edict
     expnamelist = []
-    for entry,value in edict.items(): 
+    for entry, value in edict.items():
         if len(entry) == 4:
             expnum = int(entry[-1:])
-            expnamelist.append(expnum)
+            expnamelist.append(expnum)  # todo is this why we only support 9 experiments?
     totalexperiments = (len(expnamelist))
     return(totalexperiments)

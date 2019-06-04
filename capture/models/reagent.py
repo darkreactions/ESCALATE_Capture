@@ -105,7 +105,9 @@ class perovskitereagent:
     def __init__(self, reactantinfo, rxndict, reagentnumber, chemdf, solvent_list):
         self.name = reagentnumber # reag1, reag2, etc
         self.chemicals = reactantinfo['chemical_list'] # list of the chemicals in this reagent
-        self.concs = self.concentrations(reactantinfo, chemdf, rxndict) 
+
+        # {item<i>_formulaconc: concentration for all chemical item indices i in self}
+        self.concs = self.concentrations(reactantinfo, chemdf, rxndict)
         self.ispurebool = self.ispure()
         self.solventnum = self.solvent(solvent_list)
         self.solvent_list = solvent_list
@@ -186,9 +188,18 @@ class perovskitereagent:
             modlog.Error("Reagents are improperly constructed!")
 
     def concentrations(self, reactantinfo, chemdf, rxndict):
+        """Return a dict mapping {item<i>_formulaconc: concentration for all chemical item indices i in self}
+        :param reactantinfo:
+        :param chemdf:
+        :param rxndict:
+        :return:
+        """
         concdict = {}
         chemicalitem = 1
         for chemical in self.chemicals:
+            # todo talk to ian about this:
+            # this name seems like it doesnt ever exist in the spreadsheet
+            # and so the listcomp below will always evaluate to the empty list
             variablename = 'item%s_formulaconc' %chemical
             updatedname = 'conc_chem%s' %chemical
 #            for key, value in reactantinfo.items():
@@ -198,7 +209,7 @@ class perovskitereagent:
 #                print(concdict)
             if len(self.chemicals) == 1:
                 itemlabel = 'conc_item1' 
-                if [key for key,value in reactantinfo.items() if variablename in key] == []:
+                if [key for key in reactantinfo.keys() if variablename in key] == []:
                         #density / molecular weight function returns mol / L of the chemical
                         concdict[itemlabel] = (float(chemdf.loc[self.chemicals[0],"Density            (g/mL)"])/ \
                             float(chemdf.loc[self.chemicals[0],"Molecular Weight (g/mol)"]) * 1000)

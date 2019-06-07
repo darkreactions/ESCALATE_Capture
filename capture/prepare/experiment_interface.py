@@ -120,7 +120,7 @@ def WF3_split(erdf, splitreagents):
             count2+=4
             count=0
     erdf_new2 = (erdf_new.fillna(value=0))
-    return(erdf_new2)
+    return erdf_new2
 
 
 def cleanvolarray(erdf, maxr):
@@ -148,7 +148,12 @@ def cleanvolarray(erdf, maxr):
         newdf.columns = [item]
         erdf = pd.concat([erdf, newdf], axis=1, sort=True)
     erdf = erdf.reindex(sorted(erdf.columns), axis=1)
-    return(erdf)
+
+    # TODO: This hotfix should be refactored
+    # We are assuming 6 and 7 are FAH: add half at the beginning, add half at the end
+    erdf['Reagent6 (ul)'] = np.floor((erdf['Reagent7 (ul)'] / 2))
+    erdf['Reagent7 (ul)'] = np.ceil(erdf['Reagent7 (ul)'] / 2)
+    return erdf
 
 def LBLrobotfile(rxndict, vardict, erdf):
     ''' Generate a robotic file of the proper format for LBL

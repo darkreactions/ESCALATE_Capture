@@ -1,5 +1,6 @@
 from wolframclient.evaluation import WolframLanguageSession
 
+from capture.devconfig import wolfram_kernel_path
 
 class WolframSampler:
 
@@ -8,7 +9,7 @@ class WolframSampler:
 
         Written as a class so the Wolfram session is only once at __init__ time.
         """
-        self.session = WolframLanguageSession()
+        self.session = WolframLanguageSession(kernel=wolfram_kernel_path)
         self.session.evaluate('<<./capture/generate/generateExperiments.wls')
         self._generateExperiments = self.session.function('generateExperiments')
 

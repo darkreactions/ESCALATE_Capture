@@ -23,6 +23,8 @@ reagentsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
 reagent_workbook_index = 1
 reagent_interface_amount_startrow = 15
 
+wolfram_kernel_path = '/usr/local/Wolfram/Mathematica/12.0/Executables/WolframKernel'
+
 def labfiles(lab):
     if lab == "LBL" or lab == "HC":
         filereq = ['CrystalScoring','ExpDataEntry','metadata.json']

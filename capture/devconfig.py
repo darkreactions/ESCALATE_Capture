@@ -1,5 +1,9 @@
 # devconfig.py
 
+import platform
+
+#######################################
+
 #version control
 RoboVersion = 2.4
 
@@ -8,12 +12,15 @@ max_robot_reagents = 7
 maxreagentchemicals = 3
 volspacing = 10 #reagent microliter (uL) spacing between points in the stateset
 
+#######################################
 
 # perovskite solvent list (simple specification of what is a liquid)
 # assumes only 1 liquid / reagent
 solventlist = ['GBL', 'DMSO', 'DMF', 'DCM']
 
 # lab file requirements list
+
+#######################################
 
 # Gdrive target folder for rendering
 targetfolder = '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe' #target folder for run generation
@@ -23,7 +30,17 @@ reagentsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
 reagent_workbook_index = 1
 reagent_interface_amount_startrow = 15
 
-wolfram_kernel_path = '/usr/local/Wolfram/Mathematica/12.0/Executables/WolframKernel'
+#######################################
+
+system = platform.system()
+
+if system == "Linux":
+    wolfram_kernel_path = '/usr/local/Wolfram/Mathematica/12.0/Executables/WolframKernel'
+#Mac
+elif system == "Darwin":
+    wolfram_kernel_path = None
+
+#######################################
 
 def labfiles(lab):
     if lab == "LBL" or lab == "HC":

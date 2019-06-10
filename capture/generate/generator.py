@@ -47,7 +47,7 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
     return(emsumdf, uploadlist, secfilelist, rdict)
 
 def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
-    (erdf, ermmoldf, emsumdf) = qrandom.preprocess(chemdf, rxndict, edict, rdict, climits) 
+    (erdf, ermmoldf, emsumdf) = qrandom.preprocess_and_sample(chemdf, rxndict, edict, rdict, climits)
     # Clean up dataframe for robot file -> create xls --> upload 
     erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
     # Export additional information files for later use / storage 
@@ -95,4 +95,3 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
         sys.exit()
     return(erdf, robotfile, secfilelist)
 
-        

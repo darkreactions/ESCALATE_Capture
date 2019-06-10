@@ -8,6 +8,7 @@ from capture.generate.wolframsampler import WolframSampler
 from capture.testing import inputvalidation
 from capture.models import chemical
 from capture.generate import calcs
+import capture.devconfig as config
 
 modlog = logging.getLogger('capture.generate.qrandom')
 
@@ -224,7 +225,10 @@ def build_reagent_vectors(portion_reagents, portion_chemicals):
 
     return reagent_vectors
 
-def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
+
+def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
+    """Mike's implementation of a wrapper around Josh's Mathematica sampling code.
+    """
     portionnum = 0
     portion_mmol_df = pd.DataFrame()
     experiment_mmol_df = pd.DataFrame()
@@ -254,10 +258,75 @@ def portiondataframe(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
         portionnum += 1
 
     ws.terminate()
-    experiment_df
     experiment_mmol_df.to_csv("mmol_df.csv")
     experiment_df.to_csv("vol_df.csv")
     return experiment_df, experiment_mmol_df
+
+def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
+    """Ian's original sampling implementation.
+    """
+    portionnum = 0
+    prdf = pd.DataFrame()
+    prmmoldf = pd.DataFrame()
+    for portion in expoverview:
+        # need the volume minimum and maximum and well count
+        reagentcount = 1
+        reagenttotal = len(portion)
+        # Determine from the chemicals and the remaining volume the maximum and minimum volume possible for the sobol method
+        volmax = vollimits[portionnum][1]
+        # unoptimized code that ensure that the previous reagents are considered and that the final reagent accurately fills to the minimum volume set by the users "fill to" requirement
+        rdf = pd.DataFrame()
+        mmoldf = pd.DataFrame()
+        finalrdf = pd.DataFrame()
+        finalmmoldf = pd.DataFrame()
+        for reagent in portion:
+            finalvolmin = vollimits[portionnum][0]
+            if reagentcount == 1:
+                if len(portion) == 1:
+                    volmin = vollimits[portionnum][0]
+                    volmax = vollimits[portionnum][1]+0.00001
+                else:
+                    volmin = 0
+                # since all of the volume limits for the first draw are the same these can be treated as a bounded search sequence
+                rvolmax, rvolmin = calcvollimit(userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum)
+                # Returns datafram of volumes of each reagent added to each experiment
+                rdf = initialrdf(rvolmax, rvolmin, reagent, wellnum)
+                # Returns mmol specified dataframe for each experiment, reagent, and chemical (<-- values are in the header) have been generated for this portion of the experiment
+                mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                reagentcount+=1
+                pass
+            #operate within the available ranges taken from the previous constraints
+            elif reagentcount < reagenttotal:
+                # The constraints on the middle draws are more complicated and are dependent upon the first, a different sampling strategy must be used (i.e. this is not going to use sobol as the ranges are different for each)
+                # Constrain the range based on volumne, reagent-chemical concentrations and user constraints
+                rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
+                # Since each volume maximum is different, need to sample the remaining reagents independently (thus different sampling)
+                rdf = rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum)
+                mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                reagentcount+=1
+                pass
+            # Ensure that the final round meets the lower bounds and upper bound total fill volume requirements of the user
+            elif reagentcount == reagenttotal:
+                if vollimits[portionnum][0] == vollimits[portionnum][1]:
+#                    print(finalrdf.sum(axis=1))
+                    rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
+                    reagentname = "Reagent%s (ul)" %reagent
+                    rdf = pd.DataFrame(rvolmaxdf, columns=[reagentname])
+                    mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                else:
+                    rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, portion, reagent, wellnum, rxndict)
+                    rvolmindf = ensuremin(rvolmindf, finalrdf, finalvolmin)
+                    rdf = rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum)
+                    mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' %reagent]), rdict, experiment, reagent)
+                reagentcount+=1
+            else:
+                modlog.error("Fatal error.  Unable to effectively parse reagent%s in portion %s.  Please make sure that the selected values make chemical sense!" %(reagent, portion))
+            finalrdf = pd.concat([finalrdf, rdf], axis=1)
+            finalmmoldf = pd.concat([finalmmoldf, mmoldf], axis=1)
+        prdf = pd.concat([prdf, finalrdf], axis=1)
+        prmmoldf = pd.concat([prmmoldf, finalmmoldf], axis=1)
+        portionnum += 1
+    return prdf, prmmoldf
 
 def ensuremin(rvolmindf, finalrdf, finalvolmin):
     currvoldf = finalrdf.sum(axis=1)
@@ -265,7 +334,7 @@ def ensuremin(rvolmindf, finalrdf, finalvolmin):
     rvolmindf[rvolmindf < trumindf] = trumindf
     return(rvolmindf)
 
-def preprocess(chemdf, rxndict, edict, rdict, climits):
+def preprocess_and_sample(chemdf, rxndict, edict, rdict, climits):
     ''' generates a set of random reactions within given reagent and user constraints
 
     requires the chemical dataframe, rxndict (with user inputs), experiment dictionary, 
@@ -287,8 +356,17 @@ def preprocess(chemdf, rxndict, edict, rdict, climits):
                     vollimits=(v)
                 else:
                     pass
-        modlog.info('Building reagent constraints for experiment %s using reagents %s for a total of %s wells' %(experiment, edict[experimentname], wellnum) )
-        prdf,prmmoldf = portiondataframe(edict[experimentname], rdict, vollimits, rxndict, wellnum, climits, experiment)
+
+        modlog.info('Building reagent constraints for experiment %s using reagents %s for a total of %s wells'
+                    % (experiment, edict[experimentname], wellnum))
+        if config.sampler == 'wolfram':
+            prdf, prmmoldf = wolfram_sampling(edict[experimentname], rdict, vollimits, rxndict, wellnum, climits, experiment)
+        elif config.sampler == 'default':
+            prdf, prmmoldf = default_sampling(edict[experimentname], rdict, vollimits, rxndict, wellnum, climits, experiment)
+        else:
+            modlog.error('Encountered unexpected sampler in devconfig: {}. Exiting.'.format(config.sampler))
+            sys.exit(1)
+
         erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
         ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
         # Return the reagent data frame with the volumes for that particular portion of the plate

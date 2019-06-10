@@ -36,7 +36,7 @@ system = platform.system()
 
 if system == "Linux":
     wolfram_kernel_path = '/usr/local/Wolfram/Mathematica/12.0/Executables/WolframKernel'
-#Mac
+# Mac
 elif system == "Darwin":
     wolfram_kernel_path = None
 
@@ -49,4 +49,9 @@ def labfiles(lab):
         filereq = ['CrystalScoring','metadata.json']
     return(filereq)
 
+######################################
+# Sampler
 
+# must be 'default' or 'wolfram'
+# 'wolfram' is currently experimental and unsupported
+sampler = 'default'

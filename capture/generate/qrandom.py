@@ -1,6 +1,7 @@
 import logging
 import optunity
 import pandas as pd
+import numpy as np
 import random
 import sys
 
@@ -245,8 +246,10 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
         portion_reagents = [rdict[str(i)] for i in portion]
         portion_species_names = get_unique_chemical_names(portion_reagents)
         reagent_vectors = build_reagent_vectors(portion_reagents, portion_species_names)
-        experiments = ws.generateExperiments(reagent_vectors, int(wellnum), float(maxconc), float(volmax))
+        experiments = ws.randomlySample(reagent_vectors, int(wellnum), float(maxconc), float(volmax))
         portion_df = pd.DataFrame.from_dict(experiments)
+        #portion_df['Reagent6 (ul)'] = np.floor(portion_df['Reagent7 (ul)'] / 2)
+        #portion_df['Reagent7 (ul)'] = np.ceil(portion_df['Reagent7 (ul)'] / 2)
         columnnames = portion_df.columns
         for columnname in columnnames:
             reagent = int(columnname.split('t')[1].split('(')[0]) # 'Reagent2 (ul)' to give '2'

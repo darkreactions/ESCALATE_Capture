@@ -5,6 +5,10 @@
 (*The code*)
 
 
+(* This module implements UNIFORM RANDOM SAMPLING WITHIN A CONVEX HULL DEFINED BY *)
+(* REAGENT VECTORS IN CHEMICAL CONCENTRATION SPACE *)
+
+
 (* <jschrier@fordham.edu> 24 May 2019 *)
 (* correction: 06 June 2019; fixing error with AccuracyGoal and PrecisionGoal causing problem in transfer to cloud; I had misinterpretted
 how these are specified, and Mathematica 12 (on kernels and clouds) had different defaults; the older defaults allow the problem to slip by.*)

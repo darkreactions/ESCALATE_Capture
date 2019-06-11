@@ -10,10 +10,12 @@ class WolframSampler:
         Written as a class so the Wolfram session is only once at __init__ time.
         """
         self.session = WolframLanguageSession(kernel=wolfram_kernel_path)
-        self.session.evaluate('<<./capture/generate/generateExperiments.wls')
-        self._generateExperiments = self.session.function('generateExperiments')
+        self.session.evaluate('<<./capture/generate/randomSampling.wls')
+        self.session.evaluate('<<./capture/generate/enumerativeSampling.wls')
+        self._randomlySample = self.session.function('generateExperiments')
+        self._enumerativelySample = self.session.function('achievableGrid')
 
-    def generateExperiments(self, reagentVectors, nExpt=96, maxMolarity=9., finalVolume=500.):
+    def randomlySample(self, reagentVectors, nExpt=96, maxMolarity=9., finalVolume=500.):
         """Randomly sample possible experiments in the convex hull of concentration space defined by the reagentVectors
 
         Shadows default arguments set at Wolfram level.
@@ -35,7 +37,7 @@ class WolframSampler:
         if not isinstance(finalVolume, float):
             raise TypeError('finalVolume must be float, got {}'.format(type(finalVolume)))
 
-        return self._generateExperiments(reagentVectors, nExpt, maxMolarity, finalVolume)
+        return self._randomlySample(reagentVectors, nExpt, maxMolarity, finalVolume)
 
     def terminate(self):
         """Kill the session thread"""

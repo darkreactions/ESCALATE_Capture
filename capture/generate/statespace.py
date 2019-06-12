@@ -7,6 +7,7 @@ import pandas as pd
 from capture.generate import calcs
 from capture.models import chemical
 from capture.generate.wolframsampler import WolframSampler
+from capture.generate.qrandom import get_unique_chemical_names, build_reagent_vectors
 import capture.devconfig as config
 
 modlog = logging.getLogger('capture.generate.statespace')
@@ -72,13 +73,14 @@ def wolfram_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, v
 
         maxconc = rxndict.get('max_conc', 15)
         portion_reagents = [rdict[str(i)] for i in portion]
+        volmax = vollimits[portionnum][1]
         portion_species_names = get_unique_chemical_names(portion_reagents)
         reagent_vectors = build_reagent_vectors(portion_reagents, portion_species_names)
-        experiments = ws.randomlySample(reagent_vectors,  float(maxconc), float(config.volspacing), float(maxconc))
+        experiments = ws.enumerativelySample(reagent_vectors,  float(maxconc), float(config.volspacing), float(volmax))
 
         experiment_df = pd.DataFrame.from_dict(experiments)
         # todo: aaron accumulate experiments in a df somewhere
-        # todo we can also scrap portions entirely whenw olfram is on? (since we will have the trivial number of poritons (1)
+        # todo we can also scrap portions entirely when wolfram is on? (since we will have the trivial number of poritons (1)
         # todo but its best to leave them in for now until we talk to ian
 
 

@@ -59,7 +59,7 @@ class WolframSampler:
         if not isinstance(maxMolarity, float):
             raise TypeError('maxMolarity must be float, got {}'.format(type(maxMolarity)))
         if not isinstance(deltaV, float):
-            raise TypeError('nExpt must be float, got {}'.format(type(nExpt)))
+            raise TypeError('deltaV must be float, got {}'.format(type(deltaV)))
         if not isinstance(finalVolume, float):
             raise TypeError('finalVolume must be float, got {}'.format(type(finalVolume)))
 

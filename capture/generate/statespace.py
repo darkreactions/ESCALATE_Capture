@@ -1,15 +1,19 @@
 import logging
-import pandas as pd
 import itertools
+import sys
+
+import pandas as pd
 
 from capture.generate import calcs
 from capture.models import chemical
+from capture.generate.wolframsampler import WolframSampler
+import capture.devconfig as config
 
 modlog = logging.getLogger('capture.generate.statespace')
 
 
 ##generate a state set from the volume constraints of the experimental system ensuring that the limits are met, return the full df of volumes as well as the idealized conc df
-def statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
+def default_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
     portionnum = 0
     prdf = pd.DataFrame()
     prmmoldf = pd.DataFrame()
@@ -57,6 +61,40 @@ def statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacin
             pass
     return(prdf,finalmmoldf)
 
+def wolfram_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
+    ws = WolframSampler()
+    portionnum = 0
+    prdf = pd.DataFrame()
+    prmmoldf = pd.DataFrame()
+    fullreagentnamelist=[]
+    fullvollist=[]
+    for portion in expoverview:
+
+        maxconc = rxndict.get('max_conc', 15)
+        portion_reagents = [rdict[str(i)] for i in portion]
+        portion_species_names = get_unique_chemical_names(portion_reagents)
+        reagent_vectors = build_reagent_vectors(portion_reagents, portion_species_names)
+        experiments = ws.randomlySample(reagent_vectors,  float(maxconc), float(config.volspacing), float(maxconc))
+
+        experiment_df = pd.DataFrame.from_dict(experiments)
+        # todo: aaron accumulate experiments in a df somewhere
+        # todo we can also scrap portions entirely whenw olfram is on? (since we will have the trivial number of poritons (1)
+        # todo but its best to leave them in for now until we talk to ian
+
+
+
+    finalmmoldf = pd.DataFrame()
+    # todo: aaron something might have to happen with the names here
+    for reagentname in fullreagentnamelist:
+        if "Reagent" in reagentname:
+            reagentnum = reagentname.split('t')[1].split(' ')[0]
+            mmoldf = calcs.mmolextension(prdf[reagentname], rdict, experiment, reagentnum)
+            finalmmoldf = pd.concat([finalmmoldf,mmoldf], axis=1)
+        else:
+            pass
+    ws.terminate()
+    return prdf, finalmmoldf
+
 def chemicallist(rxndict):
     chemicallist = []
     for k,v in rxndict.items():
@@ -83,7 +121,14 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
                     pass
         modlog.info('Building reagent state space for experiment %s using reagents %s' %(experiment, edict[experimentname]))
         modlog.warning('Well count will be ignored for state space creation!  Please disable CP run if this incorrect')
-        prdf,prmmoldf = statedataframe(rxndict, edict[experimentname], vollimits, rdict, experiment, volspacing)
+
+        if config.sampler == 'default':
+            prdf, prmmoldf = default_statedataframe(rxndict, edict[experimentname], vollimits, rdict, experiment, volspacing)
+        elif config.sampler == 'wolfram':
+            prdf, prmmoldf = wolfram_statedataframe(rxndict, edict[experimentname], vollimits, rdict, experiment, volspacing)
+        else:
+            modlog.error('Unexpected sampler in devconfig: {}. Quitting.'.format(config.sampler))
+            sys.exit(1)
         erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
         ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
         # Return the reagent data frame with the volumes for that particular portion of the plate

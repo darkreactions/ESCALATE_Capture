@@ -13,11 +13,11 @@ achievableGrid[reagents_Association,
   totalVolume_Real: 500.] :=
  With[
   {axisGrids =
-    Range[#1, 0, -#1*(deltaV/totalVolume)] & /@ speciesMax[reagents],
+    Range[#1, 0, -#1*(deltaV/totalVolume)] & /@ speciesMax[dropZeroColumns@reagents],
    insideHullQ =
-    RegionMember@allowedExperiments[reagents, maximumConcentration]},
+    RegionMember@allowedExperiments[dropZeroColumns@reagents, maximumConcentration]},
   Select[insideHullQ]@
    Flatten[
     Outer[List, ##] & @@ axisGrids,
     2]
-  ]
+  ] // Transpose

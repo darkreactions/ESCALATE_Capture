@@ -3,6 +3,7 @@ import itertools
 import sys
 
 import pandas as pd
+import numpy as np
 
 from capture.generate import calcs
 from capture.models import chemical
@@ -77,12 +78,16 @@ def wolfram_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, v
         portion_species_names = get_unique_chemical_names(portion_reagents)
         reagent_vectors = build_reagent_vectors(portion_reagents, portion_species_names)
         experiments = ws.enumerativelySample(reagent_vectors,  float(maxconc), float(config.volspacing), float(volmax))
+        experiments = np.array(experiments).T
 
-        experiment_df = pd.DataFrame.from_dict(experiments)
+        sampledReagents = [k for k in reagent_vectors.keys() if not np.all(reagent_vectors[k] == np.zeros(len(reagent_vectors[k])))]
+        experiment_df = pd.DataFrame(experiments, columns=sampledReagents)
+        prdf = pd.concat([prdf, experiment_df], axis=1)
+        fullreagentnamelist = sampledReagents
         # todo: aaron accumulate experiments in a df somewhere
         # todo we can also scrap portions entirely when wolfram is on? (since we will have the trivial number of poritons (1)
         # todo but its best to leave them in for now until we talk to ian
-
+        test = 1
 
 
     finalmmoldf = pd.DataFrame()

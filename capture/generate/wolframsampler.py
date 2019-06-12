@@ -13,7 +13,7 @@ class WolframSampler:
         self.session.evaluate('<<./capture/generate/randomSampling.wls')
         self.session.evaluate('<<./capture/generate/enumerativeSampling.wls')
         self._randomlySample = self.session.function('generateExperiments')
-        self._enumerativelySample = self.session.function('achievableGrid')
+        self._enumerativelySample = self.session.function('generateEnumerations')
 
     def randomlySample(self, reagentVectors, nExpt=96, maxMolarity=9., finalVolume=500.):
         """Randomly sample possible experiments in the convex hull of concentration space defined by the reagentVectors
@@ -40,13 +40,14 @@ class WolframSampler:
 
         return self._randomlySample(reagentVectors, nExpt, maxMolarity, finalVolume)
 
-    def enumerativelySample(self, reagentVectors, maxMolarity=9., deltaV=10., finalVolume=500.):
+    def enumerativelySample(self, reagentVectors, uniqueChemNames, deltaV=10., maxMolarity=9., finalVolume=500.):
         """Enumeratively sample possible experiments in the convex hull of concentration space defined by the reagentVectors
 
         Runs Josh's Mathematica function called `achievableGrid` defined in `enumerativeSampling.wls`
         Shadows default arguments set at Wolfram level.
 
         :param reagentVectors: a dictionary of vector representations of reagents living in species-concentration space
+        :param uniqueChemNames: list of chemicals making up the reagents
         :param maxMolarity: the maximum concentration of any species: defines a hypercube bounding the convex hull
         :param deltaV: the spacing of reagent volumes that define the spacing of the grid in concentration space
         :param finalVolume: a scalar to act on the concentration points to convert to desired volume
@@ -56,6 +57,8 @@ class WolframSampler:
 
         if not isinstance(reagentVectors, dict):
             raise TypeError('reagentVectors must be dict, got {}'.format(type(reagentVectors)))
+        if not isinstance(uniqueChemNames, list):
+            raise TypeError('uniqueChemNames must be a list, got {}').format(type(uniqueChemNames))
         if not isinstance(maxMolarity, float):
             raise TypeError('maxMolarity must be float, got {}'.format(type(maxMolarity)))
         if not isinstance(deltaV, float):
@@ -63,7 +66,7 @@ class WolframSampler:
         if not isinstance(finalVolume, float):
             raise TypeError('finalVolume must be float, got {}'.format(type(finalVolume)))
 
-        return self._enumerativelySample(reagentVectors, maxMolarity, deltaV, finalVolume)
+        return self._enumerativelySample(reagentVectors, uniqueChemNames, deltaV, maxMolarity, finalVolume)
 
     def terminate(self):
         """Kill the session thread"""

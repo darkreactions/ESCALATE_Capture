@@ -151,8 +151,8 @@ def cleanvolarray(erdf, maxr):
 
     # TODO: This hotfix should be refactored
     # We are assuming 6 and 7 are FAH: add half at the beginning, add half at the end
-    erdf['Reagent6 (ul)'] = np.floor((erdf['Reagent7 (ul)'] / 2))
-    erdf['Reagent7 (ul)'] = np.ceil(erdf['Reagent7 (ul)'] / 2)
+    # erdf['Reagent6 (ul)'] = np.floor((erdf['Reagent7 (ul)'] / 2))
+    # erdf['Reagent7 (ul)'] = np.ceil(erdf['Reagent7 (ul)'] / 2)
     return erdf
 
 def LBLrobotfile(rxndict, vardict, erdf):

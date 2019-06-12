@@ -54,4 +54,4 @@ def labfiles(lab):
 
 # must be 'default' or 'wolfram'
 # 'wolfram' is currently experimental and unsupported
-sampler = 'default'
+sampler = 'wolfram'

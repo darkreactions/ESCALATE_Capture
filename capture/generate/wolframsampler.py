@@ -18,6 +18,7 @@ class WolframSampler:
     def randomlySample(self, reagentVectors, nExpt=96, maxMolarity=9., finalVolume=500.):
         """Randomly sample possible experiments in the convex hull of concentration space defined by the reagentVectors
 
+        Runs Josh's Mathematica function called `generateExperiments` defined in `randomSampling.wls`
         Shadows default arguments set at Wolfram level.
         Currently does not expose processVaules argument.
 
@@ -38,6 +39,31 @@ class WolframSampler:
             raise TypeError('finalVolume must be float, got {}'.format(type(finalVolume)))
 
         return self._randomlySample(reagentVectors, nExpt, maxMolarity, finalVolume)
+
+    def enumerativelySample(self, reagentVectors, maxMolarity=9., deltaV=10., finalVolume=500.):
+        """Enumeratively sample possible experiments in the convex hull of concentration space defined by the reagentVectors
+
+        Runs Josh's Mathematica function called `achievableGrid` defined in `enumerativeSampling.wls`
+        Shadows default arguments set at Wolfram level.
+
+        :param reagentVectors: a dictionary of vector representations of reagents living in species-concentration space
+        :param maxMolarity: the maximum concentration of any species: defines a hypercube bounding the convex hull
+        :param deltaV: the spacing of reagent volumes that define the spacing of the grid in concentration space
+        :param finalVolume: a scalar to act on the concentration points to convert to desired volume
+        :return:  a dictionary mapping: {reagents => list(volumes)}
+        :raises TypeError: since Mathematica will fail silently on incorrect types
+        """
+
+        if not isinstance(reagentVectors, dict):
+            raise TypeError('reagentVectors must be dict, got {}'.format(type(reagentVectors)))
+        if not isinstance(maxMolarity, float):
+            raise TypeError('maxMolarity must be float, got {}'.format(type(maxMolarity)))
+        if not isinstance(deltaV, float):
+            raise TypeError('nExpt must be float, got {}'.format(type(nExpt)))
+        if not isinstance(finalVolume, float):
+            raise TypeError('finalVolume must be float, got {}'.format(type(finalVolume)))
+
+        return self._enumerativelySample(reagentVectors, maxMolarity, deltaV, finalVolume)
 
     def terminate(self):
         """Kill the session thread"""

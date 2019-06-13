@@ -141,7 +141,9 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
     # Final nominal molarity for each reagent in each well
     # Final nominal molarity for each reagent in each well
     emsumdf = calcs.finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
-    emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
+
+    if config.sampler == 'default':
+        emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
 #    plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
     #combine the experiments for the tray into one full set of volumes for all the wells on the plate
     modlog.info('Begin combining the experimental volume dataframes')

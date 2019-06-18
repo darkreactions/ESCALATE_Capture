@@ -4,13 +4,13 @@ import platform
 
 #######################################
 
-#version control
-RoboVersion = 2.4
+#  version control
+RoboVersion = 2.5
 
 # Hard coded limits
 max_robot_reagents = 7
 maxreagentchemicals = 3
-volspacing = 100 #reagent microliter (uL) spacing between points in the stateset
+volspacing = 100 # reagent microliter (uL) spacing between points in the stateset
 
 #######################################
 
@@ -54,4 +54,4 @@ def labfiles(lab):
 
 # must be 'default' or 'wolfram'
 # 'wolfram' is currently experimental and unsupported
-sampler = 'wolfram'
+sampler = 'default'

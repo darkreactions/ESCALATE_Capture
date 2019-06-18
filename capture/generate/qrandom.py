@@ -21,33 +21,11 @@ def rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum):
     while count < wellnum:
         volmax = rvolmaxdf[count]
         volmin = rvolmindf[count]
-#        _, info_random, _ = optunity.minimize(f, num_evals=1, x1=[volmin, volmax], solver_name='random search')
-#        reagentitem=info_random.call_log['args']['x1'] #Create reagent amounts (mmol), change x variable to change range, each generated from unique sobol index
         reagentitem = random.randint(volmin,volmax)
         reagentlist.append(reagentitem)
         count+=1
     rdf = pd.DataFrame({reagentname:reagentlist}).astype(int)
     return(rdf)
-
-## Determine the maximum concentration for a particular chemical in a reagent
-#def maxconcdet(rdata, rnum, currchemical):
-#    maxconc = 0
-#    for chemid,conc in rdata['%s' %rnum].concs.items():
-#        itemnum = chemid.split('m')[1]
-#        chemical_list_name = rdata['%s'%rnum].chemicals[itemnum]
-#        if currchemical in chemical_list_name:
-#            if conc > maxconc:
-#                maxconc = conc
-#    return(maxconc)
-#
-## Determine the absolute maximum concentration for a particular chemical across all reagents in a portion of the experiment
-#def absmaxcondet(rdata, rnum, currchemical, reagentlist):
-#    maxconc = 0 
-#    for reagent in reagentlist:
-#        conc = (maxconcdet(rdata, reagent, currchemical))
-#        if conc > maxconc:
-#            maxconc =  conc
-#    return(maxconc)
 
 def f(x1):
     return 0.0
@@ -69,42 +47,6 @@ def calcvollimit(userlimits, rdict, volmax, volmin, experiment, reagentlist, rea
     possiblemaxvolumes.append(volmax)
     possibleminvolumes = []
     possibleminvolumes.append(volmin)
-    # Determine if any user constraints override the maximum concentrations dependent on the volume limits
-#    for chemical in chemicals:
-#        #The code will update the maximum volume to meet the upper bound set by the user
-#        try: 
-#            maxconc = maxconcdet(rdict, reagent, chemical)
-#            absmaxconc = absmaxcondet(rdict, reagent, chemical, reagentlist)
-#            userdefinedmax = (userlimits['chem%s_molarmax'%chemical])
-#            # Update the constraints / limits on the total volume of this reagent to fit within the restrictions that the user might have set
-#            if userdefinedmax <= maxconc:
-#                volmaxnew = userdefinedmax / maxconc * volmax
-#                possiblemaxvolumes.append(int(volmaxnew))
-#            # If other reagents in the portion of the reaction can access higher concentrations, don't error out
-#            elif userdefinedmax <= absmaxconc:
-#               pass
-#            else: 
-#                #In the case where this upperbound cannot be met the user has overconstrained the system
-#                modlog.error("User defined concentration greater than physically possible for chemical%s in experiment %s" %(chemical, experiment))
-#                sys.exit()
-#        except Exception:
-#            pass
-#        #The code will update the minimum volume to meet the lower bound set by the user
-#        try: 
-#            reagconc = (rdata.concs['conc_chem%s' %chemical])
-#            userdefinedmin = (userlimits['chem%s_molarmin'%chemical])
-#            absmaxconc = absmaxcondet(rdict, reagent, chemical, reagentlist)
-#            if userdefinedmin >= 0:
-#                if reagconc < absmaxconc: 
-#                    pass
-#                else:
-#                    volminnew = userdefinedmin / reagconc * volmax
-#                    possibleminvolumes.append(int(volminnew))
-#            elif userdefinedmax <= absmaxconc:
-#                pass
-#            else: pass
-#        except Exception:
-#            pass
     # Take the values determined from the user constraints and pass along the relevant value to the calling function
     if (min(possiblemaxvolumes)) != volmax:
         # Flag that there are constraints so that the user is aware they are limiting the total physical space artificially

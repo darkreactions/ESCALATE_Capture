@@ -8,6 +8,7 @@ from capture.googleapi import googleio
 
 modlog = logging.getLogger('capture.prepare.interface')
 
+
 def sumreagents(erdf, deadvolume):
     reagent_volume_dict = {}
     for header in erdf.columns:
@@ -16,13 +17,21 @@ def sumreagents(erdf, deadvolume):
         reagent_volume_dict[reagentname] = reagent_volume
     return(reagent_volume_dict)
 
-def preparationdf(rdict, chemicalnamedf, sumreagentsdict, liquidlist, maxreagentchemicals, chemdf):
+
+def preparationdf(rdict,
+                  chemicalnamedf,
+                  sumreagentsdict,
+                  liquidlist,
+                  maxreagentchemicals,
+                  chemdf):
     ''' calculate the mass of each chemical return dataframe
 
-    :param chemdf:  Chemical data frame from google drive.  
+    TODO: write out nominal molarity to google sheets, see issue#52
+
+    :param chemdf:  Chemical data frame from google drive.
 
     :returns: a dataframe sized for export to version:: 3.0 interface
-    ''' 
+    '''
     nominalsdf = pd.DataFrame()
     itemcount = 1
     chemicalnamedf.sort_index(inplace=True)
@@ -36,7 +45,7 @@ def preparationdf(rdict, chemicalnamedf, sumreagentsdict, liquidlist, maxreagent
             finalvolindex = index
             pass
         else:
-            #stock solutions should be summed for final total volume
+            # stock solutions should be summed for final total volume
             if chemabbr in liquidlist or chemabbr == 'FAH':  # todo dejank
                 formulavol = (sumreagentsdict[reagentname]/1000).round(2)
                 formulavollist.append(formulavol)

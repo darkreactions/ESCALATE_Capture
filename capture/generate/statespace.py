@@ -1,15 +1,21 @@
 import logging
-import pandas as pd
 import itertools
+import sys
+
+import pandas as pd
+import numpy as np
 
 from capture.generate import calcs
 from capture.models import chemical
+from capture.generate.wolframsampler import WolframSampler
+from capture.generate.qrandom import get_unique_chemical_names, build_reagent_vectors
+import capture.devconfig as config
 
 modlog = logging.getLogger('capture.generate.statespace')
 
 
 ##generate a state set from the volume constraints of the experimental system ensuring that the limits are met, return the full df of volumes as well as the idealized conc df
-def statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
+def default_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
     portionnum = 0
     prdf = pd.DataFrame()
     prmmoldf = pd.DataFrame()
@@ -57,6 +63,37 @@ def statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacin
             pass
     return(prdf,finalmmoldf)
 
+def wolfram_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
+    ws = WolframSampler()
+
+    if len(expoverview) > 1:
+        raise ValueError('When using wolfram sampling, expoverview must have length 1, got {}'.format(len(expoverview)))
+    else:
+        # portions don't make sense when using wolfram sampling
+        # as a holdover we assume we have one an only one poriton and we hard code it here
+        portionnum = 0
+        portion = expoverview[portionnum]
+
+    maxconc = rxndict.get('max_conc', 15)
+    portion_reagents = [rdict[str(i)] for i in portion]
+    volmax = vollimits[portionnum][1]
+    portion_species_names = get_unique_chemical_names(portion_reagents)
+    reagent_vectors = build_reagent_vectors(portion_reagents, portion_species_names)
+
+    experiments = ws.enumerativelySample(reagentVectors=reagent_vectors,
+                                        uniqueChemNames=portion_species_names,
+                                        deltaV=float(config.volspacing),
+                                        maxMolarity=float(maxconc),
+                                        finalVolume=float(volmax))
+
+
+    # todo: validate these two dfs downstream
+    voldf = pd.DataFrame.from_dict(experiments['volumes'])
+    concdf = pd.DataFrame.from_dict(experiments['concentrations'])
+
+    ws.terminate()
+    return voldf, concdf
+
 def chemicallist(rxndict):
     chemicallist = []
     for k,v in rxndict.items():
@@ -83,7 +120,14 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
                     pass
         modlog.info('Building reagent state space for experiment %s using reagents %s' %(experiment, edict[experimentname]))
         modlog.warning('Well count will be ignored for state space creation!  Please disable CP run if this incorrect')
-        prdf,prmmoldf = statedataframe(rxndict, edict[experimentname], vollimits, rdict, experiment, volspacing)
+
+        if config.sampler == 'default':
+            prdf, prmmoldf = default_statedataframe(rxndict, edict[experimentname], vollimits, rdict, experiment, volspacing)
+        elif config.sampler == 'wolfram':
+            prdf, prmmoldf = wolfram_statedataframe(rxndict, edict[experimentname], vollimits, rdict, experiment, volspacing)
+        else:
+            modlog.error('Unexpected sampler in devconfig: {}. Quitting.'.format(config.sampler))
+            sys.exit(1)
         erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
         ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
         # Return the reagent data frame with the volumes for that particular portion of the plate
@@ -97,7 +141,9 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
     # Final nominal molarity for each reagent in each well
     # Final nominal molarity for each reagent in each well
     emsumdf = calcs.finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
-    emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
+
+    if config.sampler == 'default':
+        emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
 #    plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
     #combine the experiments for the tray into one full set of volumes for all the wells on the plate
     modlog.info('Begin combining the experimental volume dataframes')

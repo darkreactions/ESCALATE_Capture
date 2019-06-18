@@ -69,3 +69,12 @@ RELEASE HISTORY
   * Meta data patch
   * Updated versioning 
   * updated templates
+  * WF3 support added and tested
+
+2.5 (2019-06-17)
+-----------------------------
+  * New grid sampling in place of quasirandom sampling (uses mathematica in 2.5) #32 #48
+  * No grid sampling for WF3 - must set "default" sampling in devconfig 
+  * updated templates
+  * improved document readability
+

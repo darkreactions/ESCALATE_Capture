@@ -120,7 +120,7 @@ def WF3_split(erdf, splitreagents):
             count2+=4
             count=0
     erdf_new2 = (erdf_new.fillna(value=0))
-    return(erdf_new2)
+    return erdf_new2
 
 
 def cleanvolarray(erdf, maxr):
@@ -148,7 +148,7 @@ def cleanvolarray(erdf, maxr):
         newdf.columns = [item]
         erdf = pd.concat([erdf, newdf], axis=1, sort=True)
     erdf = erdf.reindex(sorted(erdf.columns), axis=1)
-    return(erdf)
+    return erdf
 
 def LBLrobotfile(rxndict, vardict, erdf):
     ''' Generate a robotic file of the proper format for LBL

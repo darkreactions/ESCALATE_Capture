@@ -8,6 +8,7 @@ from capture.googleapi import googleio
 
 modlog = logging.getLogger('capture.prepare.interface')
 
+
 def sumreagents(erdf, deadvolume):
     reagent_volume_dict = {}
     for header in erdf.columns:
@@ -16,13 +17,21 @@ def sumreagents(erdf, deadvolume):
         reagent_volume_dict[reagentname] = reagent_volume
     return(reagent_volume_dict)
 
-def preparationdf(rdict, chemicalnamedf, sumreagentsdict, liquidlist, maxreagentchemicals, chemdf):
+
+def preparationdf(rdict,
+                  chemicalnamedf,
+                  sumreagentsdict,
+                  liquidlist,
+                  maxreagentchemicals,
+                  chemdf):
     ''' calculate the mass of each chemical return dataframe
 
-    :param chemdf:  Chemical data frame from google drive.  
+    TODO: write out nominal molarity to google sheets, see issue#52
+
+    :param chemdf:  Chemical data frame from google drive.
 
     :returns: a dataframe sized for export to version:: 3.0 interface
-    ''' 
+    '''
     nominalsdf = pd.DataFrame()
     itemcount = 1
     chemicalnamedf.sort_index(inplace=True)
@@ -36,8 +45,8 @@ def preparationdf(rdict, chemicalnamedf, sumreagentsdict, liquidlist, maxreagent
             finalvolindex = index
             pass
         else:
-            #stock solutions should be summed for final total volume
-            if chemabbr in liquidlist:
+            # stock solutions should be summed for final total volume
+            if chemabbr in liquidlist or chemabbr == 'FAH':  # todo dejank
                 formulavol = (sumreagentsdict[reagentname]/1000).round(2)
                 formulavollist.append(formulavol)
                 nominalsdf.loc[index, "nominal_amount"] = formulavol
@@ -92,7 +101,7 @@ def chemicalnames(rxndict, rdict, chemdf, maxreagentchemicals, maxreagents):
     chemicalnamelist = []
     reagentnamelist = []
     holdreagentnum = 1
-    for reagentnum, reagentobject in rdict.items():
+    for reagentnum in sorted(rdict.keys()):
         #ensure any reagents not used have placeholders
         while int(reagentnum) > holdreagentnum:
             chemicalnamelist.append('Final Volume = ')
@@ -105,7 +114,7 @@ def chemicalnames(rxndict, rdict, chemdf, maxreagentchemicals, maxreagents):
             holdreagentnum = int(reagentnum)+1
             chemicalnamelist.append('Final Volume = ')
             reagentnamelist.append('Reagent%s' %reagentnum)
-            for chemical in reagentobject.chemicals:
+            for chemical in rdict[reagentnum].chemicals:
                 chemicalnamelist.append(chemical)
                 reagentnamelist.append('Reagent%s' %reagentnum)
                 count+=1
@@ -207,7 +216,6 @@ def reagent_interface_upload(rxndict, vardict, finalexportdf, gc, val):
     sheetobject.update_cells(nulltarget)
 
     return(sheetobject)
-
 
 def reagent_prep_pipeline(rdict, sheetobject, maxreagents):
     uploadtarget = sheetobject.range('D3:F9')

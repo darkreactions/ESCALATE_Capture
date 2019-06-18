@@ -2,7 +2,7 @@ import pandas as pd
 import sys
 import logging
 
-from capture.inspect import plotter
+#from capture.inspect import plotter
 from capture.generate import qrandom
 from capture.generate import statespace
 from capture.prepare import stateset
@@ -63,13 +63,13 @@ def CPexpgen(vardict, chemdf, rxndict, edict, rdict, climits):
     '''Generate stateset and associated files
     '''
     (emsumdf, uploadlist, secfilelist, rdict) = statepipe(vardict, chemdf, rxndict, edict, rdict, vardict['volspacing'])
-    if rxndict['plotter_on'] == 1:
-        if 1 <= rxndict['ExpWorkflowVer'] < 2:
-            plotter.plotmewf1(emsumdf, rxndict)
-        else:
-            modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
-    else:
-        pass
+ #   if rxndict['plotter_on'] == 1:
+ #       if 1 <= rxndict['ExpWorkflowVer'] < 2:
+ #           plotter.plotmewf1(emsumdf, rxndict)
+ #       else:
+ #           modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
+ #   else:
+ #       pass
     return(uploadlist, secfilelist)    
 
 def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
@@ -77,13 +77,13 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
     Generate a random sample run on gdrive
     '''
     (emsumdf, secfilelist, erdf) = quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits)
-    if rxndict['plotter_on'] == 1:
-        if 1 <= rxndict['ExpWorkflowVer'] < 2:
-            plotter.plotmewf1(emsumdf, rxndict)
-        else:
-            modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
-    else:
-        pass
+ #   if rxndict['plotter_on'] == 1:
+ #       if 1 <= rxndict['ExpWorkflowVer'] < 2:
+ #           plotter.plotmewf1(emsumdf, rxndict)
+ #       else:
+ #           modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
+ #   else:
+ #       pass
 
     # Generate a different robot file depending on the user specified lab
     if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":

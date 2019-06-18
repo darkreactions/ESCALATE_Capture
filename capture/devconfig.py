@@ -23,10 +23,11 @@ solventlist = ['GBL', 'DMSO', 'DMF', 'DCM']
 #######################################
 
 # Gdrive target folder for rendering
-targetfolder = '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe' #target folder for run generation
-chemsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+template_folder = '1PVeVpNjnXiAuzm3Oq2q-RiiLBhKPGW53'
+targetfolder = '1tUb4GcF_tDanMjvQuPa6vj0n9RNa5IDI' #target folder for run generation
+chemsheetid = "1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI"
 chem_workbook_index = 0
-reagentsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+reagentsheetid = "1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI"
 reagent_workbook_index = 1
 reagent_interface_amount_startrow = 15
 

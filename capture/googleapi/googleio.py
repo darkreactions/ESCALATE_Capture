@@ -13,6 +13,7 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from oauth2client.service_account import ServiceAccountCredentials
 from capture.googleapi import googleio
+from capture.devconfig import template_folder
 
 modlog = logging.getLogger('initialize.googleio')
 

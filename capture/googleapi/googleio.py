@@ -13,6 +13,7 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from oauth2client.service_account import ServiceAccountCredentials
 from capture.googleapi import googleio
+from capture.devconfig import template_folder
 
 modlog = logging.getLogger('initialize.googleio')
 
@@ -24,11 +25,11 @@ gauth = GoogleAuth()
 
 # We have to check this path here, rather than in runme.py, if this is global because
 # global code gets executed when a module is imported
-if not os.path.exists('./capture/localfiles'):
-    os.mkdir('./capture/localfiles')
+if not os.path.exists('./localfiles'):
+    os.mkdir('./localfiles')
 
 # TODO put this in a config
-GOOGLE_CRED_FILE = "./capture/localfiles/mycred.txt"
+GOOGLE_CRED_FILE = "./localfiles/mycred.txt"
 if not os.path.exists(GOOGLE_CRED_FILE):
     open(GOOGLE_CRED_FILE, 'w+').close()
 

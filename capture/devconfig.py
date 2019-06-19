@@ -10,7 +10,7 @@ RoboVersion = 2.5
 # Hard coded limits
 max_robot_reagents = 7
 maxreagentchemicals = 3
-volspacing = 100  # reagent microliter (uL) spacing between points in the stateset
+volspacing = 5  # reagent microliter (uL) spacing between points in the stateset
 
 #######################################
 

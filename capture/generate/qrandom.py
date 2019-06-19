@@ -204,8 +204,6 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
         portionnum += 1
 
     ws.terminate()
-    experiment_mmol_df.to_csv("mmol_df.csv")
-    experiment_df.to_csv("vol_df.csv")
     return experiment_df, experiment_mmol_df
 
 def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):

@@ -109,7 +109,7 @@ class perovskitereagent:
         # {item<i>_formulaconc: concentration for all chemical item indices i in self}
         self.concs = self.concentrations(reactantinfo, chemdf, rxndict)
         self.ispurebool = self.ispure()
-        self.solventnum = self.solvent(solvent_list)
+        self.solventnum = self.solvent(solvent_list)  # todo bad name is bad, this should be solventindex  
         self.solvent_list = solvent_list
 
         #passes the reaction preparation step if a pure chemical 

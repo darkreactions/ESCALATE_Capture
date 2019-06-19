@@ -71,14 +71,14 @@ Which maintain **TODO: Ian flesh out this section**
 
 - class `PerovskiteReagent`
     - init Args:
-        - reagentVariables: 
+        - `reagentVariables`:
             - {'reagent': reagentname,
                'etc': etc
                }
-        - rxndict
-        - reagent_ID_NUMBER
-        - chemdf
-        - solventList
+        - `rxndict`
+        - `reagent_ID_NUMBER`
+        - `chemdf`
+        - `solventList`
     - Member Variables:
         - `name`; str 
             - e.g. 2
@@ -89,6 +89,7 @@ Which maintain **TODO: Ian flesh out this section**
         - `isPure`: boolean
             - is this purely one chemical
         - `solventNumber`: int
+            - index of solvent
         - `prepTemperature`: int (or float?)
             - reagentVariables["prep_temperature"]
         - `prepStir`: int (or float?)
@@ -102,17 +103,7 @@ Which maintain **TODO: Ian flesh out this section**
         - `prepDurUnits` : str        
     
     - Member Methods:
-        Skipping __init__ helper fns
-        
-        - Mike's new fn goes here. 
-
-- class ``:
-
-    - init Args:
-    
-    - Member Variables: 
-    
-    - Member Methods
+        Skipping `__init__` helper fns
 
 
 ### Dictionaries
@@ -145,17 +136,18 @@ e.g. rdict[] maps to an instanciated Reagent class. However, edict is simply map
 Specifically, the subset of k/v pairs in rxn dict whose key's have 'exp' in the key-string.
 
 - `reagentvariables`
-    - local to capture.reagent.buildreagents
+    - local to `capture.reagent.buildreagents`
     - a subset of rxndict defining a particular reagent
     - keys are things like `item_<i>_formula` or `prep_stirrate`
     - defined for an *individual* reagent and passed to `perovskitereagent.__init__()` as `reactantinfo`
     
 
 - `climits`
-    - pulls Min and Max for each chemical.
+    - defined in `chemical.chemicallimits(rxndict)`
+    - pulls Molar Min and Max for each chemical.
     - saves into dict the min and max for each chemical
     - dict of user defined chemical limits (concentrations?)
-    - defined in the template excel file for each portion of rxndict 
+    - defined in the template excel file for each `portion` of `rxndict`
     - **TODO: I don't see any limits in any of the example XLS files... how is this intended to be used?**
 
 ### DataFrames
@@ -181,4 +173,4 @@ Specifically, the subset of k/v pairs in rxn dict whose key's have 'exp' in the 
    - Final nominal molarity for each reagent in each well
     
 - `expOverVIew`
-    - List of `s` -- see above
+    - List of `portions` -- see above

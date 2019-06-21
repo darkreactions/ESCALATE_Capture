@@ -13,9 +13,12 @@ import capture.devconfig as config
 
 modlog = logging.getLogger('capture.generate.statespace')
 
-def default_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
-    """generate a state set from the volume constraints of the experimental system ensuring that the limits are met,
-    return the full df of volumes as well as the idealized conc df
+
+def default_statedataframe(rxndict, expoverview, vollimits, rdict, experiment):
+    """Generate a state set from the volume constraints of the experimental system ensuring that the limits are met.
+
+    Return the full df of volumes as well as the idealized conc df
+
     :param rxndict:
     :param expoverview:
     :param vollimits:
@@ -37,18 +40,17 @@ def default_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, v
         reagentnamelist = []
         reagentvols = []
 
-
         for reagent in portion:
             # generate the list of possible volumes for each reagent
             # and the associated mmol calculated values (for parsing later)
 
             # Take the maximum volume limit and generate a list of all possible volumes from 0 to the max
             reagentnamelist.append('Reagent%s (ul)' % reagent)
-            reagentvols.append((list(range(0, vollimits[portionnum][1]+1, volspacing))))
+            reagentvols.append(list(range(0, vollimits[portionnum][1]+1, config.volspacing)))
             fullreagentnamelist.append('Reagent%s (ul)' % reagent)
 
         # generate permutation of all of the volumes
-        testdf = pd.DataFrame((list(itertools.product(*reagentvols))))
+        testdf = pd.DataFrame(list(itertools.product(*reagentvols)))
         testdf.astype(int)
 
         # organize dataframe with the sums of the generated numbers
@@ -59,38 +61,43 @@ def default_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, v
         rdf.columns = reagentnamelist
 
         # Select only those which meet the volume critera specified by the portion of the experiment
-        finalrdf = ((rdf.loc[(rdf[sumname] >= int(vollimits[portionnum][0])) & (rdf[sumname] <= int(vollimits[portionnum][1]))]))
+        finalrdf = rdf.loc[(rdf[sumname] >= int(vollimits[portionnum][0])) & (rdf[sumname] <= int(vollimits[portionnum][1]))]
         finalrdf = finalrdf.drop(labels=sumname, axis=1)
         fullvollist.append(finalrdf.values.tolist())
         portionnum += 1
 
     # permute all combinations of the portions that meet the requirements set by the user
-    fullpermlist = (((list(itertools.product(*fullvollist)))))
+    fullpermlist = list(itertools.product(*fullvollist))
     # combine the list of list for each rxn into a single list for import into pandas
-    finalfulllist = []
-
-    for multivol in fullpermlist:
-        finalfulllist.append(list(itertools.chain.from_iterable(multivol)))
-
-    # TODO replace with listcomp? listcomps are optimized at the interpreter-level
-    # finalfulllist = [list(itertools.chain.from_iterable(multivol)) for multivol in fullpermlist]
+    finalfulllist = [list(itertools.chain.from_iterable(multivol)) for multivol in fullpermlist]
 
     prdf = pd.DataFrame(finalfulllist)
     prdf = prdf.drop_duplicates()
     prdf.columns = fullreagentnamelist
     prdf.astype(float)
-    finalmmoldf = pd.DataFrame()
 
+    finalmmoldf = pd.DataFrame()
     for reagentname in fullreagentnamelist:
         if "Reagent" in reagentname:
             reagentnum = reagentname.split('t')[1].split(' ')[0]
             mmoldf = calcs.mmolextension(prdf[reagentname], rdict, experiment, reagentnum)
-            finalmmoldf = pd.concat([finalmmoldf,mmoldf], axis=1)
+            finalmmoldf = pd.concat([finalmmoldf, mmoldf], axis=1)
 
     return prdf, finalmmoldf
 
 
-def wolfram_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, volspacing):
+def wolfram_statedataframe(rxndict, expoverview, vollimits, rdict, experiment):
+    """Exhaustively sample a regularly spaced grid in the concentration space of this experiment.
+
+    Uses Josh's mathematica code.
+
+    :param rxndict:
+    :param expoverview:
+    :param vollimits:
+    :param rdict:
+    :param experiment: WE'RE LOOPING OVER THIS?! todo: talk with Ian.
+    :return: voldf, concdf   todo ensure these are good names
+    """
     ws = WolframSampler()
 
     if len(expoverview) > 1:
@@ -108,13 +115,11 @@ def wolfram_statedataframe(rxndict, expoverview, vollimits, rdict, experiment, v
     reagent_vectors = build_reagent_vectors(portion_reagents, portion_species_names)
 
     experiments = ws.enumerativelySample(reagentVectors=reagent_vectors,
-                                        uniqueChemNames=portion_species_names,
-                                        deltaV=float(config.volspacing),
-                                        maxMolarity=float(maxconc),
-                                        finalVolume=float(volmax))
+                                         uniqueChemNames=portion_species_names,
+                                         deltaV=float(config.volspacing),
+                                         maxMolarity=float(maxconc),
+                                         finalVolume=float(volmax))
 
-
-    # todo: validate these two dfs downstream
     voldf = pd.DataFrame.from_dict(experiments['volumes'])
     concdf = pd.DataFrame.from_dict(experiments['concentrations'])
 
@@ -131,7 +136,7 @@ def chemicallist(rxndict):
             chemicallist.append(name)
     return chemicallist
 
-def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
+def preprocess_and_enumerate(chemdf, rxndict, edict, rdict, volspacing):
     """
 
     :param chemdf:
@@ -143,12 +148,18 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
     """
     experiment = 1
     modlog.info('Making a total of %s unique experiments on the tray' %rxndict['totalexperiments'])
-    erdf = pd.DataFrame() 
+
+    # Experiment Reagent dataframes
+    # store volumes and concentrations of statespace, respectively
+    erdf = pd.DataFrame()
     ermmoldf = pd.DataFrame()
 
+    # outer loop: runs state-space enumeration for all experiments specified in Template
     while experiment < rxndict['totalexperiments'] + 1:
         modlog.info('Initializing dataframe construction for experiment %s' %experiment)
         experimentname = 'exp%s' % experiment
+
+        # get vollimits in one big ole loop
         for k, v in edict.items():
             if experimentname in k:
                 if 'wells' in k:
@@ -159,35 +170,39 @@ def statepreprocess(chemdf, rxndict, edict, rdict, volspacing):
         modlog.info('Building reagent state space for experiment %s using reagents %s' %(experiment, edict[experimentname]))
         modlog.warning('Well count will be ignored for state space creation!  Please disable CP run if this incorrect')
 
+        # DO THE ENUMERATION
         if config.sampler == 'default':
-            prdf, prmmoldf = default_statedataframe(rxndict, edict[experimentname], vollimits, rdict, experiment, volspacing)
+            prdf, prmmoldf = default_statedataframe(rxndict, edict[experimentname], vollimits, rdict, experiment)
         elif config.sampler == 'wolfram':
-            prdf, prmmoldf = wolfram_statedataframe(rxndict, edict[experimentname], vollimits, rdict, experiment, volspacing)
+            prdf, prmmoldf = wolfram_statedataframe(rxndict, edict[experimentname], vollimits, rdict, experiment)
         else:
             modlog.error('Unexpected sampler in devconfig: {}. Quitting.'.format(config.sampler))
             sys.exit(1)
 
+        # accumulate state spaces for experiments
         erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
         ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
         # Return the reagent data frame with the volumes for that particular portion of the plate
         modlog.info('Succesfully built experiment %s stateset' %(experiment))
-        experiment+=1
+        experiment += 1
 
     #Final reagent volumes dataframe
     erdf.fillna(value=0, inplace=True)
+
     #Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
     clist = chemical.exp_chem_list(rdict)
-    # Final nominal molarity for each reagent in each well
+
     # Final nominal molarity for each reagent in each well
     emsumdf = calcs.finalmmolsums(clist, ermmoldf) # Returns incorrectly labeled columns, we used these immediately and convert to the correct units
 
     if config.sampler == 'default':
         emsumdf = emsumdf.divide(erdf.sum(axis=1), axis='rows')*1000
-#    plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
-    #combine the experiments for the tray into one full set of volumes for all the wells on the plate
-    modlog.info('Begin combining the experimental volume dataframes')
-#    for chemical in rdict['2'].chemicals:
-#        print(rxndict['chem%s_abbreviation' %chemical])
 
+    # plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
+
+    # combine the experiments for the tray into one full set of volumes for all the wells on the plate
+    modlog.info('Begin combining the experimental volume dataframes')
+    # for chemical in rdict['2'].chemicals:
+    #     print(rxndict['chem%s_abbreviation' %chemical])
     return erdf, ermmoldf, emsumdf

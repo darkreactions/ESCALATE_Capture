@@ -1,3 +1,7 @@
+"""
+TODO Pendletoon, doc this whole module
+"""
+
 import logging
 import pandas as pd
 
@@ -53,7 +57,7 @@ def preparationdf(rdict,
                 nominalsdf.loc[index, "Unit"] = 'milliliter'
                 itemcount+=1
             elif chemabbr == 'null':
-                nominalsdf.loc[index, "nominal_amount"] =  'null'
+                nominalsdf.loc[index, "nominal_amount"] = 'null'
                 nominalsdf.loc[index, "Unit"] = 'null'
                 nominalsdf.loc[index, "actualsnull"] = 'null'
                 itemcount+=1

@@ -8,8 +8,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 def ReagentData(reagsheetid, reagsheetworkbook):
     """Read the reagents workbook from Google Drive and return a pandas DataFrame
 
-    :param reagsheetid: TODO will this function ever need this? it is currently overwritten internally
-    :param reagsheetworkbook:  TODO Ian, is this an integer index of the worksheet? Unclear usage of book/sheet
+    :param reagsheetid:        TODO this is a workbook (and unused)
+    :param reagsheetworkbook:  TODO this is a sheet    (Rest in a Pendletonian manner)
     :return reagdf: pandas DF representation of the reagent worksheet
     """
 
@@ -33,26 +33,22 @@ def ReagentData(reagsheetid, reagsheetworkbook):
 
 
 def buildreagents(rxndict, chemdf, reagentdf, solventlist):
-    """
-    TODO cleanup this docstring: in one sentence _why_ do we want a reagent dict?
-    #>>> What is the structure of the k => v mapping? We might want a writeup on ALL of the dicts like this
-    #>>> See issue #46
+    """Return rdict, a mapping from reagent IDs to perovskitereagent objects
 
-    builds dictionary of reagents based on user specifications of formulas and chemicals
-    parses initial user input and generates a dictionary of reagents with relevant properties
+    Checks that reagents were only specified in one manner in the Template: 'list-style' or with a ModelID
     """
 
     modlog = logging.getLogger('capture.models.reagent.buildreagents')
     reagentdict = {}
 
-    # find all of the reagents constructured in the run
+    # find all of the reagents constructed in the run
     for item in rxndict:
 
-        # parse user specifications from user interface
+        # parse 'list-style' reagent specifications from Template
         if 'Reagent' in item and "chemical_list" in item:
             reagentname = (item.split('_'))[0]
 
-            # ensure that the reagent definition is not being defined in two different ways
+            # ensure that 'list-style' is not used along with ModelID
             idflag = reagentname + "_ID"
             if idflag in rxndict:
                 print('too many %s' % reagentname)
@@ -97,11 +93,11 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
 
 
 class perovskitereagent:
-    ''' Reaction class containing user specified and calculated variables 
+    """Reaction class containing user specified and calculated variables
 
-    numerically order reagents specified by the user are associated with calculated values 
+    numerically order reagents specified by the user are associated with calculated values
     attributes all of the properties of the reagent should be contained within this object
-    '''
+    """
     def __init__(self, reactantinfo, rxndict, reagentnumber, chemdf, solvent_list):
         self.name = reagentnumber # reag1, reag2, etc
         self.chemicals = reactantinfo['chemical_list'] # list of the chemicals in this reagent

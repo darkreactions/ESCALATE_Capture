@@ -9,8 +9,12 @@ class perovskitechemical:
         pass
 
 def ChemicalData(chemsheetid, chemsheetworkbook):
-    ### General Setup Information ###
-    ##GSpread Authorization information
+    """Get the chemical sheet from the chemical inventory
+
+    :param chemsheetid:       todo this is a workbook (and unused)
+    :param chemsheetworkbook: todo this is a sheet    (Rest in peace Ian Pendletoon)
+    :return:
+    """
     print('Obtaining chemical information from Google Drive.. \n', end='')
     scope = ['https://spreadsheets.google.com/feeds']
     credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
@@ -27,6 +31,11 @@ def ChemicalData(chemsheetid, chemsheetworkbook):
 
 
 def chemicallimits(rxndict):
+    """Return the molarmins and maxes for each chemical in the run
+
+    :param rxndict:
+    :return:
+    """
     climits = {}
     for k, v in rxndict.items():
         if "chem" in k and "molarmin" in k:

@@ -4,6 +4,8 @@ import logging
 modlog = logging.getLogger('capture.generate.calcs')
 
 def mmolextension(reagentdf, rdict, experiment, reagent):
+    """TODO Pendltoonize this docc"""
+
     mmoldf = (pd.DataFrame(reagentdf))
     portionmmoldf = pd.DataFrame()
     for chemlistlocator, conc in (rdict['%s' %reagent].concs.items()):
@@ -17,9 +19,10 @@ def mmolextension(reagentdf, rdict, experiment, reagent):
                 %(experiment, reagent, truechemname)}, inplace=True)
         modlog.info('dataframe columns: %s renamed to: %s'%(oldheaders, newmmoldf.columns))
         portionmmoldf = pd.concat([portionmmoldf, newmmoldf], axis=1)
-    return(portionmmoldf)
+    return portionmmoldf
 
 def finalmmolsums(chemicals, mmoldf):
+    """TODO Pendltoonize this docc"""
     finalsummedmmols = pd.DataFrame()
     for chemical in chemicals:
         cname = '%s' %chemical
@@ -32,4 +35,4 @@ def finalmmolsums(chemicals, mmoldf):
         summedmmols.columns = [coutname]
         finalsummedmmols = pd.concat([finalsummedmmols, summedmmols], axis=1)
     finalsummedmmols.fillna(value=0, inplace=True) # Total mmmols added of each chemical in previous reagent additions
-    return(finalsummedmmols)
+    return finalsummedmmols

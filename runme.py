@@ -35,7 +35,7 @@ def linkprocess(linkfile):
 
 
 def build_rxndict(rxnvarfile):
-    """Read scientist-specified reactions from excel file and return dict representation
+    """Read Template file and return a dict representation
 
     The rxndict is a mapping of Variables => Values (column B => column d) in the
     uncommented rows of the reaction excel file

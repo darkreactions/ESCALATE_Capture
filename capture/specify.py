@@ -24,10 +24,13 @@ modlog = logging.getLogger('capture.specify')
 
 def datapipeline(rxndict, vardict):
     """Main data pipeline for organizing ESCALATE functionality
-    
-    Gathers experimental environment from user (rxndict), dev (vardict), 
-    and googleapi for file handling.  Prepares directory and relevant files, 
-    organizes function calls to orchestrate new experimental run
+
+    :param rxndict: mostly experiment Template info, see DataStructures_README.md
+    :param vardict: mostly command line parameters and devconfig info, see DataStructures_README.md
+
+    Retrieves chemical info from google drive
+    Sends Template to state-space generator or random sample generator as specified on command line.
+    Saves experiments as csvs and uploads to google drive (if debug is not active)
     """
 
     modlog = logging.getLogger('capture.specify.datapipeline')

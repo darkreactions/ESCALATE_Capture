@@ -347,8 +347,6 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     experiment_mmol_df = pd.concat([experiment_mmol_df, portion_mmol_df], axis=1)
     experiment_df = pd.concat([experiment_df, portion_df], axis=1)
 
-    experiment_mmol_df.to_csv("mmol_df.csv")
-    experiment_df.to_csv("vol_df.csv")
     return experiment_df, experiment_mmol_df
 
 

@@ -81,7 +81,14 @@ def calcvollimitdf(rdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, r
     # Create dataframes which will hold the final comparisons for the max and min
     finalvolmaxdf = pd.DataFrame()
     # Get the maximum volumes possible for this particular reagent based on user constraints
-    rvolmax, rvolmin = calcvollimit(userlimits, rdict, volmax, volmin, experiment, reagentlist, reagent, wellnum)
+    rvolmax, rvolmin = calcvollimit(userlimits,
+                                    rdict,
+                                    volmax,
+                                    volmin,
+                                    experiment,
+                                    reagentlist,
+                                    reagent,
+                                    wellnum)
     # get maximum values based on experimental constraints (well volume primarily)
     inputvalidation.reagenttesting(volmax,volmin)
     # Generate an upward limit for the chemical in dataframe based on the maximum user specified well volume and all previously used reagents
@@ -169,8 +176,14 @@ def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
 
                 # since all of the volume limits for the first draw are the same these can be
                 # treated as a bounded search sequence
-                rvolmax, rvolmin = calcvollimit(userlimits, rdict, volmax, volmin,
-                                                experiment, portion, reagent, wellnum)
+                rvolmax, rvolmin = calcvollimit(userlimits,
+                                                rdict,
+                                                volmax,
+                                                volmin,
+                                                experiment,
+                                                portion,
+                                                reagent,
+                                                wellnum)
 
                 # Returns datafram of volumes of each reagent added to each experiment
                 rdf = initialrdf(rvolmax, rvolmin, reagent, wellnum)
@@ -187,8 +200,17 @@ def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                 # (i.e. this is not going to use sobol as the ranges are different for each)
                 # Constrain the range based on volume, reagent-chemical concentrations and user constraints
 
-                rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin,
-                                                      experiment, portion, reagent, wellnum, rxndict)
+                rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf,
+                                                      mmoldf,
+                                                      userlimits,
+                                                      rdict,
+                                                      volmax,
+                                                      volmin,
+                                                      experiment,
+                                                      portion,
+                                                      reagent,
+                                                      wellnum,
+                                                      rxndict)
                 # Since each volume maximum is different, need to sample the remaining reagents independently
                 # (thus different sampling)
                 rdf = rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum)
@@ -200,8 +222,17 @@ def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
             elif reagentcount == reagenttotal:
                 if vollimits[portionnum][0] == vollimits[portionnum][1]:
                     # print(finalrdf.sum(axis=1))
-                    rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin,
-                                                          experiment, portion, reagent, wellnum, rxndict)
+                    rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf,
+                                                          mmoldf,
+                                                          userlimits,
+                                                          rdict,
+                                                          volmax,
+                                                          volmin,
+                                                          experiment,
+                                                          portion,
+                                                          reagent,
+                                                          wellnum,
+                                                          rxndict)
                     reagentname = "Reagent%s (ul)" % reagent
                     rdf = pd.DataFrame(rvolmaxdf, columns=[reagentname])
                     mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' % reagent]), rdict, experiment, reagent)
@@ -291,7 +322,10 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     reagent_vectors = build_reagent_vectors(portion_reagents, portion_species_names)
 
     ws = WolframSampler()
-    experiments = ws.randomlySample(reagent_vectors, int(wellnum), float(maxconc), float(volmax))
+    experiments = ws.randomlySample(reagent_vectors,
+                                    int(wellnum),
+                                    float(maxconc),
+                                    float(volmax))
     ws.terminate()
 
     portion_df = pd.DataFrame.from_dict(experiments)
@@ -348,9 +382,21 @@ def preprocess_and_sample(chemdf, rxndict, edict, rdict, climits):
 
         # DO THE SAMPLING
         if config.sampler == 'wolfram':
-            prdf, prmmoldf = wolfram_sampling(edict[experimentname], rdict, vollimits, rxndict, wellnum, climits, experiment)
+            prdf, prmmoldf = wolfram_sampling(edict[experimentname],
+                                              rdict,
+                                              vollimits,
+                                              rxndict,
+                                              wellnum,
+                                              climits,
+                                              experiment)
         elif config.sampler == 'default':
-            prdf, prmmoldf = default_sampling(edict[experimentname], rdict, vollimits, rxndict, wellnum, climits, experiment)
+            prdf, prmmoldf = default_sampling(edict[experimentname],
+                                              rdict,
+                                              vollimits,
+                                              rxndict,
+                                              wellnum,
+                                              climits,
+                                              experiment)
         else:
             modlog.error('Encountered unexpected sampler in devconfig: {}. Exiting.'.format(config.sampler))
             sys.exit(1)

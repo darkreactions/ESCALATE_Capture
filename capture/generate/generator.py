@@ -21,7 +21,12 @@ modlog = logging.getLogger('capture.generate.generator')
 def CPexpgen(vardict, chemdf, rxndict, edict, rdict, climits):
     """Wrapper to statepipe
     """
-    emsumdf, uploadlist, secfilelist, rdict = statepipe(vardict, chemdf, rxndict, edict, rdict, vardict['volspacing'])
+    emsumdf, uploadlist, secfilelist, rdict = statepipe(vardict,
+                                                        chemdf,
+                                                        rxndict,
+                                                        edict,
+                                                        rdict,
+                                                        vardict['volspacing']) #this should be replaced with devconfig.volspacing
 
     # TODO: Fix plotting
     # if rxndict['plotter_on'] == 1:
@@ -34,7 +39,11 @@ def CPexpgen(vardict, chemdf, rxndict, edict, rdict, climits):
 def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
     """Generate stateset and associated files
     """
-    erdf, ermmoldf, emsumdf = statespace.preprocess_and_enumerate(chemdf, rxndict, edict, rdict, volspacing)
+    erdf, ermmoldf, emsumdf = statespace.preprocess_and_enumerate(chemdf,
+                                                                  rxndict,
+                                                                  edict,
+                                                                  rdict,
+                                                                  volspacing)
 
     # Clean up dataframe for robot file -> create xls --> upload
     erdfrows = erdf.shape[0]
@@ -87,7 +96,12 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
 def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
     """Wrapper to quasirandompipe
     """
-    emsumdf, secfilelist, erdf = quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits)
+    emsumdf, secfilelist, erdf = quasirandompipe(vardict,
+                                                 chemdf,
+                                                 rxndict,
+                                                 edict,
+                                                 rdict,
+                                                 climits)
 
     # TODO fix plotter
     # if rxndict['plotter_on'] == 1:
@@ -110,8 +124,13 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
 
 
 def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
-    """Randomly sample from statespace with qrandom module, return files for uploads"""
-    erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(chemdf, rxndict, edict, rdict, climits)
+    """Randomly sample from statespace with qrandom module, return files for uploads
+    """
+    erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(chemdf,
+                                                            rxndict,
+                                                            edict,
+                                                            rdict,
+                                                            climits)
 
     # Clean up dataframe for robot file -> create xls --> upload
     erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])

@@ -59,18 +59,32 @@ def datapipeline(rxndict, vardict):
                 user selected %s experiments.' % rxndict['totalexperiments'])
             sys.exit()
         else:
-            uploadlist, secfilelist = generator.CPexpgen(vardict, chemdf, rxndict, edict, rdict, climits)
+            uploadlist, secfilelist = generator.CPexpgen(vardict,
+                                                         chemdf,
+                                                         rxndict,
+                                                         edict,
+                                                         rdict,
+                                                         climits)
             if vardict['debug'] == 1:
                 pass
             else:
                 #prepare
-                interface.PrepareDirectoryCP(uploadlist, secfilelist,
-                    rxndict['RunID'], rxndict['logfile'],rdict, vardict['targetfolder'])
+                interface.PrepareDirectoryCP(uploadlist,
+                                             secfilelist,
+                                             rxndict['RunID'],
+                                             rxndict['logfile'],
+                                             rdict,
+                                             vardict['targetfolder'])
 
     #generate
     if vardict['challengeproblem'] == 0:
         #Create experiment file and relevant experiment associated data
-        (erdf, robotfile, secfilelist) = generator.expgen(vardict, chemdf, rxndict, edict, rdict, climits)
+        (erdf, robotfile, secfilelist) = generator.expgen(vardict,
+                                                          chemdf,
+                                                          rxndict,
+                                                          edict,
+                                                          rdict,
+                                                          climits)
         # disable uploading if debug is activated 
         if vardict['debug'] == 1:
             pass
@@ -78,12 +92,19 @@ def datapipeline(rxndict, vardict):
             modlog.info('Starting file preparation for upload')
             # Lab specific handling - different labs require different files for tracking
             if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
-                (PriDir, secdir, filedict) = googleio.genddirectories(rxndict,vardict['targetfolder'], vardict['filereqs'])
-                (reagentinterfacetarget, gspreadauth) = googleio.gsheettarget(filedict)
+                PriDir, secdir, filedict = googleio.genddirectories(rxndict,vardict['targetfolder'], vardict['filereqs'])
+
+                reagentinterfacetarget, gspreadauth = googleio.gsheettarget(filedict)
                 #abstract experiment data to reagent level (generate reagent preparation based on user requests)
+
                 finalexportdf = interface.reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf)
-                sheetobject = interface.reagent_interface_upload(rxndict, vardict, finalexportdf, \
-                    gspreadauth, reagentinterfacetarget)
+
+                sheetobject = interface.reagent_interface_upload(rxndict,
+                                                                 vardict,
+                                                                 finalexportdf,
+                                                                 gspreadauth,
+                                                                 reagentinterfacetarget)
+
                 interface.reagent_prep_pipeline(rdict, sheetobject, vardict['max_robot_reagents'])
             elif rxndict['lab'] == "ECL": 
                 (PriDir, secdir, filedict) = googleio.genddirectories(rxndict,vardict['targetfolder'], vardict['filereqs'])

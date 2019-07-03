@@ -24,24 +24,28 @@ def expcount(rxndict):
 def expwellcount(rxndict):
     ''' Takes user xls specifications for well counts and ensures compatibility with code
     '''
+
     modlog = logging.getLogger('capture.prebuildvalidation.expcount')
     expwells = []
-    expcount=0
-    for k,v in rxndict.items():
+    expcount = 0
+
+    for k, v in rxndict.items():
         if 'exp' in k and len(k) == 4:
-            expcount+=1
+            expcount += 1
     for entry, value in rxndict.items():
         if 'exp' in entry and 'well' in entry:
             expwells.append(value)
-        else: pass
-    fixed_wells = rxndict['fixed_wells'] #this is bad. I don't like having hard_coded this in.
-    if (sum(expwells) + fixed_wells > rxndict['wellcount']):
+
+    manual_wells = rxndict['manual_wells']  # this is bad. I don't like having hard_coded this in.
+
+    if sum(expwells) + manual_wells > rxndict['wellcount']:
         modlog.error("Experiments requested outnumber allotted wells. Check well counts for each experiment")
         sys.exit()
-    elif (sum(expwells) + fixed_wells < rxndict['wellcount']):
+
+    elif sum(expwells) + manual_wells < rxndict['wellcount']:
         modlog.error("Experiments requested do not sum to the allotted wells. Check well counts for each experiment")
         sys.exit()
-    else: pass
+
     modlog.info("Only 1 experiment specified. Wellcount applies to only experiment")
 
 def userinterface(rxndict):

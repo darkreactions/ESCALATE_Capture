@@ -413,26 +413,22 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
         experiment += 1
 
 
-    #
-    # Code goes in here to add the specified experiments to the dataframe
-    #
-
     def get_explicit_experiments(rxnvarfile):
-        """ Extract the specified experiments, if there are any.
+        """Extract reagent volumes for the manually specified experiments, if there are any.
 
-        :param rxnvarfile:
+        :param rxnvarfile: the Template
         :return:
         """
         return pd.read_excel(io=rxnvarfile,
-                             sheet_name='FixedExps').dropna().drop('Well Number',
-                                                                   axis=1).astype(int)
+                             sheet_name='ManualExps').dropna().filter(like='Reagent').astype(int)
+
         #THIS SHOULD BE MADE INTO SOMETHING BETTER
 
-    if not rxndict['fixed_wells'] == 0:
+    if not rxndict['manual_wells'] == 0:
         specifiedExperiments = get_explicit_experiments(vardict['exefilename'])
         erdf = pd.concat([erdf, specifiedExperiments], axis=0, ignore_index=True, sort=True)
         if '6' not in rdict.keys():
-            rdict['6'] = rdict['7'] # The hottest of hot fixes returns!
+            rdict['6'] = rdict['7']  # The hottest of hot fixes returns!
         specified_mmol_df = volume_to_mmol_wrapper(specifiedExperiments, rdict, 'f')
         ermmoldf = pd.concat([ermmoldf, specified_mmol_df], axis=0, ignore_index=True, sort=True)
 
@@ -453,6 +449,7 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
     # plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
     # combine the experiments for the tray into one full set of volumes for all the wells on the plate
     modlog.info('Begin combining the experimental volume dataframes')
+    
     # for chemical in rdict['2'].chemicals:
     #    print(rxndict['chem%s_abbreviation' %chemical])
     return erdf, ermmoldf, emsumdf

@@ -41,14 +41,12 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
     modlog = logging.getLogger('capture.models.reagent.buildreagents')
     reagentdict = {}
 
-    # find all of the reagents constructed in the run
     for item in rxndict:
 
         # parse 'list-style' reagent specifications from Template
         if 'Reagent' in item and "chemical_list" in item:
-            reagentname = (item.split('_'))[0]
-
-            # ensure that 'list-style' is not used along with ModelID
+            reagentname = item.split('_')[0]
+            ## ensure that the reagent definition is not being defined in two different ways
             idflag = reagentname + "_ID"
             if idflag in rxndict:
                 print('too many %s' % reagentname)
@@ -62,13 +60,18 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
                         variable = variable.split('_', 1)
                         reagentvariables[variable[1]] = value
 
-                reagent = perovskitereagent(reagentvariables, rxndict, entry_num, chemdf, solventlist)
+                reagent = perovskitereagent(reagentvariables,
+                                            rxndict,
+                                            entry_num,
+                                            chemdf,
+                                            solventlist)
+
                 reagentdict[entry_num] = reagent
 
         # parse specifications from reagent model ID
         elif "Reagent" in item and "_ID" in item:
             reagentvariables = {}
-            reagentname = (item.split('_'))[0]
+            reagentname = item.split('_')[0]
             entry_num = reagentname.split('t')[1]
             reagentid = rxndict[item]
             reagentvariables['reagent'] = reagentname
@@ -81,14 +84,21 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
                         pass
                     else:
                         chemical_list.append(chemicalname)
-                reagentvariables[columnheader] = (reagentdf.loc["%s" %reagentid, columnheader])
+
+                reagentvariables[columnheader] = reagentdf.loc["%s" %reagentid, columnheader]
 
             reagentvariables['chemical_list'] = chemical_list
-            reagent = perovskitereagent(reagentvariables, rxndict, entry_num, chemdf, solventlist)
+
+            reagent = perovskitereagent(reagentvariables,
+                                        rxndict,
+                                        entry_num,
+                                        chemdf,
+                                        solventlist)
+
             reagentdict[entry_num] = reagent
 
-    for k, v in reagentdict.items():
-        modlog.info("%s : %s" % (k, vars(v)))
+    for k,v in reagentdict.items():
+        modlog.info("%s : %s" %(k,vars(v)))
     return reagentdict
 
 

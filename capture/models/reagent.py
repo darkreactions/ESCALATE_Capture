@@ -28,35 +28,46 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
 
     parses initial user input and generates a dictionary of reagents with relevant properties
     '''
+
     reagentdict={}
+
     #find all of the reagents constructured in the run
     for item in rxndict:
         #parse user specifications from user interface
         if 'Reagent' in item and "chemical_list" in item:
-            reagentname=(item.split('_'))[0]
+            reagentname = item.split('_')[0]
             ## ensure that the reagent definition is not being defined in two different ways
-            idflag = reagentname+"_ID" 
+            idflag = reagentname + "_ID"
+
             if idflag in rxndict:
                 print('too many %s' %reagentname)
             else:
                 reagentvariables={}
-                reagentvariables['reagent']=reagentname
-                entry_num = reagentname.split('t')
-                for variable,value in rxndict.items(): 
-                    if reagentname in variable:
-                        variable=(variable.split('_',1))
-                        reagentvariables[variable[1]]=value
-                reagent = perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)
-                # print(reagent.component_dict)
-                reagentdict[entry_num[1]]=reagent
+                reagentvariables['reagent'] = reagentname
+                entry_num = reagentname.split('t')[1]
+
+                for variable, value in rxndict.items():
+                    if reagentname in variable and '(ul)' not in variable:
+                        variable = variable.split('_', 1)
+                        reagentvariables[variable[1]] = value
+
+                reagent = perovskitereagent(reagentvariables,
+                                            rxndict,
+                                            entry_num,
+                                            chemdf,
+                                            solventlist)
+
+                reagentdict[entry_num] = reagent
+
         #parse specifications from reagent model ID
         elif "Reagent" in item and "_ID" in item:
-            reagentvariables={}
-            reagentname=(item.split('_'))[0]
-            entry_num = reagentname.split('t')
-            reagentid=rxndict[item]
-            reagentvariables['reagent']=reagentname
+            reagentvariables = {}
+            reagentname = item.split('_')[0]
+            entry_num = reagentname.split('t')[1]
+            reagentid = rxndict[item]
+            reagentvariables['reagent'] = reagentname
             chemical_list = []
+
             for columnheader in reagentdf.columns:
                 if "item" and "abbreviation" in columnheader:
                     chemicalname = (reagentdf.loc["%s" %reagentid, columnheader])
@@ -64,11 +75,20 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
                         pass
                     else:
                         chemical_list.append(chemicalname)
-                reagentvariables[columnheader] = (reagentdf.loc["%s" %reagentid, columnheader])
+
+                reagentvariables[columnheader] = reagentdf.loc["%s" %reagentid, columnheader]
+
             reagentvariables['chemical_list'] = chemical_list
-            reagent=perovskitereagent(reagentvariables, rxndict, entry_num[1], chemdf, solventlist)  
-            reagentdict[entry_num[1]]=reagent
-    for k,v in reagentdict.items(): 
+
+            reagent = perovskitereagent(reagentvariables,
+                                        rxndict,
+                                        entry_num,
+                                        chemdf,
+                                        solventlist)
+
+            reagentdict[entry_num] = reagent
+
+    for k,v in reagentdict.items():
         modlog.info("%s : %s" %(k,vars(v)))
     return(reagentdict)
 

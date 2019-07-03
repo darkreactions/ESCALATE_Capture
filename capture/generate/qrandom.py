@@ -320,38 +320,33 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
         ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
         # Return the reagent data frame with the volumes for that particular portion of the plate
         modlog.info('Succesfully built experiment %s which returned.... ' %(experiment))
-        experiment+=1
-
-
-    #
-    # Code goes in here to add the specified experiments to the dataframe
-    #
+        experiment += 1
 
     def get_explicit_experiments(rxnvarfile):
-        """ Extract the specified experiments, if there are any.
+        """Extract reagent volumes for the manually specified experiments, if there are any.
 
-        :param rxnvarfile:
+        :param rxnvarfile: the Template
         :return:
         """
         return pd.read_excel(io=rxnvarfile,
-                             sheet_name='FixedExps').dropna().drop('Well Number',
-                                                                   axis=1).astype(int)
+                             sheet_name='ManualExps').dropna().filter(like='Reagent').astype(int)
+
         #THIS SHOULD BE MADE INTO SOMETHING BETTER
 
-    if not rxndict['fixed_wells'] == 0:
+    if not rxndict['manual_wells'] == 0:
         specifiedExperiments = get_explicit_experiments(vardict['exefilename'])
         erdf = pd.concat([erdf, specifiedExperiments], axis=0, ignore_index=True, sort=True)
         if '6' not in rdict.keys():
-            rdict['6'] = rdict['7'] # The hottest of hot fixes returns!
+            rdict['6'] = rdict['7']  # The hottest of hot fixes returns!
         specified_mmol_df = volume_to_mmol_wrapper(specifiedExperiments, rdict, 'f')
         ermmoldf = pd.concat([ermmoldf, specified_mmol_df], axis=0, ignore_index=True, sort=True)
 
-    #Final reagent volumes dataframe
+    # Final reagent volumes dataframe
     erdf.fillna(value=0, inplace=True)
     if not erdf.shape[0] == rxndict['wellcount']:
-        raise ValueError("You specified too few reactions in the FixedExps subsheet.")
+        raise ValueError("You specified too few reactions in the ManualExps subsheet.")
     print("completed sampling")
-    #Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
+    # Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
     clist = chemical.exp_chem_list(rdict)
     # Final nominal molarity for each reagent in each well
@@ -362,4 +357,4 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
     modlog.info('Begin combining the experimental volume dataframes')
 #    for chemical in rdict['2'].chemicals:
 #        print(rxndict['chem%s_abbreviation' %chemical])
-    return(erdf,ermmoldf,emsumdf)
+    return erdf, ermmoldf, emsumdf

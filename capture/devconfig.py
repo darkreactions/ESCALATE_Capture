@@ -19,36 +19,30 @@ solventlist = ['GBL', 'DMSO', 'DMF', 'DCM', 'chlorobenzene']
 #######################################
 # Gdrive information
 
-<<<<<<< HEAD
-=======
 # Gdrive target folder for rendering
 #MIT
->>>>>>> MIT_alias
-template_folder = '1PVeVpNjnXiAuzm3Oq2q-RiiLBhKPGW53'
-targetfolder = '1tUb4GcF_tDanMjvQuPa6vj0n9RNa5IDI' #  target folder for run generation
-chemsheetid = "1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI"
-chem_workbook_index = 0
-reagentsheetid = "1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI"
-reagent_workbook_index = 1
-reagent_interface_amount_startrow = 15
-
-#HC LBL
 #template_folder = '1PVeVpNjnXiAuzm3Oq2q-RiiLBhKPGW53'
-#targetfolder = '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe'  # target folder for new experiments
-#chemsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+#targetfolder = '1tUb4GcF_tDanMjvQuPa6vj0n9RNa5IDI' #  target folder for run generation
+#chemsheetid = "1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI"
 #chem_workbook_index = 0
-#reagentsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+#reagentsheetid = "1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI"
 #reagent_workbook_index = 1
 #reagent_interface_amount_startrow = 15
+
+#HC LBL
+template_folder = '1PVeVpNjnXiAuzm3Oq2q-RiiLBhKPGW53'
+targetfolder = '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe'  # target folder for new experiments
+chemsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+chem_workbook_index = 0
+reagentsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+reagent_workbook_index = 1
+reagent_interface_amount_startrow = 15
 
 #######################################
 # Wolfram Kernel Management
 
 system = platform.system()
 if system == "Linux":
-<<<<<<< HEAD
-    wolfram_kernel_path = '/usr/local/Wolfram/Mathematica/12.0/Executables/WolframKernel'
-=======
     wolfram_kernel_path = None
     from pathlib import Path
     # try first path location
@@ -64,7 +58,6 @@ if system == "Linux":
         import sys
         sys.exit()
 
->>>>>>> MIT_alias
 # Mac
 elif system == "Darwin":
     wolfram_kernel_path = None
@@ -74,7 +67,7 @@ elif system == "Darwin":
 
 # must be 'default' or 'wolfram'
 # 'wolfram' is currently experimental and unsupported
-sampler = 'wolfram'
+sampler = 'default'
 
 #######################################
 # Laboratory file management

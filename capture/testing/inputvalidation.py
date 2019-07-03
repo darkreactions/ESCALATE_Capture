@@ -34,10 +34,11 @@ def expwellcount(rxndict):
         if 'exp' in entry and 'well' in entry:
             expwells.append(value)
         else: pass
-    if (sum(expwells)) > rxndict['wellcount']: 
+    fixed_wells = rxndict['fixed_wells'] #this is bad. I don't like having hard_coded this in.
+    if (sum(expwells) + fixed_wells > rxndict['wellcount']):
         modlog.error("Experiments requested outnumber allotted wells. Check well counts for each experiment")
         sys.exit()
-    elif (sum(expwells)) < rxndict['wellcount']:
+    elif (sum(expwells) + fixed_wells < rxndict['wellcount']):
         modlog.error("Experiments requested do not sum to the allotted wells. Check well counts for each experiment")
         sys.exit()
     else: pass

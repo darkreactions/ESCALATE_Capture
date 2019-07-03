@@ -298,6 +298,14 @@ def build_reagent_vectors(portion_reagents, portion_chemicals):
 
     return reagent_vectors
 
+def volume_to_mmol_wrapper(vol_df, rdict, experiment):
+    portion_mmol_df = pd.DataFrame()
+    for columnname in vol_df.columns:
+        reagent = int(columnname.split('t')[1].split('(')[0])  # 'Reagent2 (ul)' to give '2'
+        mmol_df = calcs.mmolextension((vol_df[columnname]), rdict, experiment, reagent)
+        portion_mmol_df = pd.concat([portion_mmol_df, mmol_df], axis=1)
+
+    return portion_mmol_df
 
 def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
     """Sample from the convex hull defined in species concentration space with uniform probability
@@ -349,8 +357,7 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
 
     return experiment_df, experiment_mmol_df
 
-
-def preprocess_and_sample(chemdf, rxndict, edict, rdict, climits):
+def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
     """generates a set of random reactions within given reagent and user constraints
 
     requires the chemical dataframe, rxndict (with user inputs), experiment dictionary, 
@@ -405,10 +412,37 @@ def preprocess_and_sample(chemdf, rxndict, edict, rdict, climits):
         modlog.info('Succesfully built experiment %s which returned.... ' % experiment)
         experiment += 1
 
-    #Final reagent volumes dataframe
-    erdf.fillna(value=0, inplace=True)
 
-    #Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
+    #
+    # Code goes in here to add the specified experiments to the dataframe
+    #
+
+    def get_explicit_experiments(rxnvarfile):
+        """ Extract the specified experiments, if there are any.
+
+        :param rxnvarfile:
+        :return:
+        """
+        return pd.read_excel(io=rxnvarfile,
+                             sheet_name='FixedExps').dropna().drop('Well Number',
+                                                                   axis=1).astype(int)
+        #THIS SHOULD BE MADE INTO SOMETHING BETTER
+
+    if not rxndict['fixed_wells'] == 0:
+        specifiedExperiments = get_explicit_experiments(vardict['exefilename'])
+        erdf = pd.concat([erdf, specifiedExperiments], axis=0, ignore_index=True, sort=True)
+        if '6' not in rdict.keys():
+            rdict['6'] = rdict['7'] # The hottest of hot fixes returns!
+        specified_mmol_df = volume_to_mmol_wrapper(specifiedExperiments, rdict, 'f')
+        ermmoldf = pd.concat([ermmoldf, specified_mmol_df], axis=0, ignore_index=True, sort=True)
+
+    # Final reagent volumes dataframe
+    erdf.fillna(value=0, inplace=True)
+    if not erdf.shape[0] == rxndict['wellcount']:
+        raise ValueError("You specified too few reactions in the FixedExps subsheet.")
+    print("Completed sampling")
+
+    # Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
     clist = chemical.exp_chem_list(rdict)
 

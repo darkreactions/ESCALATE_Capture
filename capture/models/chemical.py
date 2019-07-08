@@ -19,7 +19,6 @@ def ChemicalData(chemsheetid, chemsheetworkbook):
     scope = ['https://spreadsheets.google.com/feeds']
     credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
     gc = gspread.authorize(credentials)
-    chemsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
     ChemicalBook = gc.open_by_key(chemsheetid)
     chemicalsheet = ChemicalBook.get_worksheet(chemsheetworkbook)
     chemical_list = chemicalsheet.get_all_values()

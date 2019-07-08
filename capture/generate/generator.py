@@ -92,7 +92,8 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
 def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
     """Randomly sample from statespace with qrandom module, return files for uploads
     """
-    erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(chemdf,
+    erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(vardict,
+                                                            chemdf,
                                                             rxndict,
                                                             edict,
                                                             rdict,

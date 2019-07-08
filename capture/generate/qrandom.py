@@ -358,7 +358,7 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     return experiment_df, experiment_mmol_df
 
 
-def preprocess_and_sample(chemdf, rxndict, edict, rdict, climits):
+def preprocess_and_sample(vardict, chemdf, rxndict, edict, rdict, climits):
     """generates a set of random reactions within given reagent and user constraints
 
     requires the chemical dataframe, rxndict (with user inputs), experiment dictionary, 

@@ -89,26 +89,27 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
     secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
     return emsumdf, uploadlist, secfilelist, rdict
 
-<<<<<<< HEAD
 def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
+    """Randomly sample from statespace with qrandom module, return files for uploads
+    """
     erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(chemdf,
-                                                            vardict,
                                                             rxndict,
                                                             edict,
                                                             rdict,
                                                             climits)
-    # Clean up dataframe for robot file -> create xls --> upload 
+
+    # Clean up dataframe for robot file -> create xls --> upload
     erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
-    # Export additional information files for later use / storage 
+
+    # Export additional information files for later use / storage
     ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
     ermmoldf.to_csv(ermmolcsv)
     emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
     emsumdf.to_csv(emsumcsv)
-    # List to send for uploads 
+
+    # List to send for uploads
     secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
-    return(emsumdf, secfilelist, erdf)
-=======
->>>>>>> master
+    return emsumdf, secfilelist, erdf
 
 ####################################
 ## QUASI RANDOM GENERATION FUNCTIONS
@@ -135,13 +136,9 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
     # Generate a different robot file depending on the user specified lab
     if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
         robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
-<<<<<<< HEAD
     elif rxndict['lab'] == 'MIT_PVLab':
         robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
     elif rxndict['lab'] == "ECL": 
-=======
-    elif rxndict['lab'] == "ECL":
->>>>>>> master
         robotfile = expint.ECLrobotfile(rxndict, vardict, rdict, erdf)
     else:
         modlog.error('User did not specify a supported lab. \
@@ -150,27 +147,6 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
     return erdf, robotfile, secfilelist
 
 
-def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
-    """Randomly sample from statespace with qrandom module, return files for uploads
-    """
-    erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(chemdf,
-                                                            rxndict,
-                                                            edict,
-                                                            rdict,
-                                                            climits)
-
-    # Clean up dataframe for robot file -> create xls --> upload
-    erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
-
-    # Export additional information files for later use / storage
-    ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
-    ermmoldf.to_csv(ermmolcsv)
-    emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
-    emsumdf.to_csv(emsumcsv)
-
-    # List to send for uploads
-    secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
-    return emsumdf, secfilelist, erdf
 
 
 

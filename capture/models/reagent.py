@@ -37,17 +37,8 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
 
     Checks that reagents were only specified in one manner in the Template: 'list-style' or with a ModelID
     """
-
     modlog = logging.getLogger('capture.models.reagent.buildreagents')
     reagentdict = {}
-
-    parses initial user input and generates a dictionary of reagents with relevant properties
-    '''
-
-    reagentdict={}
-
-    #find all of the reagents constructured in the run
-    '''
     for item in rxndict:
 
         # parse 'list-style' reagent specifications from Template

@@ -43,9 +43,6 @@ reagent_interface_amount_startrow = 15
 
 system = platform.system()
 if system == "Linux":
-<<<<<<< HEAD
-    wolfram_kernel_path = '/usr/local/Wolfram/Mathematica/12.0/Executables/WolframKernel'
-=======
     wolfram_kernel_path = None
     from pathlib import Path
     # try first path location
@@ -61,7 +58,6 @@ if system == "Linux":
         import sys
         sys.exit()
 
->>>>>>> master
 # Mac
 elif system == "Darwin":
     wolfram_kernel_path = None

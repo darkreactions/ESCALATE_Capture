@@ -26,7 +26,7 @@ def datapipeline(rxndict, vardict):
     organizes function calls to orchestrate new experimental run
     '''
     modlog = logging.getLogger('capture.specify.datapipeline')
-    inputvalidation.prebuildvalidation(rxndict)
+    inputvalidation.prebuildvalidation(rxndict, vardict)
     chemdf=chemical.ChemicalData(vardict['chemsheetid'],vardict['chem_workbook_index']) #Dataframe with chemical information from gdrive
     reagentdf = reagent.ReagentData(vardict['reagentsheetid'], vardict['reagent_workbook_index'])
     climits = chemical.chemicallimits(rxndict) #Dictionary of user defined chemical limits

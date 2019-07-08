@@ -10,6 +10,7 @@ from capture.testing import inputvalidation
 from capture.models import chemical
 from capture.generate import calcs
 import capture.devconfig as config
+from capture.utils import get_explicit_experiments
 
 modlog = logging.getLogger('capture.generate.qrandom')
 
@@ -322,27 +323,9 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
         modlog.info('Succesfully built experiment %s which returned.... ' %(experiment))
         experiment += 1
 
-    def get_explicit_experiments(rxnvarfile):
-        """Extract reagent volumes for the manually specified experiments, if there are any.
-
-        :param rxnvarfile: the Template
-        :return:
-        """
-        explicit_experiments = pd.read_excel(io=rxnvarfile, sheet_name='ManualExps')
-        explicit_experiments = explicit_experiments[~explicit_experiments['Manual Well Number'].isna()]
-        return explicit_experiments.filter(like='Reagent').astype(int)
-
     if not rxndict['manual_wells'] == 0:
         specifiedExperiments = get_explicit_experiments(vardict['exefilename'])
-
-        for i, r in enumerate(specifiedExperiments.columns):
-            reagentId = int(r.split('t')[1].split('(')[0])
-            if specifiedExperiments[r].sum() != 0 and str(reagentId) not in rdict.keys():
-                raise ValueError("to use Reagent{} in manualExps, define 'reagent{}_chemical_list' in expdataentry".format(reagentId, reagentId))
-
         erdf = pd.concat([erdf, specifiedExperiments], axis=0, ignore_index=True, sort=True)
-        if '6' not in rdict.keys():
-            rdict['6'] = rdict['7']  # The hottest of hot fixes returns!
         specified_mmol_df = volume_to_mmol_wrapper(specifiedExperiments, rdict, 'f')
         ermmoldf = pd.concat([ermmoldf, specified_mmol_df], axis=0, ignore_index=True, sort=True)
 

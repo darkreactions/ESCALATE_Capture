@@ -6,25 +6,40 @@ from capture.googleapi import googleio
 from oauth2client.service_account import ServiceAccountCredentials
 
 def ReagentData(reagsheetid, reagsheetworkbook):
-    ### General Setup Information ###
-    ##GSpread Authorization information
-    scope= ['https://spreadsheets.google.com/feeds']
+    """Read the reagents workbook from Google Drive and return a pandas DataFrame
+
+    :param reagsheetid:        TODO this is a workbook (and unused)
+    :param reagsheetworkbook:  TODO this is a sheet    (Rest in a Pendletonian manner)
+    :return reagdf: pandas DF representation of the reagent worksheet
+    """
+
+    # Setup google drive connection
+    scope = ['https://spreadsheets.google.com/feeds']
     credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc =gspread.authorize(credentials)
+    gc = gspread.authorize(credentials)
     reagsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+
+    # open sheet, or book? todo notice the inconsistencies in nomenclature here
     ReagentBook = gc.open_by_key(reagsheetid)
     reagentsheet = ReagentBook.get_worksheet(reagsheetworkbook)
     reagent_list = reagentsheet.get_all_values()
-    reagdf=pd.DataFrame(reagent_list, columns=reagent_list[0])
-    reagdf=reagdf.iloc[1:]
-    reagdf=reagdf.reset_index(drop=True)
-    reagdf=reagdf.set_index('ECL_Model_ID')
-    return(reagdf)
+
+    # Parse sheet to df
+    reagdf = pd.DataFrame(reagent_list, columns=reagent_list[0])
+    reagdf = reagdf.iloc[1:]
+    reagdf = reagdf.reset_index(drop=True)
+    reagdf = reagdf.set_index('ECL_Model_ID')
+    return reagdf
 
 
 def buildreagents(rxndict, chemdf, reagentdf, solventlist):
+    """Return rdict, a mapping from reagent IDs to perovskitereagent objects
+
+    Checks that reagents were only specified in one manner in the Template: 'list-style' or with a ModelID
+    """
+
     modlog = logging.getLogger('capture.models.reagent.buildreagents')
-    ''' builds dictionary of reagents based on user specifications of formulas and chemicals 
+    reagentdict = {}
 
     parses initial user input and generates a dictionary of reagents with relevant properties
     '''
@@ -32,17 +47,19 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
     reagentdict={}
 
     #find all of the reagents constructured in the run
+    '''
     for item in rxndict:
-        #parse user specifications from user interface
-        if 'Reagent' in item and "chemical_list" in item:
-            reagentname = item.split('_')[0]
-            ## ensure that the reagent definition is not being defined in two different ways
-            idflag = reagentname + "_ID"
 
+        # parse 'list-style' reagent specifications from Template
+        if 'Reagent' in item and "chemical_list" in item:
+            reagentname = (item.split('_'))[0]
+
+            # ensure that 'list-style' is not used along with ModelID
+            idflag = reagentname + "_ID"
             if idflag in rxndict:
-                print('too many %s' %reagentname)
+                print('too many %s' % reagentname)
             else:
-                reagentvariables={}
+                reagentvariables = {}
                 reagentvariables['reagent'] = reagentname
                 entry_num = reagentname.split('t')[1]
 
@@ -94,17 +111,19 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
 
 
 class perovskitereagent:
-    ''' Reaction class containing user specified and calculated variables 
+    """Reaction class containing user specified and calculated variables
 
-    numerically order reagents specified by the user are associated with calculated values 
+    numerically order reagents specified by the user are associated with calculated values
     attributes all of the properties of the reagent should be contained within this object
-    '''
+    """
     def __init__(self, reactantinfo, rxndict, reagentnumber, chemdf, solvent_list):
         self.name = reagentnumber # reag1, reag2, etc
         self.chemicals = reactantinfo['chemical_list'] # list of the chemicals in this reagent
-        self.concs = self.concentrations(reactantinfo, chemdf, rxndict) 
+
+        # {item<i>_formulaconc: concentration for all chemical item indices i in self}
+        self.concs = self.concentrations(reactantinfo, chemdf, rxndict)
         self.ispurebool = self.ispure()
-        self.solventnum = self.solvent(solvent_list)
+        self.solventnum = self.solvent(solvent_list)  # todo bad name is bad, this should be solventindex  
         self.solvent_list = solvent_list
 
         #passes the reaction preparation step if a pure chemical 
@@ -183,9 +202,18 @@ class perovskitereagent:
             modlog.Error("Reagents are improperly constructed!")
 
     def concentrations(self, reactantinfo, chemdf, rxndict):
+        """Return a dict mapping {item<i>_formulaconc: concentration for all chemical item indices i in self}
+        :param reactantinfo:
+        :param chemdf:
+        :param rxndict:
+        :return:
+        """
         concdict = {}
         chemicalitem = 1
         for chemical in self.chemicals:
+            # todo talk to ian about this:
+            # this name seems like it doesnt ever exist in the spreadsheet
+            # and so the listcomp below will always evaluate to the empty list
             variablename = 'item%s_formulaconc' %chemical
             updatedname = 'conc_chem%s' %chemical
 #            for key, value in reactantinfo.items():
@@ -195,7 +223,7 @@ class perovskitereagent:
 #                print(concdict)
             if len(self.chemicals) == 1:
                 itemlabel = 'conc_item1' 
-                if [key for key,value in reactantinfo.items() if variablename in key] == []:
+                if [key for key in reactantinfo.keys() if variablename in key] == []:
                         #density / molecular weight function returns mol / L of the chemical
                         concdict[itemlabel] = (float(chemdf.loc[self.chemicals[0],"Density            (g/mL)"])/ \
                             float(chemdf.loc[self.chemicals[0],"Molecular Weight (g/mol)"]) * 1000)

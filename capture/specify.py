@@ -34,11 +34,8 @@ def datapipeline(rxndict, vardict):
     """
 
     modlog = logging.getLogger('capture.specify.datapipeline')
-
-    inputvalidation.prebuildvalidation(rxndict)
-
-    # Dataframes with chemical/reagent information from gdrive
-    chemdf = chemical.ChemicalData(vardict['chemsheetid'], vardict['chem_workbook_index'])
+    inputvalidation.prebuildvalidation(rxndict, vardict)
+    chemdf=chemical.ChemicalData(vardict['chemsheetid'],vardict['chem_workbook_index']) #Dataframe with chemical information from gdrive
     reagentdf = reagent.ReagentData(vardict['reagentsheetid'], vardict['reagent_workbook_index'])
 
     # dictionary of user defined chemical limits

@@ -1,6 +1,9 @@
 import sys
 import logging
-
+import re
+import numpy as np
+from capture.utils import get_explicit_experiments
+import capture.devconfig as config
 
 def expcount(rxndict):
     modlog = logging.getLogger('capture.prebuildvalidation.expcount')
@@ -22,19 +25,21 @@ def expcount(rxndict):
     modlog.info("Experiments correctly named and numbered")
 
 def expwellcount(rxndict):
-    ''' Takes user xls specifications for well counts and ensures compatibility with code
-    '''
+    """Makes sure well counts from all experiments (random and manual) sum to run-level wellcount
+    """
 
     modlog = logging.getLogger('capture.prebuildvalidation.expcount')
     expwells = []
     expcount = 0
 
+    exp_id_pat = re.compile('^exp\d+$')
+    exp_well_pat = re.compile('^exp\d+_wells$')  # TODO is this too restrictive?
+
     for k, v in rxndict.items():
-        if 'exp' in k and len(k) == 4:
+        if exp_id_pat.search(k.strip()):
             expcount += 1
-    for entry, value in rxndict.items():
-        if 'exp' in entry and 'well' in entry:
-            expwells.append(value)
+        if exp_well_pat.search(k.strip()):
+            expwells.append(v)
 
     manual_wells = rxndict['manual_wells']  # this is bad. I don't like having hard_coded this in.
 
@@ -48,6 +53,59 @@ def expwellcount(rxndict):
 
     modlog.info("Only 1 experiment specified. Wellcount applies to only experiment")
 
+def validate_reagent_specification(rxndict , template):
+    """Ensure that if a reagent is used in an experiment, it is specified"""
+    
+
+    # get the set of reagents specified in the template
+    REAGENT_SPEC_PAT = re.compile('Reagent(\d+)_(chemical_list|ID)')
+    SPECIFIED_REAGENTS = set(
+        [int(REAGENT_SPEC_PAT.search(k).group(1))
+         for k in rxndict.keys()
+         if REAGENT_SPEC_PAT.search(k)]
+    )
+
+    def validate_random_reagents(rxndict):
+        """Find the set of reagents that are used but not specified"""
+        used_reagents = set(
+                            np.array(
+                                [np.array(rxndict[k]).flatten()
+                                 for k in rxndict.keys()
+                                 if re.search('^exp\d+$', k.strip())]
+                            ).flatten()
+                        )
+
+        return sorted(list(used_reagents - SPECIFIED_REAGENTS))
+
+    def validate_manual_reagents(template):
+        """Find the set of reagents that are used but not specified"""
+
+        reagent_pat = re.compile('Reagent(\d+) \(ul\)')
+        manual_experiments = get_explicit_experiments(template)
+
+        used_reagents = manual_experiments.columns[manual_experiments.sum().values > 0]
+        used_reagents = set(
+                        [int(reagent_pat.search(reagent).group(1))
+                         for reagent in used_reagents
+                         if reagent_pat.search(reagent)]
+                        )
+
+        return sorted(list(used_reagents - SPECIFIED_REAGENTS))
+
+    if config.sampler != 'wolfram':
+        # TODO: discuss at code review: is it time for a better fix of this wolfram problem?
+        unspecified_random = validate_random_reagents(rxndict)
+        if unspecified_random:
+            raise ValueError('Reagent(s) {} were used in random experiment specification but not specified'
+                             .format(unspecified_random))
+
+    unspecified_manual = validate_manual_reagents(template)
+    if unspecified_manual:
+        raise ValueError('Reagent(s) {} were used in manual experiment specification but not specified'
+                         .format(unspecified_manual))
+
+    return
+
 def userinterface(rxndict):
     assert isinstance(rxndict['exp1'], list), 'exp1 in user XLS must be specified as a list of lists'
 
@@ -60,7 +118,7 @@ def postbuildvalidation(rxndict,rdict,edict):
 #        modlog.error("Fatal error. Reagents and chemicals are over constrained. Recheck user options!")
     modlog.info('Experiment successfully constructed.')
 
-def prebuildvalidation(rxndict):
+def prebuildvalidation(rxndict, vardict):
     '''handles validation functions for xls input file
 
     takes the rxndict as input and performs validation on the input to ensure the proper structure
@@ -71,6 +129,7 @@ def prebuildvalidation(rxndict):
     expcount(rxndict)
     expwellcount(rxndict)
     reagconcdefs(rxndict)
+    validate_reagent_specification(rxndict, vardict['exefilename'])
     modlog.info('User entry is configured correctly.  Proceeding with run')
 
 def reagenttesting(volmax, volmin):

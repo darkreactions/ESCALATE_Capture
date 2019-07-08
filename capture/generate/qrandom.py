@@ -419,10 +419,9 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
         :param rxnvarfile: the Template
         :return:
         """
-        return pd.read_excel(io=rxnvarfile,
-                             sheet_name='ManualExps').dropna().filter(like='Reagent').astype(int)
-
-        # todo THIS SHOULD BE MADE INTO SOMETHING BETTER
+        explicit_experiments = pd.read_excel(io=rxnvarfile, sheet_name='ManualExps')
+        explicit_experiments = explicit_experiments[~explicit_experiments['Manual Well Number'].isna()]
+        return explicit_experiments.filter(like='Reagent').astype(int)
 
     if not rxndict['manual_wells'] == 0:
         specifiedExperiments = get_explicit_experiments(vardict['exefilename'])
@@ -443,7 +442,6 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
     if not erdf.shape[0] == rxndict['wellcount']:
         raise ValueError("You specified too few reactions in the FixedExps subsheet.")
     print("Completed sampling")
-
     # Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
     clist = chemical.exp_chem_list(rdict)

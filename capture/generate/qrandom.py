@@ -331,10 +331,16 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
         return pd.read_excel(io=rxnvarfile,
                              sheet_name='ManualExps').dropna().filter(like='Reagent').astype(int)
 
-        #THIS SHOULD BE MADE INTO SOMETHING BETTER
+        # todo THIS SHOULD BE MADE INTO SOMETHING BETTER
 
     if not rxndict['manual_wells'] == 0:
         specifiedExperiments = get_explicit_experiments(vardict['exefilename'])
+
+        for i, r in enumerate(specifiedExperiments.columns):
+            reagentId = int(r.split('t')[1].split('(')[0])
+            if specifiedExperiments[r].sum() != 0 and str(reagentId) not in rdict.keys():
+                raise ValueError("to use Reagent{} in manualExps, define 'reagent{}_chemical_list' in expdataentry".format(reagentId, reagentId))
+
         erdf = pd.concat([erdf, specifiedExperiments], axis=0, ignore_index=True, sort=True)
         if '6' not in rdict.keys():
             rdict['6'] = rdict['7']  # The hottest of hot fixes returns!

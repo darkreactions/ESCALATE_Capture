@@ -93,10 +93,13 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
     # Generate a different robot file depending on the user specified lab
     if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
         robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
+    elif rxndict['lab'] == 'MIT_PVLab':
+        robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
     elif rxndict['lab'] == "ECL": 
         robotfile = expint.ECLrobotfile(rxndict, vardict, rdict, erdf)
     else:
-        modlog.error('User did not specify a supported lab. No robot file will be generated.')
+        modlog.error('User did not specify a supported lab. \
+                      ESCALATE V2 Supports LBL, ECL, HC, MIT_PVLab')
         sys.exit()
     return(erdf, robotfile, secfilelist)
 

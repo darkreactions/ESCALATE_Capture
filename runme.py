@@ -28,7 +28,7 @@ def readvars(rxnvarfile):
     rxndict={}
     varfile = (rxnvarfile)
     wb = xlrd.open_workbook(varfile)
-    sheet = wb.sheet_by_index(0)
+    sheet = wb.sheet_by_name('WF1')
     for i in range(sheet.nrows):
         commentval = sheet.cell(i,0).value
         if commentval == '#':

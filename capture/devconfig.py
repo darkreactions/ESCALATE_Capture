@@ -47,6 +47,8 @@ elif system == "Darwin":
 def labfiles(lab):
     if lab == "LBL" or lab == "HC":
         filereq = ['CrystalScoring', 'ExpDataEntry', 'metadata.json']
+    if lab == "MIT_PVLab":
+        filereq = ['CrystalScoring', 'ExpDataEntry', 'metadata.json']
     if lab == 'ECL':
         filereq = ['CrystalScoring', 'metadata.json']
     return(filereq)

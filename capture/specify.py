@@ -88,11 +88,15 @@ def datapipeline(rxndict, vardict):
         else:            
             modlog.info('Starting file preparation for upload')
             # Lab specific handling - different labs require different files for tracking
-            if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
-                PriDir, secdir, filedict = googleio.genddirectories(rxndict,vardict['targetfolder'], vardict['filereqs'])
-
+            if rxndict['lab'] == 'LBL' or \
+               rxndict['lab'] == "HC" or  \
+               rxndict['lab'] == "MIT_PVLab":
+                PriDir, secdir, filedict =  \
+                    googleio.genddirectories(rxndict,
+                                             vardict['targetfolder'],
+                                             vardict['filereqs'])
                 reagentinterfacetarget, gspreadauth = googleio.gsheettarget(filedict)
-                #abstract experiment data to reagent level (generate reagent preparation based on user requests)
+                #  abstract experiment data to reagent level (generate reagent preparation based on user requests)
 
                 finalexportdf = interface.reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf)
 

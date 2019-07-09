@@ -9,6 +9,9 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 from capture.googleapi import googleio
+from capture.devconfig import max_robot_reagents
+from capture.devconfig import maxreagentchemicals
+from capture.devconfig import reagent_interface_amount_startrow
 
 modlog = logging.getLogger('capture.prepare.interface')
 
@@ -219,7 +222,15 @@ def reagent_interface_upload(rxndict, vardict, finalexportdf, gc, val):
         count+=1
     sheetobject.update_cells(nulltarget)
 
-    return(sheetobject)
+    null_start = rowend+1
+    null_end = max_robot_reagents * (maxreagentchemicals + 1) + \
+               reagent_interface_amount_startrow + 1
+    nulltarget2 = sheetobject.range('D%s:D%s' % (null_start, null_end))
+    for cell in nulltarget2:
+        cell.value = 'null'
+    sheetobject.update_cells(nulltarget2)
+
+    return sheetobject
 
 def reagent_prep_pipeline(rdict, sheetobject, maxreagents):
     uploadtarget = sheetobject.range('D3:F9')
@@ -245,58 +256,58 @@ def reagent_prep_pipeline(rdict, sheetobject, maxreagents):
 #    for reagentnum, reagentobject in rdict.items():
     count = 0
     for cell in uploadtarget:
-        cell.value = uploadlist[count]
-        count+=1
+        try:
+            cell.value = uploadlist[count]
+            count += 1  
+        except:
+            count += 1
     sheetobject.update_cells(uploadtarget)
 
     # Reagent 1 - use all values present if possible
     try:
-        sheetobject.update_acell('H15', rdict['1'].prerxntemp)
+        sheetobject.update_acell('H16', rdict['1'].prerxntemp)
     except Exception:
-        sheetobject.update_acell('H15', 'null')
+        sheetobject.update_acell('H16', 'null')
 
     #Reagent 2
     try:
-        sheetobject.update_acell('H19', rdict['2'].prerxntemp)
+        sheetobject.update_acell('H21', rdict['2'].prerxntemp)
     except Exception:
-        sheetobject.update_acell('H19', 'null')
+        sheetobject.update_acell('H21', 'null')
 
     #Reagent 3
     try:
-        sheetobject.update_acell('H23', rdict['3'].prerxntemp)
+        sheetobject.update_acell('H26', rdict['3'].prerxntemp)
     except Exception:
-        sheetobject.update_acell('H23', 'null')
+        sheetobject.update_acell('H26', 'null')
 
     # Reagent 4
-    try:
-        sheetobject.update_acell('H27', rdict['4'].prerxntemp)
-    except Exception:
-        sheetobject.update_acell('H27', 'null')
-
-    # Reagent 5 
     try:
         sheetobject.update_acell('H31', rdict['4'].prerxntemp)
     except Exception:
         sheetobject.update_acell('H31', 'null')
 
+    # Reagent 5 
+    try:
+        sheetobject.update_acell('H36', rdict['4'].prerxntemp)
+    except Exception:
+        sheetobject.update_acell('H36', 'null')
+
     # Reagent 6 
     try:
-        sheetobject.update_acell('H35', rdict['6'].prerxntemp)
+        sheetobject.update_acell('H41', rdict['6'].prerxntemp)
     except Exception:
-        sheetobject.update_acell('H35', 'null')
+        sheetobject.update_acell('H41', 'null')
 
     # Reagent 7 
     try:
-        sheetobject.update_acell('H39', rdict['7'].prerxntemp)
+        sheetobject.update_acell('H46', rdict['7'].prerxntemp)
     except Exception:
-        sheetobject.update_acell('H39', 'null')
+        sheetobject.update_acell('H46', 'null')
 
 def PrepareDirectoryCP(uploadlist, secfilelist, runID, logfile, rdict, targetfolder):
-#    scope= ['https://spreadsheets.google.com/feeds']
-#    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-#    gc =gspread.authorize(credentials)
-    tgt_folder_id= targetfolder
-    PriDir=googleio.DriveCreateFolder(runID, tgt_folder_id)
+    tgt_folder_id = targetfolder
+    PriDir = googleio.DriveCreateFolder(runID, tgt_folder_id)
     googleio.DriveAddTemplates(PriDir, runID, []) # copies metadata from current template (leaves the rest)
     secfold_name = "%s_subdata" %runID
     secdir = googleio.DriveCreateFolder(secfold_name, PriDir)

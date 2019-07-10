@@ -17,8 +17,8 @@ __pycache__/
 *.ipynb_checkpoints
 *.xlsx#
 !WF1_Template.xlsx
-!WF1_ECL_Template.xlsx
 !WF1_DevTemplate.xlsx
 !WF1_Alloy_Template.xlsx
 !WF3_template.xlsx
 !WF3_DevTemplate.xlsx
+!MIT_PVLab_Template.xlsx

@@ -7,6 +7,7 @@
 
 import logging
 import os
+import time
 
 import gspread
 from pydrive.auth import GoogleAuth
@@ -59,6 +60,7 @@ def DriveCreateFolder(title, tgt_folder_id):
 
     file = drive.CreateFile(file_metadata)
     file.Upload()
+    time.sleep(2)
     print("Directory Created: " + "%s" % title)
 
     file_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % tgt_folder_id}).GetList()
@@ -66,7 +68,7 @@ def DriveCreateFolder(title, tgt_folder_id):
         if file['title'] == title:
             return file['id']
 
-    raise ValueError("Newly created drive file not found in directory")
+    raise ValueError('Run folder not found in GDrive. Possible server error: try again.')
 
 
 def DriveAddTemplates(opdir, RunID, includedfiles):

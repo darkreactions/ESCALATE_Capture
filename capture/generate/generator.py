@@ -12,6 +12,8 @@ from capture.generate import qrandom
 from capture.generate import statespace
 from capture.prepare import stateset
 from capture.prepare import experiment_interface as expint
+from capture.devconfig import REAGENT_ALIAS
+from capture.utils import abstract_reagent_colnames
 
 modlog = logging.getLogger('capture.generate.generator')
 
@@ -48,10 +50,13 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
     # Clean up dataframe for robot file -> create xls --> upload
     erdfrows = erdf.shape[0]
     erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
+    abstract_reagent_colnames(erdf)
 
     ermmolcsv = 'localfiles/%s_mmolbreakout.csv' % rxndict['RunID']
+    abstract_reagent_colnames(ermmoldf)
     ermmoldf.to_csv(ermmolcsv)
 
+    # has no reagent names
     emsumcsv = 'localfiles/%s_nominalMolarity.csv' % rxndict['RunID']
     emsumdf.to_csv(emsumcsv)
 
@@ -90,6 +95,16 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
     return emsumdf, uploadlist, secfilelist, rdict
 
 def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
+    """
+
+    :param vardict:
+    :param chemdf:
+    :param rxndict:
+    :param edict:
+    :param rdict:
+    :param climits:
+    :return:
+    """
     erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(chemdf,
                                                             vardict,
                                                             rxndict,
@@ -98,8 +113,10 @@ def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
                                                             climits)
     # Clean up dataframe for robot file -> create xls --> upload
     erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
+
     # Export additional information files for later use / storage 
     ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
+    abstract_reagent_colnames(ermmoldf)
     ermmoldf.to_csv(ermmolcsv)
     emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
     emsumdf.to_csv(emsumcsv)
@@ -133,7 +150,7 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
     if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
         robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
     elif rxndict['lab'] == 'MIT_PVLab':
-        robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
+        robotfile = expint.MIT_human_robotfile(rxndict, vardict, erdf)
     elif rxndict['lab'] == "ECL": 
         robotfile = expint.ECLrobotfile(rxndict, vardict, rdict, erdf)
     else:

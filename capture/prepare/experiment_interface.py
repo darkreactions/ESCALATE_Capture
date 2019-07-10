@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import logging
 import sys
+from capture.devconfig import REAGENT_ALIAS
+from capture.utils import abstract_reagent_colnames
 
 modlog = logging.getLogger('capture.prepare.experiment_model_out')
 
@@ -57,19 +59,19 @@ def ecl_temp(rdict):
 # that code overhaul
 # will not work for workflow 3
 def MakeWellList(platecontainer, wellcount):
-    wellorder=['A', 'C', 'E', 'G', 'B', 'D', 'F', 'H'] #order is set by how the robot draws from the solvent wells
-    VialList=[]
-    welllimit=wellcount/8+1
-    count=1
-    while count<welllimit:
+    wellorder = ['A', 'C', 'E', 'G', 'B', 'D', 'F', 'H']  # order is set by how the robot draws from the solvent wells
+    VialList = []
+    welllimit = wellcount/8 + 1
+    count = 1
+    while count < welllimit:
         for item in wellorder:
             countstr=str(count)
-            Viallabel=item+countstr
+            Viallabel = item + countstr
             VialList.append(Viallabel)
-        count+=1
-    df_VialInfo=pd.DataFrame(VialList)
-    df_VialInfo.columns=['Vial Site']
-    df_VialInfo['Labware ID:']=platecontainer 
+        count += 1
+    df_VialInfo = pd.DataFrame(VialList)
+    df_VialInfo.columns = ['Vial Site']
+    df_VialInfo['Labware ID:'] = platecontainer
     df_VialInfo = df_VialInfo.truncate(after=(wellcount-1))
     return(df_VialInfo)
 
@@ -151,46 +153,100 @@ def cleanvolarray(erdf, maxr):
     return erdf
 
 def LBLrobotfile(rxndict, vardict, erdf):
-    ''' Generate a robotic file of the proper format for LBL
+    """Write to excel file for LBL Nimbus and return filename
 
-    erdf should contain the experimental reaction data frame which consists of the volumes of each
-    reagent in each experiment to be performed.  The rxndict and vardict should be identical to what was
-    created in the original input files.  
-    '''
-    vol_ar=volarray(erdf, vardict['max_robot_reagents'])
-    Parameters={
-    'Reaction Parameters':['Temperature (C):','Stir Rate (rpm):','Mixing time1 (s):','Mixing time2 (s):', 'Reaction time (s):',""], 
-    'Parameter Values':[rxndict['temperature2_nominal'], rxndict['stirrate'], rxndict['duratation_stir1'], rxndict['duratation_stir2'], rxndict['duration_reaction'] ,''],
-    }
-    Conditions={
-    'Reagents':['Reagent1', "Reagent2", "Reagent3", "Reagent4",'Reagent5','Reagent6','Reagent7'],
-    'Reagent identity':['1', "2", "3", "4",'5','6','7'],
-    'Liquid Class':vol_ar,
-    'Reagent Temperature':[rxndict['reagents_prerxn_temperature']]*len(vol_ar)}
-    df_parameters=pd.DataFrame(data=Parameters)
-    df_conditions=pd.DataFrame(data=Conditions)
+    :param erdf: should contain the experimental reaction data frame which consists of the volumes of each
+    reagent in each experiment to be performed.
+    """
+    vol_ar = volarray(erdf, vardict['max_robot_reagents'])
+    rxn_parameters = pd.DataFrame({
+        'Reaction Parameters': ['Temperature (C):', 'Stir Rate (rpm):',
+                                        'Mixing time1 (s):', 'Mixing time2 (s):',
+                                        'Reaction time (s):', ""],
+        'Parameter Values': [rxndict['temperature2_nominal'], rxndict['stirrate'],
+                             rxndict['duratation_stir1'], rxndict['duratation_stir2'],
+                             rxndict['duration_reaction'], ''],
+    })
+
+    rxn_conditions = pd.DataFrame({
+        'Reagents':['Reagent1', "Reagent2", "Reagent3", "Reagent4", 'Reagent5', 'Reagent6', 'Reagent7'],
+        'Reagent identity': ['1', "2", "3", "4", '5', '6', '7'],
+        'Liquid Class': vol_ar,
+        'Reagent Temperature': [rxndict['reagents_prerxn_temperature']] *len(vol_ar)
+    })
+
     robotfiles = []
+
     if rxndict['ExpWorkflowVer'] == 3:
+
         # For WF3 tray implementation to work
-        df_Tray2=MakeWellList_WF3(rxndict['plate_container'], rxndict['wellcount']*2)
+        df_Tray2 = MakeWellList_WF3(rxndict['plate_container'], rxndict['wellcount']*2)
         erdf_new = WF3_split(erdf,rxndict['exp1_split'])
-        outframe1=pd.concat([df_Tray2.iloc[:,0],erdf_new,df_Tray2.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
+        outframe1 = pd.concat([df_Tray2.iloc[:, 0],
+                               erdf_new, df_Tray2.iloc[:, 1],
+                               rxn_parameters, rxn_conditions],
+                              sort=False, axis=1)
         robotfile = ("localfiles/%s_RUNME_RobotFile.xls" %rxndict['RunID'])
+
         ## For report code to work
-        df_Tray=MakeWellList(rxndict['plate_container'], rxndict['wellcount']*1)
-        outframe2=pd.concat([df_Tray.iloc[:,0],erdf,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
-        robotfile2 = ("localfiles/%s_RobotInput.xls" %rxndict['RunID'])
+        df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount']*1)
+        outframe2 = pd.concat([df_Tray.iloc[:, 0], erdf, df_Tray.iloc[:,1],rxn_parameters, rxn_conditions],
+                              sort=False, axis=1)
+        robotfile2 = ("localfiles/%s_RobotInput.xls" % rxndict['RunID'])
+
         outframe1.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
         outframe2.to_excel(robotfile2, sheet_name='NIMBUS_reaction', index=False)
         robotfiles.append(robotfile)
         robotfiles.append(robotfile2)
+
     else:
-        df_Tray=MakeWellList(rxndict['plate_container'], rxndict['wellcount']*1)
-        outframe=pd.concat([df_Tray.iloc[:,0],erdf,df_Tray.iloc[:,1],df_parameters, df_conditions], sort=False, axis=1)
-        robotfile = ("localfiles/%s_RobotInput.xls" %rxndict['RunID'])
+        df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount'])
+        outframe = pd.concat([df_Tray.iloc[:, 0], erdf, df_Tray.iloc[:, 1], rxn_parameters, rxn_conditions],
+                             sort=False, axis=1)
+        robotfile = ("localfiles/%s_RobotInput.xls" % rxndict['RunID'])
         robotfiles.append(robotfile)
         outframe.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
-    return(robotfiles) 
+    return robotfiles
+
+def MIT_human_robotfile(rxndict, vardict, erdf):
+    """Write to excel file for MIT Human and return filename
+
+    :param erdf: should contain the experimental reaction data frame which consists of the volumes of each
+    reagent in each experiment to be performed.
+    """
+    vol_ar = volarray(erdf, vardict['max_robot_reagents'])
+    rxn_parameters = pd.DataFrame({
+        'Reaction Parameters': ['Temperature (C):', 'Stir Rate (rpm):',
+                                        'Mixing time1 (s):', 'Mixing time2 (s):',
+                                        'Reaction time (s):', ""],
+        'Parameter Values': [rxndict['temperature2_nominal'], rxndict['stirrate'],
+                             rxndict['duratation_stir1'], rxndict['duratation_stir2'],
+                             rxndict['duration_reaction'], ''],
+    })
+
+    rxn_conditions = pd.DataFrame({
+        REAGENT_ALIAS + 's': [REAGENT_ALIAS + str(i) for i in range(1, 8)],
+        REAGENT_ALIAS + ' identity': [str(i) for i in range(1, 8)],
+        'Liquid Class': vol_ar,
+        REAGENT_ALIAS + ' Temperature': [rxndict['reagents_prerxn_temperature']] * len(vol_ar)
+    })
+
+    # df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount'])
+    df_Tray = pd.DataFrame({
+        'Experiment Index': range(1, int(rxndict['wellcount']) + 1),
+        'Labware ID': rxndict['plate_container']
+    })
+    # todo: put UIDs here (in lieu of df_tray.iloc[:, 0]--vial site)
+
+
+    outframe = pd.concat([df_Tray.iloc[:, 0], erdf, df_Tray.iloc[:, 1], rxn_parameters, rxn_conditions],
+                         sort=False, axis=1)
+    volume_file = ("localfiles/%s_ExperimentVolumeInterface.xls" % rxndict['RunID'])
+
+    outframe = abstract_reagent_colnames(outframe, inplace=False)
+    outframe.to_excel(volume_file, sheet_name='experiment_volume_interface', index=False)
+
+    return [volume_file]
 
 def reagent_id_list(rxndict):
     reagentidlist=[]

@@ -423,14 +423,9 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
     # Final reagent volumes dataframe
     erdf.fillna(value=0, inplace=True)
     if not erdf.shape[0] == rxndict['wellcount']:
-<<<<<<< HEAD
         raise ValueError("Too few reactions specified: \n" +\
                          "Ensure that all exp<index>_wells and manual_well sum to wellcount")
-    print("completed sampling")
-=======
-        raise ValueError("You specified too few reactions in the FixedExps subsheet.")
     print("Completed sampling")
->>>>>>> 58-explicitExperiments
     # Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
     clist = chemical.exp_chem_list(rdict)
@@ -442,13 +437,7 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
     # plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
     # combine the experiments for the tray into one full set of volumes for all the wells on the plate
     modlog.info('Begin combining the experimental volume dataframes')
-<<<<<<< HEAD
-#    for chemical in rdict['2'].chemicals:
-#        print(rxndict['chem%s_abbreviation' %chemical])
-    return erdf, ermmoldf, emsumdf
-=======
     
     # for chemical in rdict['2'].chemicals:
     #    print(rxndict['chem%s_abbreviation' %chemical])
     return erdf, ermmoldf, emsumdf
->>>>>>> 58-explicitExperiments

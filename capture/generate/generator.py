@@ -90,24 +90,19 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
     return emsumdf, uploadlist, secfilelist, rdict
 
 def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
-    """Randomly sample from statespace with qrandom module, return files for uploads
-    """
-    erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(vardict,
-                                                            chemdf,
+    erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(chemdf,
+                                                            vardict,
                                                             rxndict,
                                                             edict,
                                                             rdict,
                                                             climits)
-
     # Clean up dataframe for robot file -> create xls --> upload
     erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
-
-    # Export additional information files for later use / storage
+    # Export additional information files for later use / storage 
     ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
     ermmoldf.to_csv(ermmolcsv)
     emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
     emsumdf.to_csv(emsumcsv)
-
     # List to send for uploads
     secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
     return emsumdf, secfilelist, erdf

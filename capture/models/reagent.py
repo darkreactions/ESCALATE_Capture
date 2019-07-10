@@ -39,13 +39,13 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
     """
     modlog = logging.getLogger('capture.models.reagent.buildreagents')
     reagentdict = {}
+
     for item in rxndict:
 
         # parse 'list-style' reagent specifications from Template
         if 'Reagent' in item and "chemical_list" in item:
-            reagentname = (item.split('_'))[0]
-
-            # ensure that 'list-style' is not used along with ModelID
+            reagentname = item.split('_')[0]
+            ## ensure that the reagent definition is not being defined in two different ways
             idflag = reagentname + "_ID"
             if idflag in rxndict:
                 print('too many %s' % reagentname)
@@ -98,7 +98,8 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
 
     for k,v in reagentdict.items():
         modlog.info("%s : %s" %(k,vars(v)))
-    return(reagentdict)
+
+    return reagentdict
 
 
 class perovskitereagent:

@@ -147,10 +147,12 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
 
     # TODO this is brittle
     # Generate a different robot file depending on the user specified lab
+
+
     if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
         robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
     elif rxndict['lab'] == 'MIT_PVLab':
-        robotfile = expint.MIT_human_robotfile(rxndict, vardict, erdf)
+        robotfile = expint.generate_experiment_specification_file(rxndict, vardict, erdf)
     elif rxndict['lab'] == "ECL": 
         robotfile = expint.ECLrobotfile(rxndict, vardict, rdict, erdf)
     else:

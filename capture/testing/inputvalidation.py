@@ -2,7 +2,7 @@ import sys
 import logging
 import re
 import numpy as np
-from capture.utils import get_explicit_experiments
+from capture.utils import get_explicit_experiments, flatten
 import capture.devconfig as config
 
 def expcount(rxndict):
@@ -67,13 +67,12 @@ def validate_reagent_specification(rxndict , template):
 
     def validate_random_reagents(rxndict):
         """Find the set of reagents that are used but not specified"""
-        used_reagents = set(
-                            np.array(
-                                [np.array(rxndict[k]).flatten()
-                                 for k in rxndict.keys()
-                                 if re.search('^exp\d+$', k.strip())]
-                            ).flatten()
-                        )
+
+        used_reagents = []
+        for k in rxndict.keys():
+            if re.search('^exp\d+$', k.strip()):
+                used_reagents.extend(rxndict[k])
+        used_reagents = set(flatten(used_reagents))
 
         return sorted(list(used_reagents - SPECIFIED_REAGENTS))
 

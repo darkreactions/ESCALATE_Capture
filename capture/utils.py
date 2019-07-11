@@ -39,3 +39,22 @@ def abstract_reagent_colnames(df, inplace=True):
     """
     result = df.rename(columns=lambda x: re.sub('[Rr]eagent', REAGENT_ALIAS, x), inplace=inplace)
     return result
+
+
+def flatten(L):
+    """Flatten a list recursively
+
+    Inspired byt his fun discussion: https://stackoverflow.com/questions/12472338/flattening-a-list-recursively
+
+    np.array.flatten did not work for irregular arrays, and itertools.chain.from_iterable cannot handle arbitrary
+
+    :param L: A list to flatten
+    :return: the flattened list
+    """
+    if L == []:
+        return L
+    if isinstance(L[0], list):
+        return flatten(L[0]) + flatten(L[1:])
+    return L[:1] + flatten(L[1:])
+
+

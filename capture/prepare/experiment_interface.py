@@ -208,8 +208,16 @@ def LBLrobotfile(rxndict, vardict, erdf):
         outframe.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
     return robotfiles
 
-def MIT_human_robotfile(rxndict, vardict, erdf):
+def generate_experiment_specification_file(rxndict, vardict, erdf):
     """Write to excel file for MIT Human and return filename
+
+    todo:
+        * write this file for ALL experiments
+        * robot just reads this general representation and writes to specific format
+            * e.g. Nimbus gets its own format
+        * This solves report issue
+            * report looks for specification file, and if it cant find it looks for RobotInput.xls
+
 
     :param erdf: should contain the experimental reaction data frame which consists of the volumes of each
     reagent in each experiment to be performed.
@@ -241,7 +249,7 @@ def MIT_human_robotfile(rxndict, vardict, erdf):
     experiment_names = build_experiment_names_df(rxndict, vardict)
     outframe = pd.concat([df_Tray.iloc[:, 0], experiment_names, erdf, df_Tray.iloc[:, 1], rxn_parameters, rxn_conditions],
                          sort=False, axis=1)
-    volume_file = ("localfiles/%s_ExperimentVolumeInterface.xls" % rxndict['RunID'])
+    volume_file = ("localfiles/%s_ExperimentSpecification.xls" % rxndict['RunID'])
 
     outframe = abstract_reagent_colnames(outframe, inplace=False)
     outframe.to_excel(volume_file, sheet_name='experiment_volume_interface', index=False)

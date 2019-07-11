@@ -20,15 +20,15 @@ def get_explicit_experiments(rxnvarfile, only_volumes=True):
     explicit_experiments = explicit_experiments.ix[:, explicit_experiments.sum() != 0]
 
     if only_volumes:
-        explicit_experiments = explicit_experiments.filter(regex='{}\d \(ul\)'.format(REAGENT_ALIAS)).astype(int)
+        explicit_experiments = explicit_experiments.filter(regex='Reagent\d \(ul\)').astype(int)
 
     return explicit_experiments
 
 
 def get_reagent_number_as_string(reagent_str):
     """Get the number from a string representation"""
-    reagent_pat = re.compile('{}(\d+)'.format(REAGENT_ALIAS))
-    return reagent_pat.match(reagent_str).group(1)
+    reagent_pat = re.compile('([Rr]eagent|{})(\d+)'.format(REAGENT_ALIAS))
+    return reagent_pat.match(reagent_str).group(2)
 
 
 def abstract_reagent_colnames(df, inplace=True):

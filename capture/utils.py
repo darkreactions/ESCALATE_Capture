@@ -44,9 +44,10 @@ def abstract_reagent_colnames(df, inplace=True):
 def flatten(L):
     """Flatten a list recursively
 
-    Inspired byt his fun discussion: https://stackoverflow.com/questions/12472338/flattening-a-list-recursively
+    Inspired by this fun discussion: https://stackoverflow.com/questions/12472338/flattening-a-list-recursively
 
-    np.array.flatten did not work for irregular arrays, and itertools.chain.from_iterable cannot handle arbitrary
+    np.array.flatten did not work for irregular arrays
+    and itertools.chain.from_iterable cannot handle arbitrarily nested lists
 
     :param L: A list to flatten
     :return: the flattened list

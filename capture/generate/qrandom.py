@@ -10,7 +10,7 @@ from capture.testing import inputvalidation
 from capture.models import chemical
 from capture.generate import calcs
 import capture.devconfig as config
-from capture.utils import get_explicit_experiments
+from capture.utils import get_explicit_experiments, get_reagent_number_as_string
 
 modlog = logging.getLogger('capture.generate.qrandom')
 
@@ -302,7 +302,7 @@ def build_reagent_vectors(portion_reagents, portion_chemicals):
 def volume_to_mmol_wrapper(vol_df, rdict, experiment):
     portion_mmol_df = pd.DataFrame()
     for columnname in vol_df.columns:
-        reagent = int(columnname.split('t')[1].split('(')[0])  # 'Reagent2 (ul)' to give '2'
+        reagent = int(get_reagent_number_as_string(columnname))  # 'Reagent2 (ul)' to give '2'
         mmol_df = calcs.mmolextension((vol_df[columnname]), rdict, experiment, reagent)
         portion_mmol_df = pd.concat([portion_mmol_df, mmol_df], axis=1)
 

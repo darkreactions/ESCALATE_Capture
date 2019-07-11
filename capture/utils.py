@@ -6,10 +6,11 @@ import re
 from capture.devconfig import REAGENT_ALIAS
 
 
-def get_explicit_experiments(rxnvarfile):
+def get_explicit_experiments(rxnvarfile, only_volumes=True):
     """Extract reagent volumes for the manually specified experiments, if there are any.
 
     :param rxnvarfile: the Template
+    :param only_volumes: only return the experiment Reagent volumes
     :return:
     """
     explicit_experiments = pd.read_excel(io=rxnvarfile, sheet_name='ManualExps')
@@ -17,7 +18,11 @@ def get_explicit_experiments(rxnvarfile):
     explicit_experiments = explicit_experiments[~explicit_experiments['Manual Well Number'].isna()]
     # remove unused reagents:
     explicit_experiments = explicit_experiments.ix[:, explicit_experiments.sum() != 0]
-    return explicit_experiments.filter(like='Reagent').astype(int)
+
+    if only_volumes:
+        explicit_experiments = explicit_experiments.filter(regex='{}\d \(ul\)'.format(REAGENT_ALIAS)).astype(int)
+
+    return explicit_experiments
 
 
 def get_reagent_number_as_string(reagent_str):

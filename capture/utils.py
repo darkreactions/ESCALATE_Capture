@@ -59,3 +59,20 @@ def flatten(L):
     return L[:1] + flatten(L[1:])
 
 
+def update_sheet_column(sheet, data, col_index, start_row):
+    """
+    :param sheet: the gsheet object to update
+    :param data: iterable of values to place in sheet, starting at (col_index, start_row)
+    :param col_index: A sheet column header in [A, B, ..., AA, AB, ...]
+    :param start_row: index of the row at which to begin updating sheet
+    :return: None
+    """
+
+    stop_row = len(data) + start_row - 1
+    range_spec = '{col:s}{start:d}:{col:s}{stop:d}'.format(col=col_index, start=start_row, stop=stop_row)
+    col = sheet.range(range_spec)
+    for i, cell in enumerate(col):
+        cell.value = data[i]
+
+    sheet.update_cells(col)
+    return

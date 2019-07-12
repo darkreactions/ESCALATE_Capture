@@ -28,6 +28,7 @@ chem_workbook_index = 0
 reagentsheetid = "1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI"
 reagent_workbook_index = 1
 reagent_interface_amount_startrow = 16
+max_reagents = 8  # todo: discuss
 REAGENT_ALIAS = 'Precursor'
 
 # # HC or LBL

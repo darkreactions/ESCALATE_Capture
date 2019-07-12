@@ -5,10 +5,10 @@ TODO Pendletoon, doc this whole module
 import logging
 import pandas as pd
 
-from capture.devconfig import max_robot_reagents
 from capture.devconfig import maxreagentchemicals
 from capture.devconfig import reagent_interface_amount_startrow
-from capture.devconfig import REAGENT_ALIAS
+from capture.devconfig import REAGENT_ALIAS, max_reagents
+from capture.utils import update_sheet_column
 
 modlog = logging.getLogger('capture.prepare.interface')
 
@@ -191,60 +191,26 @@ def upload_reagent_specifications(vardict, finalexportdf, sheet):
     ''' upload rxndict, finalexportdf to gc target, returns the used gsheets object 
 
     '''
-    #adaptive row specification (easier updates)
-    rowstart = vardict['reagent_interface_amount_startrow']
-    rowend = len(finalexportdf.index) + rowstart-1
 
-    # Chemical abbreviations
-    # TODO MIT: Abstract this as funciton: df col, sheet_uid, rowstart = 1, rowend = n_exp
-    chemlabeltarget = sheet.range('B%s:B%s' % (rowstart, rowend))
-    chemlabeldf = finalexportdf['chemabbr']
-    chemlabellist = chemlabeldf.values.tolist()
-    count = 0
-    for cell in chemlabeltarget:
-        cell.value = chemlabellist[count]
-        count+=1
-    sheet.update_cells(chemlabeltarget)
+    update_sheet_column(sheet, finalexportdf['chemabbr'],
+                        col_index='B', start_row=reagent_interface_amount_startrow)
+    update_sheet_column(sheet, finalexportdf['nominal_amount'],
+                        col_index='C', start_row=reagent_interface_amount_startrow)
+    update_sheet_column(sheet, finalexportdf['Unit'],
+                        col_index='E', start_row=reagent_interface_amount_startrow)
 
-    #Formula amounts of materials to generate the objects
-    amounttarget = sheet.range('C%s:C%s' % (rowstart, rowend))
-    amountdf = finalexportdf['nominal_amount']
-    amountlist = amountdf.values.tolist()
-    count = 0
-    for cell in amounttarget:
-        cell.value = amountlist[count]
-        count+=1
-    sheet.update_cells(amounttarget)
+    # add in actual amount column for specified reagents
+    # only adds null to rows where there is no chemical
+    nulls = finalexportdf['actualsnull'].values.tolist()
+    nulls = [val if val == 'null' else '' for val in nulls]
+    update_sheet_column(sheet, nulls,
+                        col_index='D', start_row=reagent_interface_amount_startrow)
 
-    # export unit labels
-    unittarget = sheet.range('E%s:E%s' % (rowstart, rowend))
-    unitdf = finalexportdf['Unit']
-    unitlist = unitdf.values.tolist()
-    count = 0
-    for cell in unittarget:
-        cell.value = unitlist[count]
-        count+=1
-    sheet.update_cells(unittarget)
-
-    #correctly send out nulls for "actuals" column
-    nulltarget = sheet.range('D%s:D%s' % (rowstart, rowend))
-    nulldf = finalexportdf['actualsnull']
-    nulllist = nulldf.values.tolist()
-    nlsexport = [x if x == 'null' else '' for x in nulllist]
-    count = 0
-    for cell in nulltarget:
-        cell.value = nlsexport[count]
-        count+=1
-    sheet.update_cells(nulltarget)
-
-    null_start = rowend+1
-    null_end = max_robot_reagents * (maxreagentchemicals + 1) + \
-               reagent_interface_amount_startrow + 1
-    nulltarget2 = sheet.range('D%s:D%s' % (null_start, null_end))
-    for cell in nulltarget2:
-        cell.value = 'null'
-    sheet.update_cells(nulltarget2)
-
+    # add nulls to actual amount column for unspecified reagents
+    null_start = reagent_interface_amount_startrow + len(finalexportdf)
+    num_nulls = (max_reagents - len(finalexportdf.reagentnames.unique())) * (maxreagentchemicals + 1)
+    nulls = ['null'] * num_nulls
+    update_sheet_column(sheet, nulls, col_index='D', start_row=null_start)
 
 def upload_reagent_prep_info(rdict, sheetobject):
     uploadtarget = sheetobject.range('D3:F9')

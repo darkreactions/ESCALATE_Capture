@@ -20,15 +20,15 @@ modlog = logging.getLogger('capture.generate.generator')
 ####################################
 ## STATE SPACE GENERATION FUNCTIONS
 
-def CPexpgen(vardict, chemdf, rxndict, edict, rdict, climits):
+def generate_cp_files(vardict, chemdf, rxndict, edict, rdict, climits):
     """Wrapper to statepipe
     """
-    emsumdf, uploadlist, secfilelist, rdict = statepipe(vardict,
-                                                        chemdf,
-                                                        rxndict,
-                                                        edict,
-                                                        rdict,
-                                                        vardict['volspacing']) #this should be replaced with devconfig.volspacing
+    emsumdf, uploadlist, secfilelist, rdict = stateset_generation_pipeline(vardict,
+                                                                           chemdf,
+                                                                           rxndict,
+                                                                           edict,
+                                                                           rdict,
+                                                                           vardict['volspacing']) #this should be replaced with devconfig.volspacing
 
     # TODO: Fix plotting
     # if rxndict['plotter_on'] == 1:
@@ -38,7 +38,7 @@ def CPexpgen(vardict, chemdf, rxndict, edict, rdict, climits):
     #         modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
     return uploadlist, secfilelist
 
-def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
+def stateset_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, volspacing):
     """Generate stateset and associated files
     """
     erdf, ermmoldf, emsumdf = statespace.preprocess_and_enumerate(chemdf,
@@ -94,7 +94,7 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
     secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
     return emsumdf, uploadlist, secfilelist, rdict
 
-def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
+def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, climits):
     """
 
     :param vardict:
@@ -127,15 +127,15 @@ def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
 ####################################
 ## QUASI RANDOM GENERATION FUNCTIONS
 
-def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
+def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, climits):
     """Wrapper to quasirandompipe
     """
-    emsumdf, secfilelist, erdf = quasirandompipe(vardict,
-                                                 chemdf,
-                                                 rxndict,
-                                                 edict,
-                                                 rdict,
-                                                 climits)
+    emsumdf, secfilelist, erdf = quasirandom_generation_pipeline(vardict,
+                                                                 chemdf,
+                                                                 rxndict,
+                                                                 edict,
+                                                                 rdict,
+                                                                 climits)
 
     # TODO fix plotter
     # if rxndict['plotter_on'] == 1:
@@ -160,8 +160,3 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
                       ESCALATE V2 Supports LBL, ECL, HC, MIT_PVLab')
         sys.exit()
     return erdf, robotfile, secfilelist
-
-
-
-
-

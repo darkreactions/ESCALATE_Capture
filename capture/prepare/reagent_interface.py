@@ -8,6 +8,7 @@ import pandas as pd
 from capture.devconfig import max_robot_reagents
 from capture.devconfig import maxreagentchemicals
 from capture.devconfig import reagent_interface_amount_startrow
+from capture.devconfig import REAGENT_ALIAS
 
 modlog = logging.getLogger('capture.prepare.interface')
 
@@ -149,9 +150,27 @@ def build_reagent_spec_df(rxndict, vardict, erdf, rdict, chemdf):
 
 def upload_reagent_interface(rxndict, vardict, rdict, finalexportdf, gc, uid):
     sheet = gc.open_by_key(uid).sheet1
+    upload_aliased_cells(sheet)
     upload_reagent_prep_info(rdict, sheet)
     upload_run_information(rxndict, vardict, sheet)
-    upload_reagent_specifications(rxndict, vardict, finalexportdf, sheet)
+    upload_reagent_specifications(vardict, finalexportdf, sheet)
+
+
+def upload_aliased_cells(sheet):
+    """Upload cells containing reagent alias to the reagent interface"""
+
+    # Value used in googlesheet as placeholder for reagent alias
+    cell_alias_pat = '<Reagent>'
+
+    # Cells in googlesheet containing reagent alias:
+    cell_coords = ['C1', 'C2']
+    # Reagent<i> cells at bottom of sheet (all in col A, regularly spaced):
+    cell_coords.extend(['A' + str(i) for i in range(16, 52, 5)])
+
+    for cell_coord in cell_coords:
+        current_value = sheet.acell(cell_coord).value
+        new_value = current_value.replace(cell_alias_pat, REAGENT_ALIAS)
+        sheet.update_acell(cell_coord, new_value)
 
 
 def upload_run_information(rxndict, vardict, sheet):
@@ -168,7 +187,7 @@ def upload_run_information(rxndict, vardict, sheet):
     sheet.update_acell('B11', 'null')
     sheet.update_acell('B12', 'null')
 
-def upload_reagent_specifications(rxndict, vardict, finalexportdf, sheet):
+def upload_reagent_specifications(vardict, finalexportdf, sheet):
     ''' upload rxndict, finalexportdf to gc target, returns the used gsheets object 
 
     '''

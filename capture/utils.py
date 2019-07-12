@@ -82,7 +82,8 @@ def build_experiment_names_df(rxndict, vardict):
     experiment_names = []
     for exp_i in range(1, rxndict['totalexperiments'] + 1):
         experiment_names.extend(
-            [rxndict.get('exp{i}_name', 'Experiment {i}'.format(i=exp_i))
+            [rxndict.get('exp{i}_name'.format(i=exp_i),
+                         'Experiment {i}'.format(i=exp_i))
             ] * int(rxndict['exp{i}_wells'.format(i=exp_i)])
         )
 

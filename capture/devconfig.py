@@ -81,7 +81,7 @@ def labfiles(lab):
     if lab == "LBL" or lab == "HC":
         filereq = ['CrystalScoring', 'ExpDataEntry', 'metadata.json']
     if lab == "MIT_PVLab":
-        filereq = ['CrystalScoring', 'ExpDataEntry', 'metadata.json']
+        filereq = ['observation_interface', 'preparation_interface', 'metadata.json']
     if lab == 'ECL':
         filereq = ['CrystalScoring', 'metadata.json']
     return filereq

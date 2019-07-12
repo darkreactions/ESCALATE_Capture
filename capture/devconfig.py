@@ -4,7 +4,6 @@ import platform
 # version control todo: ian where does this get used? Not sure if we should have to manually do this
 RoboVersion = 2.5
 
-SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL']
 
 #######################################
 # chemistry-relevant specifications
@@ -38,7 +37,6 @@ REAGENT_ALIAS = 'Precursor'
 # reagentsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
 # reagent_workbook_index = 1
 # reagent_interface_amount_startrow = 15
-# REAGENT_ALIAS = 'Reagent'
 
 #######################################
 # Wolfram Kernel Management

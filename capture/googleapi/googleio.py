@@ -7,6 +7,7 @@
 
 import logging
 import os
+import re
 
 import gspread
 from pydrive.auth import GoogleAuth
@@ -148,19 +149,22 @@ def create_drive_directories(rxndict, targetfolder, includedfiles):
     return PriDir, secdir, file_dict
 
 
-def get_reagent_interface_uid(file_dict):
-    """Iterate through gdrive file_dict to find experimental data entry form
+def get_uid_by_name(file_dict, name_pat):
+    """Return the uid of the file from file dict whose name matches name_pat
+
+    Returns the first matching name in order of dict hash.
 
     :param file_dict: dictionary representing a gdrive folder
+    :param name_pat: a pattern to search for in the file_dict
     :return: uid of gdrive observation_interface file
     """
 
     for key, val in file_dict.items():
-        if any(elem in key for elem in ['ExpDataEntry', 'preparation_interface']):
+        if re.search(name_pat, key):
             target = val
             return target
 
-    raise ValueError('No preparation_interface file in file gdrive dictionary')
+    raise ValueError('Could not find {} in file_dict.keys'.format(name_pat))
 
 def get_gdrive_client():
     scope = ['https://spreadsheets.google.com/feeds']

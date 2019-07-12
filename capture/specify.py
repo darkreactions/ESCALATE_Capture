@@ -98,8 +98,8 @@ def datapipeline(rxndict, vardict):
 
                 google_drive_client = googleio.get_gdrive_client()
 
-                # upload reagent interface
-                reagent_interface_uid = googleio.get_reagent_interface_uid(gdrive_uid_dict)
+                # upload reagent preparation_interface
+                reagent_interface_uid = googleio.get_uid_by_name(gdrive_uid_dict, '(ExpDataEntry|preparation_interface)')
                 regent_spec_df = interface.build_reagent_spec_df(rxndict, vardict, erdf, rdict, chemdf)
                 interface.upload_reagent_interface(rxndict, vardict, rdict,
                                                    regent_spec_df, google_drive_client, reagent_interface_uid)

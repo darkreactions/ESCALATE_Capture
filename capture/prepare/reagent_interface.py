@@ -98,13 +98,13 @@ def preparationdf(rdict,
 
 
 
-def chemicalnames(rxndict, rdict, chemdf, maxreagentchemicals, maxreagents):
-    '''generates a dataframe of chemical names for reagent interface
+def chemicalnames(rdict, maxreagentchemicals):
+    """generates a dataframe of chemical names for reagent interface
 
     :param chemdf:  Chemical data frame from google drive.  
 
     :returns: a dataframe sized for export to version:: 3.0 interface
-    '''
+    """
     chemicalnamelist = []
     reagentnamelist = []
     holdreagentnum = 1
@@ -115,25 +115,24 @@ def chemicalnames(rxndict, rdict, chemdf, maxreagentchemicals, maxreagents):
             chemicalnamelist.extend(['null'] * maxreagentchemicals)
             maxinterfaceslots = maxreagentchemicals + 1
             reagentnamelist.extend(['Reagent%s' %holdreagentnum] * maxinterfaceslots)
-            holdreagentnum = holdreagentnum+1
+            holdreagentnum += 1
         else:
-            count=0
+            count = 0
             holdreagentnum = int(reagentnum)+1
             chemicalnamelist.append('Final Volume = ')
             reagentnamelist.append('Reagent%s' %reagentnum)
             for chemical in rdict[reagentnum].chemicals:
                 chemicalnamelist.append(chemical)
                 reagentnamelist.append('Reagent%s' %reagentnum)
-                count+=1
+                count += 1
             while count < maxreagentchemicals:
                 chemicalnamelist.append('null')
                 reagentnamelist.append('Reagent%s' %reagentnum)
-                count+=1
-            else: pass
+                count += 1
     chemicalnamedf = pd.DataFrame(chemicalnamelist, columns=['chemabbr'])
     reagentnamedf = pd.DataFrame(reagentnamelist, columns=['reagentnames'])
     chemicalnamedf = pd.concat([chemicalnamedf, reagentnamedf], axis=1)
-    return(chemicalnamedf)
+    return chemicalnamedf
 
 def reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf):
     ''' uploads information to google sheets reagent interface template
@@ -150,8 +149,7 @@ def reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf):
 #    for cell in cell_list:
 #        print(cell.label)
     # Prepare the dataframe for export to the gsheets interface 
-    chemicalnamedf = chemicalnames(rxndict, rdict, chemdf, vardict['maxreagentchemicals'], \
-        vardict['max_robot_reagents'])
+    chemicalnamedf = chemicalnames(rdict, vardict['maxreagentchemicals'])
     sumreagentsdict = sumreagents(erdf, rxndict['reagent_dead_volume']*1000)
     nominalsdf = preparationdf(rdict, chemicalnamedf, sumreagentsdict, vardict['solventlist'], \
         vardict['maxreagentchemicals'], chemdf)
@@ -182,6 +180,7 @@ def reagent_interface_upload(rxndict, vardict, finalexportdf, gc, val):
     rowend = len(finalexportdf.index) + rowstart-1
 
     # Chemical abbreviations
+    # TODO MIT: Abstract this as funciton: df col, sheet_uid, rowstart = 1, rowend = n_exp
     chemlabeltarget = sheetobject.range('B%s:B%s'%(rowstart, rowend))
     chemlabeldf = finalexportdf['chemabbr']
     chemlabellist = chemlabeldf.values.tolist()

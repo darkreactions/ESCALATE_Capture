@@ -148,19 +148,25 @@ def genddirectories(rxndict, targetfolder, includedfiles):
     return PriDir, secdir, file_dict
 
 
-def gsheettarget(file_dict):
+def get_observation_interface_uid(file_dict):
     """Iterate through gdrive file_dict to find experimental data entry form
 
     :param file_dict: dictionary representing a gdrive folder
-    :return: tuple containing filename and gspread credental object for experimental data entry form
+    :return: uid of gdrive observation_interface file
     """
-    scope = ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc = gspread.authorize(credentials)
+    # scope = ['https://spreadsheets.google.com/feeds']
+    # credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
+    # gc = gspread.authorize(credentials)
 
     for key, val in file_dict.items():
-        if "ExpDataEntry" in key:  # Experimentalsheet = gc.open_bysearches for ExpDataEntry Form to get id
+        if any(elem in key for elem in ['ExpDataEntry', 'preparation_interface']):
             target = val
-            return target, gc
+            return target
 
-    raise ValueError('No ExpDataEntry file in file dictionary')
+    raise ValueError('No preparation_interface file in file gdrive dictionary')
+
+def get_drive_client():
+    scope = ['https://spreadsheets.google.com/feeds']
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
+    gc = gspread.authorize(credentials)
+    return gc

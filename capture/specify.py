@@ -16,6 +16,7 @@ from capture.models import reagent
 from capture.models import chemical
 from capture.templates import expbuild
 from capture.googleapi import googleio
+import capture.devconfig as config
 
 
 # create logger
@@ -62,9 +63,7 @@ def datapipeline(rxndict, vardict):
                                                          edict,
                                                          rdict,
                                                          climits)
-            if vardict['debug'] == 1:
-                pass
-            else:
+            if not vardict['debug']:
                 #prepare
                 interface.PrepareDirectoryCP(uploadlist,
                                              secfilelist,
@@ -73,49 +72,46 @@ def datapipeline(rxndict, vardict):
                                              rdict,
                                              vardict['targetfolder'])
 
-    #generate
-    if vardict['challengeproblem'] == 0:
-        #Create experiment file and relevant experiment associated data
-        (erdf, robotfile, secfilelist) = generator.expgen(vardict,
-                                                          chemdf,
-                                                          rxndict,
-                                                          edict,
-                                                          rdict,
-                                                          climits)
-        # disable uploading if debug is activated 
-        if vardict['debug'] == 1:
-            pass
-        else:            
+    # generate
+    if not vardict['challengeproblem']:
+        # Create experiment file and relevant experiment associated data
+        erdf, robotfile, secfilelist = generator.expgen(vardict,
+                                                        chemdf,
+                                                        rxndict,
+                                                        edict,
+                                                        rdict,
+                                                        climits)
+        # disable uploading if debug is activated
+        if not vardict['debug']:
             modlog.info('Starting file preparation for upload')
             # Lab specific handling - different labs require different files for tracking
-            if rxndict['lab'] == 'LBL' or \
-               rxndict['lab'] == "HC" or  \
-               rxndict['lab'] == "MIT_PVLab":
-                PriDir, secdir, filedict =  \
-                    googleio.genddirectories(rxndict,
-                                             vardict['targetfolder'],
-                                             vardict['filereqs'])
-                reagentinterfacetarget, gspreadauth = googleio.gsheettarget(filedict)
-                #  abstract experiment data to reagent level (generate reagent preparation based on user requests)
+
+            if not rxndict['lab'] in config.SUPPORTED_LABS:
+                modlog.error('User selected a lab that was not supported. Closing run')
+                sys.exit()
+
+            primary_dir, secondary_dir, gdrive_uid_dict = googleio.genddirectories(rxndict,
+                                                                                   vardict['targetfolder'],
+                                                                                   vardict['filereqs'])
+            if rxndict['lab'] in ['LBL', 'HC', 'MIT_PVLab']:
+
+                # todo: test this new fun
+                google_drive_client = googleio.get_drive_client()
+                observation_interface_uid = googleio.get_observation_interface_uid(gdrive_uid_dict)
 
                 finalexportdf = interface.reagent_data_prep(rxndict, vardict, erdf, rdict, chemdf)
 
                 sheetobject = interface.reagent_interface_upload(rxndict,
                                                                  vardict,
                                                                  finalexportdf,
-                                                                 gspreadauth,
-                                                                 reagentinterfacetarget)
+                                                                 google_drive_client,
+                                                                 observation_interface_uid)
 
                 interface.reagent_prep_pipeline(rdict, sheetobject, vardict['max_robot_reagents'])
-            elif rxndict['lab'] == "ECL": 
-                (PriDir, secdir, filedict) = googleio.genddirectories(rxndict,vardict['targetfolder'], vardict['filereqs'])
-                modlog.warn('User selected ECL run, no reagent interface generated.  Please ensure the JSON is exported from ECL!')
-                pass
-            else:
-                modlog.error('User selected a lab that was not supported.  Closing run')
-                sys.exit()
+            elif rxndict['lab'] == "ECL":
+                modlog.warn('User selected ECL run, no reagent interface generated. Please ensure the JSON is exported from ECL!')
             logfile = '%s/%s'%(os.getcwd(),rxndict['logfile'])
-            googleio.GupFile(PriDir, secdir, secfilelist, robotfile, \
+            googleio.GupFile(primary_dir, secondary_dir, secfilelist, robotfile, \
                 rxndict['RunID'], logfile)
             modlog.info('File upload completed successfully')
     modlog.info("Job Creation Complete")

@@ -11,6 +11,7 @@ from pandas import ExcelWriter
 
 import capture.googleapi.googleio
 from capture.prepare import reagent_interface as interface
+from capture.prepare.observation_interface import upload_observation_interface_data
 from capture.testing import inputvalidation
 from capture.generate import generator
 from capture.models import reagent
@@ -103,6 +104,12 @@ def datapipeline(rxndict, vardict):
                 regent_spec_df = interface.build_reagent_spec_df(rxndict, vardict, erdf, rdict, chemdf)
                 interface.upload_reagent_interface(rxndict, vardict, rdict,
                                                    regent_spec_df, google_drive_client, reagent_interface_uid)
+
+                # upload data to observation_interace
+                observation_interface_uid = googleio.get_uid_by_name(gdrive_uid_dict, 'observation_interface')
+                upload_observation_interface_data(rxndict, vardict, google_drive_client, observation_interface_uid)
+
+
             elif rxndict['lab'] == "ECL":
                 modlog.warn('User selected ECL run, no reagent interface generated. Please ensure the JSON is exported from ECL!')
             logfile = '%s/%s'%(os.getcwd(),rxndict['logfile'])

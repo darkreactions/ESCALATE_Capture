@@ -1,9 +1,8 @@
 import pandas as pd
 import numpy as np
 import logging
-import sys
 from capture.devconfig import REAGENT_ALIAS
-from capture.utils import abstract_reagent_colnames, get_explicit_experiments
+from capture.utils import abstract_reagent_colnames, build_experiment_names_df
 
 modlog = logging.getLogger('capture.prepare.experiment_model_out')
 
@@ -244,7 +243,6 @@ def generate_experiment_specification_file(rxndict, vardict, erdf):
         'Experiment Index': range(1, int(rxndict['wellcount']) + 1),
         'Labware ID': rxndict['plate_container']
     })
-    # todo: put UIDs here (in lieu of df_tray.iloc[:, 0]--vial site)
 
     experiment_names = build_experiment_names_df(rxndict, vardict)
     outframe = pd.concat([df_Tray.iloc[:, 0], experiment_names, erdf, df_Tray.iloc[:, 1], rxn_parameters, rxn_conditions],
@@ -255,20 +253,6 @@ def generate_experiment_specification_file(rxndict, vardict, erdf):
     outframe.to_excel(volume_file, sheet_name='experiment_volume_interface', index=False)
 
     return [volume_file]
-
-def build_experiment_names_df(rxndict, vardict):
-    experiment_names = []
-    for exp_i in range(1, rxndict['totalexperiments'] + 1):
-        experiment_names.extend(
-            [rxndict.get('exp{i}_name', 'Experiment {i}'.format(i=exp_i))
-            ] * int(rxndict['exp{i}_wells'.format(i=exp_i)])
-        )
-
-    explicit_experiments = get_explicit_experiments(vardict['exefilename'], only_volumes=False)
-    experiment_names.extend(explicit_experiments['Manual Well Custom ID'].values.tolist())
-
-    return pd.DataFrame({'Experiment Names': experiment_names})
-
 
 
 def reagent_id_list(rxndict):

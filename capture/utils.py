@@ -76,3 +76,17 @@ def update_sheet_column(sheet, data, col_index, start_row):
 
     sheet.update_cells(col)
     return
+
+
+def build_experiment_names_df(rxndict, vardict):
+    experiment_names = []
+    for exp_i in range(1, rxndict['totalexperiments'] + 1):
+        experiment_names.extend(
+            [rxndict.get('exp{i}_name', 'Experiment {i}'.format(i=exp_i))
+            ] * int(rxndict['exp{i}_wells'.format(i=exp_i)])
+        )
+
+    explicit_experiments = get_explicit_experiments(vardict['exefilename'], only_volumes=False)
+    experiment_names.extend(explicit_experiments['Manual Well Custom ID'].values.tolist())
+
+    return pd.DataFrame({'Experiment Names': experiment_names})

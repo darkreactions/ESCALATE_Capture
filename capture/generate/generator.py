@@ -153,12 +153,11 @@ def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, climits):
 
     if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
         robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
-    elif rxndict['lab'] == 'MIT_PVLab':
+    elif rxndict['lab'] in ['MIT_PVLab', 'dev']:
         robotfile = expint.generate_experiment_specification_file(rxndict, vardict, erdf)
     elif rxndict['lab'] == "ECL": 
         robotfile = expint.ECLrobotfile(rxndict, vardict, rdict, erdf)
     else:
-        modlog.error('User did not specify a supported lab. \
-                      ESCALATE V2 Supports LBL, ECL, HC, MIT_PVLab')
+        modlog.error('No path for lab {}'.format(rxndict['lab']))
         sys.exit()
     return erdf, robotfile, secfilelist

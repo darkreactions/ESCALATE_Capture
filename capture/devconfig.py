@@ -4,7 +4,7 @@ import platform
 # version control todo: ian where does this get used? Not sure if we should have to manually do this
 RoboVersion = 2.5
 
-SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL']
+SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 
 #######################################
 # chemistry-relevant specifications
@@ -42,6 +42,7 @@ lab_vars = {
             'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
             'reagent_workbook_index': 1,
             'reagent_interface_amount_startrow': 15,
+            'max_reagents': 8,
             'reagent_alias': 'Reagent'
         },
     'LBL':
@@ -53,7 +54,20 @@ lab_vars = {
             'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
             'reagent_workbook_index': 1,
             'reagent_interface_amount_startrow': 15,
+            'max_reagents': 7,
             'reagent_alias': 'Reagent'
+        },
+    'dev':
+        {
+            'template_folder': '1w5tReXSRvC6cm_rQy74-10QLIlG7Eee0',
+            'targetfolder': '19nt2-9Inub8IEYDxOLnplCPDEYt1NPqZ',  # target folder for new experiments
+            'chemsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
+            'chem_workbook_index': 0,
+            'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
+            'reagent_workbook_index': 1,
+            'reagent_interface_amount_startrow': 16,
+            'reagent_alias': 'Reagent',
+            'max_reagents': 8,
         }
 }
 
@@ -87,7 +101,7 @@ elif system == "Darwin":
 
 # must be 'default' or 'wolfram'
 # 'wolfram' is currently experimental and unsupported
-sampler = 'wolfram'
+sampler = 'default'
 
 #######################################
 # Laboratory file management
@@ -97,7 +111,7 @@ def labfiles(lab):
     """Returns files that need to be sent to a given laboratory"""
     if lab == "LBL" or lab == "HC":
         filereq = ['CrystalScoring', 'ExpDataEntry', 'metadata.json']
-    if lab == "MIT_PVLab":
+    if lab == "MIT_PVLab" or lab == 'dev':
         filereq = ['observation_interface', 'preparation_interface', 'metadata.json']
     if lab == 'ECL':
         filereq = ['CrystalScoring', 'metadata.json']

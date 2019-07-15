@@ -97,7 +97,7 @@ def datapipeline(rxndict, vardict):
             primary_dir, secondary_dir, gdrive_uid_dict = googleio.create_drive_directories(rxndict,
                                                                                             drive_target_folder,
                                                                                             vardict['filereqs'])
-            if rxndict['lab'] in ['LBL', 'HC', 'MIT_PVLab']:
+            if rxndict['lab'] in ['LBL', 'HC', 'MIT_PVLab', 'dev']:
 
                 google_drive_client = googleio.get_gdrive_client()
 

@@ -14,7 +14,8 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from oauth2client.service_account import ServiceAccountCredentials
 from capture.googleapi import googleio
-from capture.devconfig import template_folder
+import capture.devconfig as config
+from utils import globals
 
 modlog = logging.getLogger('initialize.googleio')
 
@@ -78,8 +79,10 @@ def copy_drive_templates(opdir, RunID, includedfiles):
     :param includedfiles: files to be copied from template gdrive directory
     :return: a referenced dictionary of files (title, Gdrive ID)
     """
+
+    template_folder = config.lab_vars[globals.get_lab()]['template_folder']
     file_template_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % template_folder}).GetList()
-    for templatefile in file_template_list:       
+    for templatefile in file_template_list:
             basename = templatefile['title']
             if basename in includedfiles:
                 drive.auth.service.files().copy(fileId=templatefile['id'],
@@ -173,7 +176,7 @@ def get_gdrive_client():
     return gc
 
 
-def upload_cp_files_to_drive(uploadlist, secfilelist, runID, logfile, rdict, targetfolder):
+def upload_cp_files_to_drive(uploadlist, secfilelist, runID, logfile, targetfolder):
     tgt_folder_id = targetfolder
     PriDir = googleio.create_drive_folder(runID, tgt_folder_id)
     googleio.copy_drive_templates(PriDir, runID, []) # copies metadata from current template (leaves the rest)

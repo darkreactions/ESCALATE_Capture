@@ -1,4 +1,4 @@
-from capture.utils import build_experiment_names_df, update_sheet_column
+from utils.data_handling import build_experiment_names_df, update_sheet_column
 
 
 def upload_observation_interface_data(rxndict, vardict, gc, interface_uid):

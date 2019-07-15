@@ -10,7 +10,7 @@ from capture.testing import inputvalidation
 from capture.models import chemical
 from capture.generate import calcs
 import capture.devconfig as config
-from capture.utils import get_explicit_experiments, get_reagent_number_as_string
+from utils.data_handling import get_explicit_experiments, get_reagent_number_as_string
 
 modlog = logging.getLogger('capture.generate.qrandom')
 

@@ -12,8 +12,7 @@ from capture.generate import qrandom
 from capture.generate import statespace
 from capture.prepare import stateset
 from capture.prepare import experiment_interface as expint
-from capture.devconfig import REAGENT_ALIAS
-from capture.utils import abstract_reagent_colnames
+from utils.data_handling import abstract_reagent_colnames
 
 modlog = logging.getLogger('capture.generate.generator')
 

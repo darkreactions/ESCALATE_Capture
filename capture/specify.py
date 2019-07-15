@@ -19,7 +19,7 @@ from capture.models import chemical
 from capture.templates import expbuild
 from capture.googleapi import googleio
 import capture.devconfig as config
-
+from utils import globals
 
 # create logger
 modlog = logging.getLogger('capture.specify')
@@ -38,8 +38,10 @@ def datapipeline(rxndict, vardict):
 
     modlog = logging.getLogger('capture.specify.datapipeline')
     inputvalidation.prebuildvalidation(rxndict, vardict)
-    chemdf = chemical.ChemicalData(vardict['chemsheetid'], vardict['chem_workbook_index'])
-    reagentdf = reagent.ReagentData(vardict['reagentsheetid'], vardict['reagent_workbook_index'])
+    chemdf = chemical.ChemicalData(config.lab_vars[globals.get_lab()]['chemsheetid'],
+                                   config.lab_vars[globals.get_lab()]['chem_workbook_index'])
+    reagentdf = reagent.ReagentData(config.lab_vars[globals.get_lab()]['reagentsheetid'],
+                                    config.lab_vars[globals.get_lab()]['reagent_workbook_index'])
 
     # dictionary of user defined chemical limits
     climits = chemical.chemicallimits(rxndict)
@@ -50,6 +52,8 @@ def datapipeline(rxndict, vardict):
 
     # dictionary of experiments
     edict = exppartition(rxndict)
+
+    drive_target_folder = config.lab_vars[globals.get_lab()]['targetfolder']
 
     inputvalidation.postbuildvalidation(rxndict, rdict, edict)
     #generate
@@ -66,13 +70,11 @@ def datapipeline(rxndict, vardict):
                                                                   rdict,
                                                                   climits)
             if not vardict['debug']:
-                #prepare
                 googleio.upload_cp_files_to_drive(uploadlist,
                                                   secfilelist,
                                                   rxndict['RunID'],
                                                   rxndict['logfile'],
-                                                  rdict,
-                                                  vardict['targetfolder'])
+                                                  drive_target_folder)
 
     # generate
     if not vardict['challengeproblem']:
@@ -93,7 +95,7 @@ def datapipeline(rxndict, vardict):
                 sys.exit()
 
             primary_dir, secondary_dir, gdrive_uid_dict = googleio.create_drive_directories(rxndict,
-                                                                                            vardict['targetfolder'],
+                                                                                            drive_target_folder,
                                                                                             vardict['filereqs'])
             if rxndict['lab'] in ['LBL', 'HC', 'MIT_PVLab']:
 

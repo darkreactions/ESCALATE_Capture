@@ -1,8 +1,7 @@
 import sys
 import logging
 import re
-import numpy as np
-from capture.utils import get_explicit_experiments, flatten
+from utils.data_handling import get_explicit_experiments, flatten
 import capture.devconfig as config
 
 def expcount(rxndict):
@@ -41,7 +40,7 @@ def expwellcount(rxndict):
         if exp_well_pat.search(k.strip()):
             expwells.append(v)
 
-    manual_wells = rxndict['manual_wells']  # this is bad. I don't like having hard_coded this in.
+    manual_wells = rxndict.get('manual_wells', 0)
 
     if sum(expwells) + manual_wells > rxndict['wellcount']:
         modlog.error("Experiments requested outnumber allotted wells. Check well counts for each experiment")

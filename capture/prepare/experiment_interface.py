@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
+
 import logging
-from capture.devconfig import REAGENT_ALIAS
-from capture.utils import abstract_reagent_colnames, build_experiment_names_df
+import capture.devconfig as config
+from utils import globals
+from utils.data_handling import abstract_reagent_colnames, build_experiment_names_df
 
 modlog = logging.getLogger('capture.prepare.experiment_model_out')
 
@@ -231,11 +233,12 @@ def generate_experiment_specification_file(rxndict, vardict, erdf):
                              rxndict['duration_reaction'], ''],
     })
 
+    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
     rxn_conditions = pd.DataFrame({
-        REAGENT_ALIAS + 's': [REAGENT_ALIAS + str(i) for i in range(1, 8)],
-        REAGENT_ALIAS + ' identity': [str(i) for i in range(1, 8)],
+        reagent_alias + 's': [reagent_alias + str(i) for i in range(1, 8)],
+        reagent_alias + ' identity': [str(i) for i in range(1, 8)],
         'Liquid Class': vol_ar,
-        REAGENT_ALIAS + ' Temperature': [rxndict['reagents_prerxn_temperature']] * len(vol_ar)
+        reagent_alias + ' Temperature': [rxndict['reagents_prerxn_temperature']] * len(vol_ar)
     })
 
     # df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount'])

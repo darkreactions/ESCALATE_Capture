@@ -5,10 +5,10 @@ TODO Pendletoon, doc this whole module
 import logging
 import pandas as pd
 
+import capture.devconfig as config
 from capture.devconfig import maxreagentchemicals
-from capture.devconfig import reagent_interface_amount_startrow
-from capture.devconfig import REAGENT_ALIAS, max_reagents
-from capture.utils import update_sheet_column
+from utils.data_handling import update_sheet_column
+from utils import globals
 
 modlog = logging.getLogger('capture.prepare.interface')
 
@@ -153,7 +153,7 @@ def upload_reagent_interface(rxndict, vardict, rdict, finalexportdf, gc, uid):
     upload_aliased_cells(sheet)
     upload_reagent_prep_info(rdict, sheet)
     upload_run_information(rxndict, vardict, sheet)
-    upload_reagent_specifications(vardict, finalexportdf, sheet)
+    upload_reagent_specifications(finalexportdf, sheet)
 
 
 def upload_aliased_cells(sheet):
@@ -167,9 +167,10 @@ def upload_aliased_cells(sheet):
     # Reagent<i> cells at bottom of sheet (all in col A, regularly spaced):
     cell_coords.extend(['A' + str(i) for i in range(16, 52, 5)])
 
+    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
     for cell_coord in cell_coords:
         current_value = sheet.acell(cell_coord).value
-        new_value = current_value.replace(cell_alias_pat, REAGENT_ALIAS)
+        new_value = current_value.replace(cell_alias_pat, reagent_alias)
         sheet.update_acell(cell_coord, new_value)
 
 
@@ -187,10 +188,14 @@ def upload_run_information(rxndict, vardict, sheet):
     sheet.update_acell('B11', 'null')
     sheet.update_acell('B12', 'null')
 
-def upload_reagent_specifications(vardict, finalexportdf, sheet):
-    ''' upload rxndict, finalexportdf to gc target, returns the used gsheets object 
+def upload_reagent_specifications(finalexportdf, sheet):
+    """upload rxndict, finalexportdf to gc target, returns the used gsheets object
 
-    '''
+    """
+
+    # get lab-specific config variables
+    reagent_interface_amount_startrow = config.lab_vars[globals.get_lab()]['reagent_interface_amount_startrow']
+    max_reagents = config.lab_vars[globals.get_lab()]['max_reagents']
 
     update_sheet_column(sheet, finalexportdf['chemabbr'],
                         col_index='B', start_row=reagent_interface_amount_startrow)

@@ -3,7 +3,8 @@
 import pandas as pd
 import re
 
-from capture.devconfig import REAGENT_ALIAS
+import capture.devconfig as config
+from utils import globals
 
 
 def get_explicit_experiments(rxnvarfile, only_volumes=True):
@@ -27,7 +28,8 @@ def get_explicit_experiments(rxnvarfile, only_volumes=True):
 
 def get_reagent_number_as_string(reagent_str):
     """Get the number from a string representation"""
-    reagent_pat = re.compile('([Rr]eagent|{})(\d+)'.format(REAGENT_ALIAS))
+    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
+    reagent_pat = re.compile('([Rr]eagent|{})(\d+)'.format(reagent_alias))
     return reagent_pat.match(reagent_str).group(2)
 
 
@@ -37,7 +39,8 @@ def abstract_reagent_colnames(df, inplace=True):
     :param df: dataframe to rename
     :return: None or pandas.DataFrame (depending on inplace)
     """
-    result = df.rename(columns=lambda x: re.sub('[Rr]eagent', REAGENT_ALIAS, x), inplace=inplace)
+    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
+    result = df.rename(columns=lambda x: re.sub('[Rr]eagent', reagent_alias, x), inplace=inplace)
     return result
 
 

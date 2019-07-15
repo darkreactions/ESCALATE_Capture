@@ -13,6 +13,7 @@ import argparse as ap
 from log import init
 from capture import specify
 from capture import devconfig
+from utils import globals
 
 
 def escalatecapture(rxndict, vardict):
@@ -95,16 +96,6 @@ if __name__ == "__main__":
     vardict['solventlist'] = devconfig.solventlist
 
     vardict['lab_vars'] = devconfig.lab_vars
-
-    # todo: factor all of these out with reads into vardict['lab_vars']['lab']
-    vardict['targetfolder'] = devconfig.targetfolder
-    vardict['chemsheetid'] = devconfig.chemsheetid
-    vardict['chem_workbook_index'] = devconfig.chem_workbook_index
-    vardict['reagent_workbook_index'] = int(devconfig.reagent_workbook_index)
-    vardict['reagentsheetid'] = devconfig.reagentsheetid
-    vardict['reagent_interface_amount_startrow'] = devconfig.reagent_interface_amount_startrow
-
-
     # rxndict will hold variables specified in the Excel interface
     # see build_rxndict docs for a more detailed discussion.
     rxndict = build_rxndict(vardict['exefilename'])
@@ -115,8 +106,7 @@ if __name__ == "__main__":
     #  It is reference which lab is this experiment going to be run at. LBL, HC, etc.
     vardict['filereqs'] = devconfig.labfiles(rxndict['lab'])
 
-    # put this here so we can index into vardict['lab_vars'] without needing rxndict in scope.
-    vardict['lab'] = rxndict['lab']
+    globals.set_lab(rxndict['lab'])
 
     # TODO dicts can be modified in place
     rxndict, vardict = init.runuidgen(rxndict, vardict) 

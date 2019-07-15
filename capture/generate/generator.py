@@ -94,6 +94,11 @@ def stateset_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, volspac
     secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
     return emsumdf, uploadlist, secfilelist, rdict
 
+
+####################################
+## QUASI RANDOM GENERATION FUNCTIONS
+
+
 def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, climits):
     """
 
@@ -124,8 +129,6 @@ def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, clim
     secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
     return emsumdf, secfilelist, erdf
 
-####################################
-## QUASI RANDOM GENERATION FUNCTIONS
 
 def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, climits):
     """Wrapper to quasirandompipe

@@ -87,7 +87,8 @@ def build_experiment_names_df(rxndict, vardict):
             ] * int(rxndict['exp{i}_wells'.format(i=exp_i)])
         )
 
-    explicit_experiments = get_explicit_experiments(vardict['exefilename'], only_volumes=False)
-    experiment_names.extend(explicit_experiments['Manual Well Custom ID'].values.tolist())
+    if rxndict['manual_wells']:
+        explicit_experiments = get_explicit_experiments(vardict['exefilename'], only_volumes=False)
+        experiment_names.extend(explicit_experiments['Manual Well Custom ID'].values.tolist())
 
     return pd.DataFrame({'Experiment Names': experiment_names})

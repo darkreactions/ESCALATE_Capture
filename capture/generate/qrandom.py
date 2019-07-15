@@ -377,15 +377,20 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
         experimentname = 'exp%s' % experiment
 
         # gross loop to get wellnum and vollimits
+        # todo: factor out this loop
         for k, v in edict.items():
             if experimentname in k:
                 if 'wells' in k:
-                    wellnum = int(v)
+                    num_wells = int(v)
                 if 'vols' in k:
                     vollimits = v
 
+        if num_wells == 0:
+            experiment += 1
+            continue
+
         modlog.info('Building reagent constraints for experiment %s using reagents %s for a total of %s wells'
-                    % (experiment, edict[experimentname], wellnum))
+                    % (experiment, edict[experimentname], num_wells))
 
         # DO THE SAMPLING
         if config.sampler == 'wolfram':
@@ -393,7 +398,7 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
                                               rdict,
                                               vollimits,
                                               rxndict,
-                                              wellnum,
+                                              num_wells,
                                               climits,
                                               experiment)
         elif config.sampler == 'default':
@@ -401,7 +406,7 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
                                               rdict,
                                               vollimits,
                                               rxndict,
-                                              wellnum,
+                                              num_wells,
                                               climits,
                                               experiment)
         else:
@@ -425,7 +430,6 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
     if not erdf.shape[0] == rxndict['wellcount']:
         raise ValueError("Too few reactions specified: \n" +\
                          "Ensure that all exp<index>_wells and manual_well sum to wellcount")
-    print("Completed sampling")
     # Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
     clist = chemical.exp_chem_list(rdict)

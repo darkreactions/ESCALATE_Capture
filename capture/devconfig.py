@@ -19,6 +19,8 @@ solventlist = ['GBL', 'DMSO', 'DMF', 'DCM', 'CBz']
 
 #######################################
 # Google Drive Targets (ensure correct credentials)
+# todo: replace all references to the globals declared here
+#       with reads into the lab_vars dict either here or in vardict.
 
 # MIT
 template_folder = '1PVeVpNjnXiAuzm3Oq2q-RiiLBhKPGW53'
@@ -40,6 +42,44 @@ REAGENT_ALIAS = 'Precursor'
 # reagent_workbook_index = 1
 # reagent_interface_amount_startrow = 15
 # REAGENT_ALIAS = 'Reagent'
+
+lab_vars = {
+    'MIT_PVLab':
+        {
+            'template_folder': '1PVeVpNjnXiAuzm3Oq2q-RiiLBhKPGW53',
+            'targetfolder': '1tUb4GcF_tDanMjvQuPa6vj0n9RNa5IDI',  # target folder for run generation
+            'chemsheetid': '1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI',
+            'chem_workbook_index': 0,
+            'reagentsheetid': '1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI',
+            'reagent_workbook_index': 1,
+            'reagent_interface_amount_startrow': 16,
+            'max_reagents': 8,  # todo: discuss
+            'REAGENT_ALIAS': 'Precursor'
+        },
+    'HC':
+        {
+            'template_folder': '131G45eK7o9ZiDb4a2yV7l2E1WVQrz16d',
+            'targetfolder': '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe',  # target folder for new experiments
+            'chemsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
+            'chem_workbook_index': 0,
+            'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
+            'reagent_workbook_index': 1,
+            'reagent_interface_amount_startrow': 15,
+            'REAGENT_ALIAS': 'Reagent'
+        },
+
+    'LBL':
+        {
+            'template_folder': '131G45eK7o9ZiDb4a2yV7l2E1WVQrz16d',
+            'targetfolder': '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe',  # target folder for new experiments
+            'chemsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
+            'chem_workbook_index': 0,
+            'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
+            'reagent_workbook_index': 1,
+            'reagent_interface_amount_startrow': 15,
+            'REAGENT_ALIAS': 'Reagent'
+        }
+}
 
 #######################################
 # Wolfram Kernel Management

@@ -93,6 +93,10 @@ if __name__ == "__main__":
     vardict['volspacing'] = devconfig.volspacing
     vardict['maxreagentchemicals'] = devconfig.maxreagentchemicals
     vardict['solventlist'] = devconfig.solventlist
+
+    vardict['lab_vars'] = devconfig.lab_vars
+
+    # todo: factor all of these out with reads into vardict['lab_vars']['lab']
     vardict['targetfolder'] = devconfig.targetfolder
     vardict['chemsheetid'] = devconfig.chemsheetid
     vardict['chem_workbook_index'] = devconfig.chem_workbook_index
@@ -110,6 +114,9 @@ if __name__ == "__main__":
     # >>> also, what is lab? I'm not sure what this label is referencing...
     #  It is reference which lab is this experiment going to be run at. LBL, HC, etc.
     vardict['filereqs'] = devconfig.labfiles(rxndict['lab'])
+
+    # put this here so we can index into vardict['lab_vars'] without needing rxndict in scope.
+    vardict['lab'] = rxndict['lab']
 
     # TODO dicts can be modified in place
     rxndict, vardict = init.runuidgen(rxndict, vardict) 

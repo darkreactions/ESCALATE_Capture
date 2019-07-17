@@ -9,7 +9,6 @@ SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 #######################################
 # chemistry-relevant specifications
 
-max_robot_reagents = 7
 maxreagentchemicals = 4
 volspacing = 50  # reagent microliter (uL) spacing between points in the stateset
 
@@ -30,8 +29,9 @@ lab_vars = {
             'reagentsheetid': '1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI',
             'reagent_workbook_index': 1,
             'reagent_interface_amount_startrow': 16,
-            'max_reagents': 8,  # todo: discuss
-            'reagent_alias': 'Precursor'
+            'max_reagents': 8,
+            'reagent_alias': 'Precursor',
+            'required_upload_files': ['observation_interface', 'preparation_interface', 'metadata.json']
         },
     'HC':
         {
@@ -43,7 +43,8 @@ lab_vars = {
             'reagent_workbook_index': 1,
             'reagent_interface_amount_startrow': 15,
             'max_reagents': 8,
-            'reagent_alias': 'Reagent'
+            'reagent_alias': 'Reagent',
+            'required_files': ['CrystalScoring', 'ExpDataEntry', 'metadata.json']
         },
     'LBL':
         {
@@ -55,7 +56,8 @@ lab_vars = {
             'reagent_workbook_index': 1,
             'reagent_interface_amount_startrow': 15,
             'max_reagents': 7,
-            'reagent_alias': 'Reagent'
+            'reagent_alias': 'Reagent',
+            'required_files': ['CrystalScoring', 'ExpDataEntry', 'metadata.json']
         },
     'dev':
         {
@@ -68,6 +70,7 @@ lab_vars = {
             'reagent_interface_amount_startrow': 16,
             'reagent_alias': 'Reagent',
             'max_reagents': 8,
+            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json']
         }
 }
 

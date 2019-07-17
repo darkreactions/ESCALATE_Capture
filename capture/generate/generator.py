@@ -48,7 +48,7 @@ def stateset_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, volspac
 
     # Clean up dataframe for robot file -> create xls --> upload
     erdfrows = erdf.shape[0]
-    erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
+    erdf = expint.cleanvolarray(erdf, vardict['robot_reagents'])
     abstract_reagent_colnames(erdf)
 
     ermmolcsv = 'localfiles/%s_mmolbreakout.csv' % rxndict['RunID']
@@ -116,7 +116,7 @@ def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, clim
                                                             rdict,
                                                             climits)
     # Clean up dataframe for robot file -> create xls --> upload
-    erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
+    erdf = expint.cleanvolarray(erdf, maxr=vardict['lab_vars'][rxndict['lab']]['max_reagents'])
 
     # Export additional information files for later use / storage 
     ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])

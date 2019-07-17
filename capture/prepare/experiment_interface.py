@@ -159,7 +159,7 @@ def LBLrobotfile(rxndict, vardict, erdf):
     :param erdf: should contain the experimental reaction data frame which consists of the volumes of each
     reagent in each experiment to be performed.
     """
-    vol_ar = volarray(erdf, vardict['max_robot_reagents'])
+    vol_ar = volarray(erdf, vardict['lab_vars'][vardict['lab']]['max_reagents'])
     rxn_parameters = pd.DataFrame({
         'Reaction Parameters': ['Temperature (C):', 'Stir Rate (rpm):',
                                         'Mixing time1 (s):', 'Mixing time2 (s):',
@@ -223,7 +223,7 @@ def generate_experiment_specification_file(rxndict, vardict, erdf):
     :param erdf: should contain the experimental reaction data frame which consists of the volumes of each
     reagent in each experiment to be performed.
     """
-    vol_ar = volarray(erdf, vardict['max_robot_reagents'])
+    vol_ar = volarray(erdf, vardict['lab_vars'][vardict['lab']]['max_reagents'])
     rxn_parameters = pd.DataFrame({
         'Reaction Parameters': ['Temperature (C):', 'Stir Rate (rpm):',
                                         'Mixing time1 (s):', 'Mixing time2 (s):',

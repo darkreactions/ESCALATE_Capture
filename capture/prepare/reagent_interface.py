@@ -25,7 +25,7 @@ def get_reagent_target_volumes(erdf, deadvolume):
 
 def build_nominals_df(rdict,
                       chemicalnamedf,
-                      sumreagentsdict,
+                      target_final_volume,
                       liquidlist,
                       maxreagentchemicals,
                       chemdf):
@@ -51,7 +51,7 @@ def build_nominals_df(rdict,
         else:
             # stock solutions should be summed for final total volume
             if chemabbr in liquidlist or chemabbr == 'FAH':  # todo dejank
-                formulavol = (sumreagentsdict[reagentname]/1000).round(2)
+                formulavol = (target_final_volume[reagentname]/1000).round(2)
                 formulavollist.append(formulavol)
                 nominalsdf.loc[index, "nominal_amount"] = formulavol
                 nominalsdf.loc[index, "Unit"] = 'milliliter'
@@ -66,13 +66,13 @@ def build_nominals_df(rdict,
                 #calculate reagent amounts from formula
                 reagentnum = str(reagentname.split('t')[1])
 #                print(rdict[reagentnum].concs['conc_item%s'%(itemcount)])
-                modlog.info(('Formula target was', chemabbr, reagentname, \
-                    rdict[reagentnum].concs['conc_item%s' %(itemcount)]))
-                modlog.info(('row index =', index, 'calc value = ', sumreagentsdict[reagentname]/1000/1000 * \
-                    rdict[reagentnum].concs['conc_item%s' %(itemcount)] * \
-                    float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])
-                    ))
-                nominalamount = (sumreagentsdict[reagentname]/1000/1000 * \
+#                modlog.info(('Formula target was', chemabbr, reagentname, \
+#                    rdict[reagentnum].concs['conc_item%s' %(itemcount)]))
+#                modlog.info(('row index =', index, 'calc value = ', target_final_volume[reagentname]/1000/1000 * \
+#                    rdict[reagentnum].concs['conc_item%s' %(itemcount)] * \
+#                    float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])
+#                    ))
+                nominalamount = (target_final_volume[reagentname]/1000/1000 * \
                     rdict[reagentnum].concs['conc_item%s' %(itemcount)] * \
                     float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])
                     ).round(2)
@@ -92,6 +92,93 @@ def build_nominals_df(rdict,
     return nominalsdf
 
 
+def build_nominals_v1(rdict,
+                      chemicalnamedf,
+                      target_final_volume_dict,
+                      liquidlist,
+                      maxreagentchemicals,
+                      chemdf):
+    ''' calculate the mass of each chemical return dataframe
+
+    Uses model 1 of the density calculation to get a better approximation
+    for the contribution of solids to the final volume 
+    TODO: write out nominal molarity to google sheets, see issue#52
+    TODO: ensure column integrity of read in chemical dataframe
+
+    :param chemdf:  Chemical data frame from google drive.
+    :returns: a dataframe sized for export to version 2.x interface
+    '''
+    nominalsdf = pd.DataFrame()
+    itemcount = 1
+    chemicalnamedf.sort_index(inplace=True)
+    reagentname = []
+    for index, row in chemicalnamedf.iterrows():
+        reagent_name_updater = row['reagentnames']
+        if reagentname != reagent_name_updater:
+            reagentname = row['reagentnames']
+            reagentnum = str(reagentname.split('t')[1])
+            total_remaining_volume = target_final_volume_dict[reagentname] / 1000 / 1000
+            target_final_volume = target_final_volume_dict[reagentname] / 1000 / 1000
+
+        chemabbr = row['chemabbr']
+        # First iteration should always lead with this string (formatting)
+        if row['chemabbr'] == 'Final Volume = ':
+            formulavollist = []
+            formulavol = 'null'
+            itemcount = 1
+            finalvolindex = index
+        else:
+            # stock solutions should be summed for final total volume
+            # Returns nulls to the dataframe where no chemicals / information is expected
+            if chemabbr == 'null':
+                nominalsdf.loc[index, "nominal_amount"] = 'null'
+                nominalsdf.loc[index, "Unit"] = 'null'
+                nominalsdf.loc[index, "actualsnull"] = 'null'
+                itemcount+=1
+                pass
+            else:
+                # If the chemical being considered is the final the remaining volume is assigned
+                if rdict[reagentnum].chemicals[-1] == chemabbr:
+                    nominalsdf.loc[index, "nominal_amount"] = total_remaining_volume * 1000
+                    nominalsdf.loc[index, "Unit"] = 'milliliter'
+                    itemcount+=1
+#                print(rdict[reagentnum].concs['conc_item%s'%(itemcount)])
+#                modlog.info(('Formula target was', chemabbr, reagentname, \
+#                    rdict[reagentnum].concs['conc_item%s' %(itemcount)]))
+#                modlog.info(('row index =', index, 'calc value = ', target_final_volume[reagentname]/1000/1000 * \
+#                    rdict[reagentnum].concs['conc_item%s' %(itemcount)] * \
+#                    float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])
+#                    ))
+
+#                 If the chemical is a component, but not final, the contributing
+#                 volume is calculated and the mass or volume is returned to the dataframe
+                elif chemabbr in liquidlist or chemabbr == 'FAH':  # todo dejank
+                    myvariable = rdict[reagentnum].concs['conc_item%s' %(itemcount)]
+                    needed_mol = target_final_volume * rdict[reagentnum].concs['conc_item%s' %(itemcount)]
+                    chemical_volume = needed_mol * float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])\
+                                      / float(chemdf.loc["%s" %chemabbr, "Density            (g/mL)"])
+                    total_remaining_volume = total_remaining_volume - chemical_volume / 1000
+                    nominalsdf.loc[index, "nominal_amount"] =  chemical_volume
+                    nominalsdf.loc[index, "Unit"] = 'milliliter'
+                    itemcount+=1
+
+                else:
+                    myvariable = rdict[reagentnum].concs['conc_item%s' %(itemcount)]
+                    needed_mol = target_final_volume * (rdict[reagentnum].concs['conc_item%s' %(itemcount)])
+                    chemical_mass_g = needed_mol * float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])
+                    chemical_volume = needed_mol * float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])\
+                                      / float(chemdf.loc["%s" %chemabbr, "Density            (g/mL)"])
+                    total_remaining_volume = total_remaining_volume - chemical_volume / 1000
+                    nominalsdf.loc[index, "nominal_amount"] =  chemical_mass_g
+                    nominalsdf.loc[index, "Unit"] = 'gram'
+                    itemcount+=1
+
+        if itemcount == (maxreagentchemicals+1):
+            nominalsdf.loc[finalvolindex, "nominal_amount"] = target_final_volume * 1000
+            nominalsdf.loc[finalvolindex, "Unit"] = 'milliliter'
+            modlog.info((reagentname, "formula calculation complete"))
+    nominalsdf.sort_index(inplace=True)
+    return nominalsdf
 
 def build_chemical_names_df(rdict, maxreagentchemicals):
     """generates a dataframe of chemical names for reagent interface
@@ -142,8 +229,13 @@ def build_reagent_spec_df(rxndict, vardict, erdf, rdict, chemdf):
     modlog.info('Starting reagent interface upload')
     chemical_names_df = build_chemical_names_df(rdict, vardict['maxreagentchemicals'])
     reagent_target_volumes = get_reagent_target_volumes(erdf, rxndict['reagent_dead_volume'] * 1000)
-    nominals_df = build_nominals_df(rdict, chemical_names_df, reagent_target_volumes,
-                                    vardict['solventlist'], vardict['maxreagentchemicals'], chemdf)
+    # TODO: Update HC/LBL culture to match with the actual concs branch.. until then we make them distinct
+    if globals.get_lab() in ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']:
+        nominals_df = build_nominals_df(rdict, chemical_names_df, reagent_target_volumes,
+                                        vardict['solventlist'], vardict['maxreagentchemicals'], chemdf)
+    if globals.get_lab() in ['MIT_PVLab']:
+        nominals_df = build_nominals_v1(rdict, chemical_names_df, reagent_target_volumes,
+                                        vardict['solventlist'], vardict['maxreagentchemicals'], chemdf)
     reagent_spec_df = pd.concat([chemical_names_df, nominals_df], axis=1)
     return reagent_spec_df
 
@@ -215,7 +307,7 @@ def upload_reagent_specifications(finalexportdf, sheet):
     null_start = reagent_interface_amount_startrow + len(finalexportdf)
     num_nulls = (max_reagents - len(finalexportdf.reagentnames.unique())) * (maxreagentchemicals + 1)
     nulls = ['null'] * num_nulls
-    #update_sheet_column(sheet, nulls, col_index='D', start_row=null_start)
+   # update_sheet_column(sheet, nulls, col_index='D', start_row=null_start)
 
 def upload_reagent_prep_info(rdict, sheetobject):
     uploadtarget = sheetobject.range('D3:F10')

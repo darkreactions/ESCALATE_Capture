@@ -139,7 +139,7 @@ def build_nominals_v1(rdict,
             else:
                 # If the chemical being considered is the final the remaining volume is assigned
                 if rdict[reagentnum].chemicals[-1] == chemabbr:
-                    nominalsdf.loc[index, "nominal_amount"] = total_remaining_volume * 1000
+                    nominalsdf.loc[index, "nominal_amount"] = (total_remaining_volume * 1000).round(2)
                     nominalsdf.loc[index, "Unit"] = 'milliliter'
                     itemcount+=1
 #                print(rdict[reagentnum].concs['conc_item%s'%(itemcount)])
@@ -158,7 +158,7 @@ def build_nominals_v1(rdict,
                     chemical_volume = needed_mol * float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])\
                                       / float(chemdf.loc["%s" %chemabbr, "Density            (g/mL)"])
                     total_remaining_volume = total_remaining_volume - chemical_volume / 1000
-                    nominalsdf.loc[index, "nominal_amount"] =  chemical_volume
+                    nominalsdf.loc[index, "nominal_amount"] =  chemical_volume.round(2)
                     nominalsdf.loc[index, "Unit"] = 'milliliter'
                     itemcount+=1
 
@@ -169,12 +169,12 @@ def build_nominals_v1(rdict,
                     chemical_volume = needed_mol * float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])\
                                       / float(chemdf.loc["%s" %chemabbr, "Density            (g/mL)"])
                     total_remaining_volume = total_remaining_volume - chemical_volume / 1000
-                    nominalsdf.loc[index, "nominal_amount"] =  chemical_mass_g
+                    nominalsdf.loc[index, "nominal_amount"] =  chemical_mass_g.round(2)
                     nominalsdf.loc[index, "Unit"] = 'gram'
                     itemcount+=1
 
         if itemcount == (maxreagentchemicals+1):
-            nominalsdf.loc[finalvolindex, "nominal_amount"] = target_final_volume * 1000
+            nominalsdf.loc[finalvolindex, "nominal_amount"] = (target_final_volume * 1000).round(2)
             nominalsdf.loc[finalvolindex, "Unit"] = 'milliliter'
             modlog.info((reagentname, "formula calculation complete"))
     nominalsdf.sort_index(inplace=True)

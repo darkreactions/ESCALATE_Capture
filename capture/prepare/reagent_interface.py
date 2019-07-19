@@ -215,10 +215,10 @@ def upload_reagent_specifications(finalexportdf, sheet):
     null_start = reagent_interface_amount_startrow + len(finalexportdf)
     num_nulls = (max_reagents - len(finalexportdf.reagentnames.unique())) * (maxreagentchemicals + 1)
     nulls = ['null'] * num_nulls
-    update_sheet_column(sheet, nulls, col_index='D', start_row=null_start)
+    #update_sheet_column(sheet, nulls, col_index='D', start_row=null_start)
 
 def upload_reagent_prep_info(rdict, sheetobject):
-    uploadtarget = sheetobject.range('D3:F9')
+    uploadtarget = sheetobject.range('D3:F10')
     uploadlist = []
     reagentcount = 1
     for reagentnum, reagentobject in rdict.items():
@@ -280,3 +280,9 @@ def upload_reagent_prep_info(rdict, sheetobject):
         sheetobject.update_acell('H46', rdict['7'].prerxntemp)
     except Exception:
         sheetobject.update_acell('H46', 'null')
+
+    # Reagent 8
+    try:
+        sheetobject.update_acell('H51', rdict['8'].prerxntemp)
+    except Exception:
+        sheetobject.update_acell('H51', 'null')

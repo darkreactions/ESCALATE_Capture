@@ -210,7 +210,8 @@ def LBLrobotfile(rxndict, vardict, erdf):
     return robotfiles
 
 def generate_experiment_specification_file(rxndict, vardict, erdf):
-    """Write to excel file for MIT Human and return filename
+    """New Development code .... needs debugging 
+    Write to excel file for MIT Human and return filename
 
     todo:
         * write this file for ALL experiments
@@ -225,18 +226,18 @@ def generate_experiment_specification_file(rxndict, vardict, erdf):
     """
     vol_ar = volarray(erdf, vardict['lab_vars'][vardict['lab']]['max_reagents'])
     rxn_parameters = pd.DataFrame({
-        'Reaction Parameters': ['Temperature (C):', 'Stir Rate (rpm):',
-                                        'Mixing time1 (s):', 'Mixing time2 (s):',
-                                        'Reaction time (s):', ""],
-        'Parameter Values': [rxndict['temperature2_nominal'], rxndict['stirrate'],
+        'Reaction Parameters': ['Spincoating Temperature ( C )', 'Spincoating Speed (rpm):',
+                                        'Spincoating Duration (s)', 'Spincoating Duration 2 (s)',
+                                        'Annealing Temperature ( C )','Annealing Duration (s)', ""],
+        'Parameter Values': [rxndict['temperature1_nominal'], rxndict['stirrate'],
                              rxndict['duratation_stir1'], rxndict['duratation_stir2'],
-                             rxndict['duration_reaction'], ''],
+                             rxndict['temperature2_nominal'],rxndict['duration_reaction'], ''],
     })
 
     reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
     rxn_conditions = pd.DataFrame({
-        reagent_alias + 's': [reagent_alias + str(i) for i in range(1, 8)],
-        reagent_alias + ' identity': [str(i) for i in range(1, 8)],
+        reagent_alias + 's': [reagent_alias + str(i) for i in range(1, 9)],
+        reagent_alias + ' identity': [str(i) for i in range(1, 9)],
         'Liquid Class': vol_ar,
         reagent_alias + ' Temperature': [rxndict['reagents_prerxn_temperature']] * len(vol_ar)
     })

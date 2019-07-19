@@ -1,5 +1,7 @@
-Author: Ian Pendleton 
-Contact ipendleton .at. haverford.edu
+Authors: Ian Pendleton, Michael Tynes, Aaron Dharna
+Science Contact: ipendleton .at. haverford.edu
+Technical Debugging: mtynes .at. fordham.edu, adharna .at. fordham.edu
+
 
 Overview
 =================

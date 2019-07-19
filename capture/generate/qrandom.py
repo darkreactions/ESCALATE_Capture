@@ -10,6 +10,7 @@ from capture.testing import inputvalidation
 from capture.models import chemical
 from capture.generate import calcs
 import capture.devconfig as config
+from utils.data_handling import get_explicit_experiments, get_reagent_number_as_string
 
 modlog = logging.getLogger('capture.generate.qrandom')
 
@@ -298,6 +299,14 @@ def build_reagent_vectors(portion_reagents, portion_chemicals):
 
     return reagent_vectors
 
+def volume_to_mmol_wrapper(vol_df, rdict, experiment):
+    portion_mmol_df = pd.DataFrame()
+    for columnname in vol_df.columns:
+        reagent = int(get_reagent_number_as_string(columnname))  # 'Reagent2 (ul)' to give '2'
+        mmol_df = calcs.mmolextension((vol_df[columnname]), rdict, experiment, reagent)
+        portion_mmol_df = pd.concat([portion_mmol_df, mmol_df], axis=1)
+
+    return portion_mmol_df
 
 def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
     """Sample from the convex hull defined in species concentration space with uniform probability
@@ -349,8 +358,8 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
 
     return experiment_df, experiment_mmol_df
 
+def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
 
-def preprocess_and_sample(chemdf, rxndict, edict, rdict, climits):
     """generates a set of random reactions within given reagent and user constraints
 
     requires the chemical dataframe, rxndict (with user inputs), experiment dictionary, 
@@ -368,15 +377,20 @@ def preprocess_and_sample(chemdf, rxndict, edict, rdict, climits):
         experimentname = 'exp%s' % experiment
 
         # gross loop to get wellnum and vollimits
+        # todo: factor out this loop
         for k, v in edict.items():
             if experimentname in k:
                 if 'wells' in k:
-                    wellnum = int(v)
+                    num_wells = int(v)
                 if 'vols' in k:
                     vollimits = v
 
+        if num_wells == 0:
+            experiment += 1
+            continue
+
         modlog.info('Building reagent constraints for experiment %s using reagents %s for a total of %s wells'
-                    % (experiment, edict[experimentname], wellnum))
+                    % (experiment, edict[experimentname], num_wells))
 
         # DO THE SAMPLING
         if config.sampler == 'wolfram':
@@ -384,7 +398,7 @@ def preprocess_and_sample(chemdf, rxndict, edict, rdict, climits):
                                               rdict,
                                               vollimits,
                                               rxndict,
-                                              wellnum,
+                                              num_wells,
                                               climits,
                                               experiment)
         elif config.sampler == 'default':
@@ -392,7 +406,7 @@ def preprocess_and_sample(chemdf, rxndict, edict, rdict, climits):
                                               rdict,
                                               vollimits,
                                               rxndict,
-                                              wellnum,
+                                              num_wells,
                                               climits,
                                               experiment)
         else:
@@ -402,13 +416,21 @@ def preprocess_and_sample(chemdf, rxndict, edict, rdict, climits):
         erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
         ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
         # Return the reagent data frame with the volumes for that particular portion of the plate
-        modlog.info('Succesfully built experiment %s which returned.... ' % experiment)
+        modlog.info('Succesfully built experiment %s which returned.... ' %(experiment))
         experiment += 1
 
-    #Final reagent volumes dataframe
-    erdf.fillna(value=0, inplace=True)
+    if not rxndict['manual_wells'] == 0:
+        specifiedExperiments = get_explicit_experiments(vardict['exefilename'])
+        erdf = pd.concat([erdf, specifiedExperiments], axis=0, ignore_index=True, sort=True)
+        specified_mmol_df = volume_to_mmol_wrapper(specifiedExperiments, rdict, 'f')
+        ermmoldf = pd.concat([ermmoldf, specified_mmol_df], axis=0, ignore_index=True, sort=True)
 
-    #Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
+    # Final reagent volumes dataframe
+    erdf.fillna(value=0, inplace=True)
+    if not erdf.shape[0] == rxndict['wellcount']:
+        raise ValueError("Too few reactions specified: \n" +\
+                         "Ensure that all exp<index>_wells and manual_well sum to wellcount")
+    # Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
     clist = chemical.exp_chem_list(rdict)
 
@@ -419,6 +441,7 @@ def preprocess_and_sample(chemdf, rxndict, edict, rdict, climits):
     # plotter.plotme(ReagentmmList[0],ReagentmmList[1], hold.tolist())
     # combine the experiments for the tray into one full set of volumes for all the wells on the plate
     modlog.info('Begin combining the experimental volume dataframes')
+    
     # for chemical in rdict['2'].chemicals:
     #    print(rxndict['chem%s_abbreviation' %chemical])
     return erdf, ermmoldf, emsumdf

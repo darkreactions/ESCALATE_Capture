@@ -13,6 +13,7 @@ import argparse as ap
 from log import init
 from capture import specify
 from capture import devconfig
+from utils import globals
 
 
 def escalatecapture(rxndict, vardict):
@@ -46,7 +47,7 @@ def build_rxndict(rxnvarfile):
     rxndict = {}
     varfile = rxnvarfile
     wb = xlrd.open_workbook(varfile)
-    sheet = wb.sheet_by_index(0)
+    sheet = wb.sheet_by_name('WF1')
     for i in range(sheet.nrows):
         commentval = sheet.cell(i, 0).value
         if commentval == '#':
@@ -80,42 +81,29 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     challengeproblem = args.ss
-    debug = args.debug
 
-    # vardict will hold variables configured by developers
-    vardict = {}
-
-    vardict['exefilename'] = args.Variables
-    vardict['max_robot_reagents'] = devconfig.max_robot_reagents
-    vardict['RoboVersion'] = devconfig.RoboVersion
-    vardict['challengeproblem'] = challengeproblem
-    vardict['debug'] = debug
-    vardict['volspacing'] = devconfig.volspacing
-    vardict['maxreagentchemicals'] = devconfig.maxreagentchemicals
-    vardict['solventlist'] = devconfig.solventlist
-    vardict['targetfolder'] = devconfig.targetfolder
-    vardict['chemsheetid'] = devconfig.chemsheetid
-    vardict['chem_workbook_index'] = devconfig.chem_workbook_index
-    vardict['reagent_workbook_index'] = int(devconfig.reagent_workbook_index)
-    vardict['reagentsheetid'] = devconfig.reagentsheetid
-    vardict['reagent_interface_amount_startrow'] = devconfig.reagent_interface_amount_startrow
-
-
-    # rxndict will hold variables specified in the Excel interface
-    # see build_rxndict docs for a more detailed discussion.
-    rxndict = build_rxndict(vardict['exefilename'])
+    rxndict = build_rxndict(args.Variables)
     rxndict['challengeproblem'] = challengeproblem
+    # vardict will hold variables configured by developers
+    vardict = {
+        'exefilename': args.Variables,
+        'RoboVersion': devconfig.RoboVersion,
+        'challengeproblem': challengeproblem,
+        'debug': args.debug,
+        'volspacing': devconfig.volspacing,
+        'maxreagentchemicals': devconfig.maxreagentchemicals,
+        'solventlist': devconfig.solventlist,
+        'lab_vars': devconfig.lab_vars,
+        'filereqs': devconfig.labfiles(rxndict['lab']),
+        'lab': rxndict['lab']
+    }
 
-    # TODO these interdependencies are sloppy, separate concerns
-    # >>> also, what is lab? I'm not sure what this label is referencing...
-    #  It is reference which lab is this experiment going to be run at. LBL, HC, etc.
-    vardict['filereqs'] = devconfig.labfiles(rxndict['lab'])
+    globals.set_lab(rxndict['lab'])
 
-    # TODO dicts can be modified in place
-    rxndict, vardict = init.runuidgen(rxndict, vardict) 
+    init.runuidgen(rxndict, vardict)
 
     loggerfile = init.buildlogger(rxndict)
-    rxndict['logfile'] = loggerfile  # TODO stick this in rxndict inside of buildlogger
+    rxndict['logfile'] = loggerfile
 
     # log the initial state of the run
     init.initialize(rxndict, vardict)

@@ -12,21 +12,22 @@ from capture.generate import qrandom
 from capture.generate import statespace
 from capture.prepare import stateset
 from capture.prepare import experiment_interface as expint
+from utils.data_handling import abstract_reagent_colnames
 
 modlog = logging.getLogger('capture.generate.generator')
 
 ####################################
 ## STATE SPACE GENERATION FUNCTIONS
 
-def CPexpgen(vardict, chemdf, rxndict, edict, rdict, climits):
+def generate_cp_files(vardict, chemdf, rxndict, edict, rdict, climits):
     """Wrapper to statepipe
     """
-    emsumdf, uploadlist, secfilelist, rdict = statepipe(vardict,
-                                                        chemdf,
-                                                        rxndict,
-                                                        edict,
-                                                        rdict,
-                                                        vardict['volspacing']) #this should be replaced with devconfig.volspacing
+    emsumdf, uploadlist, secfilelist, rdict = stateset_generation_pipeline(vardict,
+                                                                           chemdf,
+                                                                           rxndict,
+                                                                           edict,
+                                                                           rdict,
+                                                                           vardict['volspacing']) #this should be replaced with devconfig.volspacing
 
     # TODO: Fix plotting
     # if rxndict['plotter_on'] == 1:
@@ -36,7 +37,7 @@ def CPexpgen(vardict, chemdf, rxndict, edict, rdict, climits):
     #         modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
     return uploadlist, secfilelist
 
-def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
+def stateset_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, volspacing):
     """Generate stateset and associated files
     """
     erdf, ermmoldf, emsumdf = statespace.preprocess_and_enumerate(chemdf,
@@ -47,11 +48,14 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
 
     # Clean up dataframe for robot file -> create xls --> upload
     erdfrows = erdf.shape[0]
-    erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
+    erdf = expint.cleanvolarray(erdf, vardict['robot_reagents'])
+    abstract_reagent_colnames(erdf)
 
     ermmolcsv = 'localfiles/%s_mmolbreakout.csv' % rxndict['RunID']
+    abstract_reagent_colnames(ermmoldf)
     ermmoldf.to_csv(ermmolcsv)
 
+    # has no reagent names
     emsumcsv = 'localfiles/%s_nominalMolarity.csv' % rxndict['RunID']
     emsumdf.to_csv(emsumcsv)
 
@@ -93,15 +97,47 @@ def statepipe(vardict, chemdf, rxndict, edict, rdict, volspacing):
 ####################################
 ## QUASI RANDOM GENERATION FUNCTIONS
 
-def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
+
+def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, climits):
+    """
+
+    :param vardict:
+    :param chemdf:
+    :param rxndict:
+    :param edict:
+    :param rdict:
+    :param climits:
+    :return:
+    """
+    erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(chemdf,
+                                                            vardict,
+                                                            rxndict,
+                                                            edict,
+                                                            rdict,
+                                                            climits)
+    # Clean up dataframe for robot file -> create xls --> upload
+    erdf = expint.cleanvolarray(erdf, maxr=vardict['lab_vars'][rxndict['lab']]['max_reagents'])
+
+    # Export additional information files for later use / storage 
+    ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
+    abstract_reagent_colnames(ermmoldf)
+    ermmoldf.to_csv(ermmolcsv)
+    emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
+    emsumdf.to_csv(emsumcsv)
+    # List to send for uploads
+    secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
+    return emsumdf, secfilelist, erdf
+
+
+def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, climits):
     """Wrapper to quasirandompipe
     """
-    emsumdf, secfilelist, erdf = quasirandompipe(vardict,
-                                                 chemdf,
-                                                 rxndict,
-                                                 edict,
-                                                 rdict,
-                                                 climits)
+    emsumdf, secfilelist, erdf = quasirandom_generation_pipeline(vardict,
+                                                                 chemdf,
+                                                                 rxndict,
+                                                                 edict,
+                                                                 rdict,
+                                                                 climits)
 
     # TODO fix plotter
     # if rxndict['plotter_on'] == 1:
@@ -113,37 +149,15 @@ def expgen(vardict, chemdf, rxndict, edict, rdict, climits):
 
     # TODO this is brittle
     # Generate a different robot file depending on the user specified lab
+
+
     if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
         robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
-    elif rxndict['lab'] == "ECL":
+    elif rxndict['lab'] in ['MIT_PVLab', 'dev']:
+        robotfile = expint.generate_experiment_specification_file(rxndict, vardict, erdf)
+    elif rxndict['lab'] == "ECL": 
         robotfile = expint.ECLrobotfile(rxndict, vardict, rdict, erdf)
     else:
-        modlog.error('User did not specify a supported lab. No robot file will be generated.')
+        modlog.error('No path for lab {}'.format(rxndict['lab']))
         sys.exit()
     return erdf, robotfile, secfilelist
-
-
-def quasirandompipe(vardict, chemdf, rxndict, edict, rdict, climits):
-    """Randomly sample from statespace with qrandom module, return files for uploads
-    """
-    erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(chemdf,
-                                                            rxndict,
-                                                            edict,
-                                                            rdict,
-                                                            climits)
-
-    # Clean up dataframe for robot file -> create xls --> upload
-    erdf = expint.cleanvolarray(erdf, vardict['max_robot_reagents'])
-
-    # Export additional information files for later use / storage
-    ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
-    ermmoldf.to_csv(ermmolcsv)
-    emsumcsv = ('localfiles/%s_nominalMolarity.csv' %rxndict['RunID'])
-    emsumdf.to_csv(emsumcsv)
-
-    # List to send for uploads
-    secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
-    return emsumdf, secfilelist, erdf
-
-
-

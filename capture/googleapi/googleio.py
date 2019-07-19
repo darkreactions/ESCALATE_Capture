@@ -7,14 +7,17 @@
 
 import logging
 import os
+import re
 import time
+
 
 import gspread
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from oauth2client.service_account import ServiceAccountCredentials
 from capture.googleapi import googleio
-from capture.devconfig import template_folder
+import capture.devconfig as config
+from utils import globals
 
 modlog = logging.getLogger('initialize.googleio')
 
@@ -45,7 +48,7 @@ drive = GoogleDrive(gauth)
 ##############################################################################################
 
 
-def DriveCreateFolder(title, tgt_folder_id):
+def create_drive_folder(title, tgt_folder_id):
     """Create template directory for later copying of relevant files
     :param title: title of the new folder
     :param tgt_folder_id: ID of the parent folder in which to create the new folder
@@ -71,7 +74,7 @@ def DriveCreateFolder(title, tgt_folder_id):
     raise ValueError('Run folder not found in GDrive. Possible server error: try again.')
 
 
-def DriveAddTemplates(opdir, RunID, includedfiles):
+def copy_drive_templates(opdir, RunID, includedfiles):
     """Copy template gdrive files into gdrive directory for this run
 
     :param opdir: gdrive directory for this run
@@ -80,10 +83,9 @@ def DriveAddTemplates(opdir, RunID, includedfiles):
     :return: a referenced dictionary of files (title, Gdrive ID)
     """
 
-#    template_folder='1HneaSFzgJgHImDAL-8OgQfSx1ioFJp6S'  # Debugging target folder
-    template_folder = '131G45eK7o9ZiDb4a2yV7l2E1WVQrz16d'  # New template 11/5/2018
+    template_folder = config.lab_vars[globals.get_lab()]['template_folder']
     file_template_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % template_folder}).GetList()
-    for templatefile in file_template_list:       
+    for templatefile in file_template_list:
             basename = templatefile['title']
             if basename in includedfiles:
                 drive.auth.service.files().copy(fileId=templatefile['id'],
@@ -97,7 +99,7 @@ def DriveAddTemplates(opdir, RunID, includedfiles):
     return new_dict
 
 
-def GupFile(opdir, secdir, secfilelist, filelist, runID, eclogfile):
+def upload_files_to_gdrive(opdir, secdir, secfilelist, filelist, runID, eclogfile):
     """Upload files to Google Drive
 
     :param opdir: main google drive directory to upload to
@@ -137,7 +139,7 @@ def GupFile(opdir, secdir, secfilelist, filelist, runID, eclogfile):
     print('File Upload Complete')
 
 
-def genddirectories(rxndict, targetfolder, includedfiles):
+def create_drive_directories(rxndict, targetfolder, includedfiles):
     """Generate the primary and secondary gdrive directories for this run
 
     :param rxndict: the rxndict
@@ -146,26 +148,41 @@ def genddirectories(rxndict, targetfolder, includedfiles):
     :return: a triple: (primary directory, secondary directory, dictionary of template files)
     """
     tgt_folder_id = targetfolder
-    PriDir = googleio.DriveCreateFolder(rxndict['RunID'], tgt_folder_id)
-    file_dict = googleio.DriveAddTemplates(PriDir, rxndict['RunID'], includedfiles)
+    PriDir = googleio.create_drive_folder(rxndict['RunID'], tgt_folder_id)
+    file_dict = googleio.copy_drive_templates(PriDir, rxndict['RunID'], includedfiles)
     secfold_name = "%s_subdata" % rxndict['RunID']
-    secdir = googleio.DriveCreateFolder(secfold_name, PriDir)
+    secdir = googleio.create_drive_folder(secfold_name, PriDir)
     return PriDir, secdir, file_dict
 
 
-def gsheettarget(file_dict):
-    """Iterate through gdrive file_dict to find experimental data entry form
+def get_uid_by_name(file_dict, name_pat):
+    """Return the uid of the file from file dict whose name matches name_pat
+
+    Returns the first matching name in order of dict hash.
 
     :param file_dict: dictionary representing a gdrive folder
-    :return: tuple containing filename and gspread credental object for experimental data entry form
+    :param name_pat: a pattern to search for in the file_dict
+    :return: uid of gdrive observation_interface file
     """
-    scope = ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc = gspread.authorize(credentials)
 
     for key, val in file_dict.items():
-        if "ExpDataEntry" in key:  # Experimentalsheet = gc.open_bysearches for ExpDataEntry Form to get id
+        if re.search(name_pat, key):
             target = val
-            return target, gc
+            return target
 
-    raise ValueError('No ExpDataEntry file in file dictionary')
+    raise ValueError('Could not find {} in file_dict.keys'.format(name_pat))
+
+def get_gdrive_client():
+    scope = ['https://spreadsheets.google.com/feeds']
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
+    gc = gspread.authorize(credentials)
+    return gc
+
+
+def upload_cp_files_to_drive(uploadlist, secfilelist, runID, logfile, targetfolder):
+    tgt_folder_id = targetfolder
+    PriDir = googleio.create_drive_folder(runID, tgt_folder_id)
+    googleio.copy_drive_templates(PriDir, runID, []) # copies metadata from current template (leaves the rest)
+    secfold_name = "%s_subdata" %runID
+    secdir = googleio.create_drive_folder(secfold_name, PriDir)
+    googleio.upload_files_to_gdrive(PriDir, secdir, secfilelist, uploadlist, runID, logfile)

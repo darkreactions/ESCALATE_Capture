@@ -29,14 +29,14 @@ def buildlogger(rxndict):
 def runuidgen(rxndict, vardict):
     '''generates a UID for the run as needed
     '''
-    rxndict['readdate_gen']=datetime.now(timezone.utc).isoformat()
-    rxndict['readdate']=rxndict['readdate_gen'].replace(':', '_') #Remove problematic characters
-    rxndict['date']=datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    rxndict['time']=datetime.now(timezone.utc).strftime("%H_%M_%S")
-    rxndict['RunID']=rxndict['readdate'] + "_" + rxndict['lab'] #Agreed Upon format for final run information
+    rxndict['readdate_gen'] = datetime.now(timezone.utc).isoformat()
+    rxndict['readdate'] = rxndict['readdate_gen'].replace(':', '_') #Remove problematic characters
+    rxndict['date'] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    rxndict['time'] = datetime.now(timezone.utc).strftime("%H_%M_%S")
+    rxndict['RunID'] = rxndict['readdate'] + "_" + rxndict['lab'] #Agreed Upon format for final run information
     copyfile(vardict['exefilename'], 'localfiles/%s_%s' %(rxndict['RunID'], vardict['exefilename']))
-    vardict['exefilename'] = 'localfiles/%s_%s' %(rxndict['RunID'], vardict['exefilename'])
-    return(rxndict, vardict)
+    vardict['exefilename'] = 'localfiles/%s_%s' % (rxndict['RunID'], vardict['exefilename'])
+    #return(rxndict, vardict)
 
 def initialize(rxndict, vardict):
     ''' record a detailed and organized set of the variables set by the user

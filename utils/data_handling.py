@@ -98,14 +98,22 @@ def build_experiment_names_df(rxndict, vardict):
 
 
 def get_user_actions(rxndict, sheet):
-    """
+    """We are EXPLICITLY EXTRACTING the user actions here. These numbers were gotten be examining the sheet object.
+    If we are adding future actions, they each need to be of the form:
+
+    userActions[n] = {sheet.cell(cellIndex_(n-1) + 1, 1).value: sheet.cell(cellIndex_(n-1) + 1, 3).value}
+
+    Each action should be in its own subdict. This is so that we save both the key (which is the string user action
+    and the value. Then, go update experiment_interface.generate_experiment_specification_file such that
+    we add in the new k/v pairs as is done in that file.
 
     :param rxndict:
-    :param sheet:
+    :param sheet: excel sheet object
     :return:
     """
     userActions = {}
     userActions[0] = {sheet.cell(106, 1).value: sheet.cell(106, 3).value}
     userActions[1] = {sheet.cell(107, 1).value: sheet.cell(107, 3).value}
+    # add new userActions here.
 
     rxndict['user_actions'] = userActions

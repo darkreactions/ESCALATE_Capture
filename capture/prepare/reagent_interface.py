@@ -13,6 +13,18 @@ from utils import globals
 modlog = logging.getLogger('capture.prepare.interface')
 
 
+def _get_reagent_header_cells(column: str):
+    """Get all cells in the rows that start each reagent for a given colum
+
+    :param column: (str) in {A, B, ..., Z, AA, AB, ...}
+    """
+    startrow = config.lab_vars[globals.get_lab()]['reagent_interface_amount_startrow']
+    reagent_interface_step = config.maxreagentchemicals + 1
+    num_reagents = config.lab_vars[globals.get_lab()]['max_reagents']
+    stoprow = startrow + reagent_interface_step * num_reagents
+    result = [column + str(i) for i in range(startrow, stoprow, reagent_interface_step)]
+    return result
+
 def get_reagent_target_volumes(erdf, deadvolume):
     """Target volumes for reagent preparation as dictionary"""
     reagent_target_volumes = {}
@@ -255,15 +267,18 @@ def upload_aliased_cells(sheet):
     cell_alias_pat = '<Reagent>'
 
     # Cells in googlesheet containing reagent alias:
-    cell_coords = ['C1', 'C2']
+    aliased_cells = ['C1', 'C2']
+
     # Reagent<i> cells at bottom of sheet (all in col A, regularly spaced):
-    cell_coords.extend(['A' + str(i) for i in range(16, 52, 5)])
+    aliased_cells.extend(_get_reagent_header_cells('A'))
 
     reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
-    for cell_coord in cell_coords:
-        current_value = sheet.acell(cell_coord).value
+    for cell in aliased_cells:
+        current_value = sheet.acell(cell).value
         new_value = current_value.replace(cell_alias_pat, reagent_alias)
-        sheet.update_acell(cell_coord, new_value)
+        sheet.update_acell(cell, new_value)
+
+    return
 
 
 def upload_run_information(rxndict, vardict, sheet):
@@ -331,50 +346,14 @@ def upload_reagent_prep_info(rdict, sheetobject):
             count += 1
     sheetobject.update_cells(uploadtarget)
 
-    # Reagent 1 - use all values present if possible
-    try:
-        sheetobject.update_acell('H16', rdict['1'].prerxntemp)
-    except Exception:
-        sheetobject.update_acell('H16', 'null')
+    # Upload prerxntemps
+    prerxn_temp_cells = _get_reagent_header_cells(column='H')
+    num_reagents = config.lab_vars[globals.get_lab()]['max_reagents'] + 1
+    for i in range(1, num_reagents):
+        try:
+            payload = rdict[str(i)].prerxntemp
+        except KeyError:
+            payload = 'null'
 
-    #Reagent 2
-    try:
-        sheetobject.update_acell('H21', rdict['2'].prerxntemp)
-    except Exception:
-        sheetobject.update_acell('H21', 'null')
+        sheetobject.update_acell(prerxn_temp_cells[i-1], payload)
 
-    #Reagent 3
-    try:
-        sheetobject.update_acell('H26', rdict['3'].prerxntemp)
-    except Exception:
-        sheetobject.update_acell('H26', 'null')
-
-    # Reagent 4
-    try:
-        sheetobject.update_acell('H31', rdict['4'].prerxntemp)
-    except Exception:
-        sheetobject.update_acell('H31', 'null')
-
-    # Reagent 5 
-    try:
-        sheetobject.update_acell('H36', rdict['4'].prerxntemp)
-    except Exception:
-        sheetobject.update_acell('H36', 'null')
-
-    # Reagent 6 
-    try:
-        sheetobject.update_acell('H41', rdict['6'].prerxntemp)
-    except Exception:
-        sheetobject.update_acell('H41', 'null')
-
-    # Reagent 7 
-    try:
-        sheetobject.update_acell('H46', rdict['7'].prerxntemp)
-    except Exception:
-        sheetobject.update_acell('H46', 'null')
-
-    # Reagent 8
-    try:
-        sheetobject.update_acell('H51', rdict['8'].prerxntemp)
-    except Exception:
-        sheetobject.update_acell('H51', 'null')

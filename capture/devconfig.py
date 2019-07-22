@@ -42,9 +42,9 @@ lab_vars = {
             'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
             'reagent_workbook_index': 1,
             'reagent_interface_amount_startrow': 15,
-            'max_reagents': 8,
+            'max_reagents': 7,
             'reagent_alias': 'Reagent',
-            'required_files': ['CrystalScoring', 'ExpDataEntry', 'metadata.json']
+            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json']
         },
     'LBL':
         {
@@ -57,7 +57,7 @@ lab_vars = {
             'reagent_interface_amount_startrow': 15,
             'max_reagents': 7,
             'reagent_alias': 'Reagent',
-            'required_files': ['CrystalScoring', 'ExpDataEntry', 'metadata.json']
+            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json']
         },
     'dev':
         {
@@ -105,17 +105,3 @@ elif system == "Darwin":
 # must be 'default' or 'wolfram'
 # 'wolfram' is currently experimental and unsupported
 sampler = 'default'
-
-#######################################
-# Laboratory file management
-
-
-def labfiles(lab):
-    """Returns files that need to be sent to a given laboratory"""
-    if lab == "LBL" or lab == "HC":
-        filereq = ['CrystalScoring', 'ExpDataEntry', 'metadata.json']
-    if lab == "MIT_PVLab" or lab == 'dev':
-        filereq = ['observation_interface', 'preparation_interface', 'metadata.json']
-    if lab == 'ECL':
-        filereq = ['CrystalScoring', 'metadata.json']
-    return filereq

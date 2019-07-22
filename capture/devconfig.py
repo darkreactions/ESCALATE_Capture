@@ -20,19 +20,6 @@ solventlist = ['GBL', 'DMSO', 'DMF', 'DCM', 'CBz']
 # Lab-specific variables
 
 lab_vars = {
-    'MIT_PVLab':
-        {
-            'template_folder': '1PVeVpNjnXiAuzm3Oq2q-RiiLBhKPGW53',
-            'targetfolder': '1tUb4GcF_tDanMjvQuPa6vj0n9RNa5IDI',  # target folder for run generation
-            'chemsheetid': '1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI',
-            'chem_workbook_index': 0,
-            'reagentsheetid': '1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI',
-            'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 16,
-            'max_reagents': 8,
-            'reagent_alias': 'Precursor',
-            'required_upload_files': ['observation_interface', 'preparation_interface', 'metadata.json']
-        },
     'HC':
         {
             'template_folder': '131G45eK7o9ZiDb4a2yV7l2E1WVQrz16d',
@@ -44,7 +31,8 @@ lab_vars = {
             'reagent_interface_amount_startrow': 15,
             'max_reagents': 7,
             'reagent_alias': 'Reagent',
-            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json']
+            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
+            'observation_interface': {'uid_col': 'E'}
         },
     'LBL':
         {
@@ -57,7 +45,8 @@ lab_vars = {
             'reagent_interface_amount_startrow': 15,
             'max_reagents': 7,
             'reagent_alias': 'Reagent',
-            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json']
+            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
+            'observation_interface': {'uid_col': 'E'}
         },
     'dev':
         {
@@ -70,8 +59,23 @@ lab_vars = {
             'reagent_interface_amount_startrow': 16,
             'reagent_alias': 'Reagent',
             'max_reagents': 8,
-            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json']
-        }
+            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
+            'observation_interface': {'uid_col': 'F'}
+        },
+    'MIT_PVLab':
+        {
+            'template_folder': '1PVeVpNjnXiAuzm3Oq2q-RiiLBhKPGW53',
+            'targetfolder': '1tUb4GcF_tDanMjvQuPa6vj0n9RNa5IDI',  # target folder for run generation
+            'chemsheetid': '1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI',
+            'chem_workbook_index': 0,
+            'reagentsheetid': '1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI',
+            'reagent_workbook_index': 1,
+            'reagent_interface_amount_startrow': 16,
+            'max_reagents': 8,
+            'reagent_alias': 'Precursor',
+            'required_upload_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
+            'observation_interface': {'uid_col': 'F'}
+        },
 }
 
 #######################################

@@ -170,10 +170,10 @@ def LBLrobotfile(rxndict, vardict, erdf):
     })
 
     rxn_conditions = pd.DataFrame({
-        'Reagents':['Reagent1', "Reagent2", "Reagent3", "Reagent4", 'Reagent5', 'Reagent6', 'Reagent7'],
-        'Reagent identity': ['1', "2", "3", "4", '5', '6', '7'],
+        'Reagents': ['Reagent{}'.format(i+1) for i in range(len(vol_ar))],
+        'Reagent identity': [str(i+1) for i in range(len(vol_ar))],
         'Liquid Class': vol_ar,
-        'Reagent Temperature': [rxndict['reagents_prerxn_temperature']] *len(vol_ar)
+        'Reagent Temperature': [rxndict['reagents_prerxn_temperature']] * len(vol_ar)
     })
 
     robotfiles = []
@@ -187,13 +187,13 @@ def LBLrobotfile(rxndict, vardict, erdf):
                                erdf_new, df_Tray2.iloc[:, 1],
                                rxn_parameters, rxn_conditions],
                               sort=False, axis=1)
-        robotfile = ("localfiles/%s_RUNME_RobotFile.xls" %rxndict['RunID'])
+        robotfile = ('localfiles/%s_RUNME_RobotFile.xls' %rxndict['RunID'])
 
         ## For report code to work
         df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount']*1)
         outframe2 = pd.concat([df_Tray.iloc[:, 0], erdf, df_Tray.iloc[:,1],rxn_parameters, rxn_conditions],
                               sort=False, axis=1)
-        robotfile2 = ("localfiles/%s_RobotInput.xls" % rxndict['RunID'])
+        robotfile2 = ('localfiles/%s_RobotInput.xls' % rxndict['RunID'])
 
         outframe1.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
         outframe2.to_excel(robotfile2, sheet_name='NIMBUS_reaction', index=False)
@@ -204,7 +204,7 @@ def LBLrobotfile(rxndict, vardict, erdf):
         df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount'])
         outframe = pd.concat([df_Tray.iloc[:, 0], erdf, df_Tray.iloc[:, 1], rxn_parameters, rxn_conditions],
                              sort=False, axis=1)
-        robotfile = ("localfiles/%s_RobotInput.xls" % rxndict['RunID'])
+        robotfile = ('localfiles/%s_RobotInput.xls' % rxndict['RunID'])
         robotfiles.append(robotfile)
         outframe.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
     return robotfiles

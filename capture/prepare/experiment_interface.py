@@ -225,13 +225,34 @@ def generate_experiment_specification_file(rxndict, vardict, erdf):
     reagent in each experiment to be performed.
     """
     vol_ar = volarray(erdf, vardict['lab_vars'][vardict['lab']]['max_reagents'])
+
+    # THIS IS VERY BAD PRACTICE.
+    userAction0 = list(rxndict['user_actions'][0].keys())[0]
+    userAction1 = list(rxndict['user_actions'][1].keys())[0]
+    userActionValue0 = rxndict['user_actions'][0][userAction0]
+    userActionValue1 = rxndict['user_actions'][1][userAction1]
+    # todo CLEAN UP THE ABOVE AFTER THE IMMEDIATE MIT PUSH.
+    
     rxn_parameters = pd.DataFrame({
-        'Reaction Parameters': ['Spincoating Temperature ( C )', 'Spincoating Speed (rpm):',
-                                        'Spincoating Duration (s)', 'Spincoating Duration 2 (s)',
-                                        'Annealing Temperature ( C )','Annealing Duration (s)', ""],
-        'Parameter Values': [rxndict['temperature1_nominal'], rxndict['stirrate'],
-                             rxndict['duratation_stir1'], rxndict['duratation_stir2'],
-                             rxndict['temperature2_nominal'],rxndict['duration_reaction'], ''],
+        'Reaction Parameters': ['Spincoating Temperature ( C )',
+                                'Spincoating Speed (rpm):',
+                                'Spincoating Duration (s)',
+                                'Spincoating Duration 2 (s)',
+                                'Annealing Temperature ( C )',
+                                'Annealing Duration (s)',
+                                userAction0,
+                                userAction1,
+                                ""],
+
+        'Parameter Values': [rxndict['temperature1_nominal'],
+                             rxndict['stirrate'],
+                             rxndict['duratation_stir1'],
+                             rxndict['duratation_stir2'],
+                             rxndict['temperature2_nominal'],
+                             rxndict['duration_reaction'],
+                             userActionValue0,
+                             userActionValue1,
+                             ''],
     })
 
     reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']

@@ -95,3 +95,17 @@ def build_experiment_names_df(rxndict, vardict):
         experiment_names.extend(explicit_experiments['Manual Well Custom ID'].values.tolist())
 
     return pd.DataFrame({'Experiment Names': experiment_names})
+
+
+def get_user_actions(rxndict, sheet):
+    """
+
+    :param rxndict:
+    :param sheet:
+    :return:
+    """
+    userActions = {}
+    userActions[0] = {sheet.cell(106, 1).value: sheet.cell(106, 3).value}
+    userActions[1] = {sheet.cell(107, 1).value: sheet.cell(107, 3).value}
+
+    rxndict['user_actions'] = userActions

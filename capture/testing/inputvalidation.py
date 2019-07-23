@@ -56,7 +56,7 @@ def expwellcount(rxndict):
     modlog.info("Only 1 experiment specified. Wellcount applies to only experiment")
 
 
-def used_reagents_are_specified(rxndict, template):
+def used_reagents_are_specified(rxndict, template, reagent_alias):
     """Ensure that if a reagent is used in an experiment, it is specified"""
     
 
@@ -101,13 +101,13 @@ def used_reagents_are_specified(rxndict, template):
         # TODO: discuss at code review: is it time for a better fix of this wolfram problem?
         unspecified_random = validate_random_reagents(rxndict)
         if unspecified_random:
-            raise ValueError('Reagent(s) {} were used in random experiment specification but not specified'
-                             .format(unspecified_random))
+            raise ValueError(f'{reagent_alias}(s) {unspecified_random} were used in random experiment specification '
+                             f'but not specified')
 
     unspecified_manual = validate_manual_reagents(template)
     if unspecified_manual:
-        raise ValueError('Reagent(s) {} were used in manual experiment specification but not specified'
-                         .format(unspecified_manual))
+        raise ValueError(f'{reagent_alias}(s) {unspecified_manual} were used in manual experiment specification '
+                         f'but not specified')
 
     return
 
@@ -174,12 +174,13 @@ def prebuildvalidation(rxndict, vardict):
     takes the rxndict as input and performs validation on the input to ensure the proper structure
     -- currently underdeveloped
     '''
+    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
     modlog = logging.getLogger('capture.prebuildvalidation')
     userinterface(rxndict)
     expcount(rxndict)
     expwellcount(rxndict)
     reagconcdefs(rxndict)
-    used_reagents_are_specified(rxndict, vardict['exefilename'])
+    used_reagents_are_specified(rxndict, vardict['exefilename'], reagent_alias)
     modlog.info('User entry is configured correctly.  Proceeding with run')
 
 def reagenttesting(volmax, volmin):

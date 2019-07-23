@@ -8,7 +8,7 @@ class perovskitechemical:
     def __init__(self, rxndict, chemdf):
         pass
 
-def ChemicalData(chemsheetid, chemsheetworkbook):
+def build_chemdf(chemsheetid, chemsheetworkbook):
     """Get the chemical sheet from the chemical inventory
 
     :param chemsheetid:       todo this is a workbook (and unused)

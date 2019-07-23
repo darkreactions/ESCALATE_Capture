@@ -38,10 +38,12 @@ def datapipeline(rxndict, vardict):
 
     modlog = logging.getLogger('capture.specify.datapipeline')
     inputvalidation.prebuildvalidation(rxndict, vardict)
-    chemdf = chemical.ChemicalData(config.lab_vars[globals.get_lab()]['chemsheetid'],
+    chemdf = chemical.build_chemdf(config.lab_vars[globals.get_lab()]['chemsheetid'],
                                    config.lab_vars[globals.get_lab()]['chem_workbook_index'])
-    reagentdf = reagent.ReagentData(config.lab_vars[globals.get_lab()]['reagentsheetid'],
-                                    config.lab_vars[globals.get_lab()]['reagent_workbook_index'])
+    reagentdf = reagent.build_reagentdf(config.lab_vars[globals.get_lab()]['reagentsheetid'],
+                                        config.lab_vars[globals.get_lab()]['reagent_workbook_index'])
+
+    vardict['solventlist'] = chemdf.index[chemdf['Chemical Category'] == 'solvent'].values.tolist()
 
     # dictionary of user defined chemical limits
     climits = chemical.chemicallimits(rxndict)

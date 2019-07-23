@@ -3,6 +3,9 @@ import logging
 import re
 from utils.data_handling import get_explicit_experiments, flatten
 import capture.devconfig as config
+from utils import globals
+
+modlog = logging.getLogger(__name__)
 
 def expcount(rxndict):
     modlog = logging.getLogger('capture.prebuildvalidation.expcount')
@@ -111,13 +114,58 @@ def used_reagents_are_specified(rxndict, template):
 def userinterface(rxndict):
     assert isinstance(rxndict['exp1'], list), 'exp1 in user XLS must be specified as a list of lists'
 
+
 def reagconcdefs(rxndict):
     for k,v in rxndict.items():
         pass
 
-def postbuildvalidation(rxndict, rdict, edict):
+
+def validate_solvent_positions(rdict, solventlist, reagent_alias, chemdf):
+    """Check that the last chemical in the reagent is a solvent, and that all other chemicals are not solvents"""
+
+    # loop over reagents in order to keep things a little prettier for the user in case of multiple failures
+    for reagent_index in sorted(rdict.keys()):
+        reagent = rdict[reagent_index]
+
+        reagent_solvents = [chemical for chemical in reagent.chemicals if chemical in solventlist]
+        num_solvents = len(reagent_solvents)
+
+        if num_solvents > 1:
+            modlog.warning(f'You are using {num_solvents} in {reagent_alias}{reagent_index}, '
+                           f'be aware of nonideal mixing')
+
+        if num_solvents >= 1 and reagent.chemicals[-1] not in solventlist :
+            raise ValueError(f'Solvents should appear last. {reagent_solvents[-1]} is a solvent ' 
+                             f'but does not appear last in {reagent_alias}{reagent_index}')
+
+        if num_solvents == 0:
+
+            densities = chemdf.filter(regex='[Dd]ensity')
+
+            if densities.shape[1] > 1:
+                raise ValueError('Multiple density columns detected in Chemical Inventory')
+
+            last_chemical = reagent.chemicals[-1]
+            density = densities.loc[last_chemical]
+
+            try:
+                float(density)
+            except ValueError:
+                # density is unspecified. We'll raise our own error here
+                raise ValueError(f'No solvents specified in {reagent_alias}{reagent_index} '
+                                 f'and {last_chemical} has no density in Chemical Inventory')
+            else:
+                # density was specified
+                modlog.warning(f'No solvents specified in {reagent_alias}{reagent_index} ')
+
+    return
+
+def postbuildvalidation(rxndict, vardict, rdict, edict, chemdf):
+    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
+
     modlog = logging.getLogger('capture.postbuildvalidation')
 #        modlog.error("Fatal error. Reagents and chemicals are over constrained. Recheck user options!")
+    validate_solvent_positions(rdict, vardict['solventlist'], reagent_alias, chemdf)
     modlog.info('Experiment successfully constructed.')
 
 def prebuildvalidation(rxndict, vardict):

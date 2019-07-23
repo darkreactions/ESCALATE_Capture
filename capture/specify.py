@@ -57,7 +57,7 @@ def datapipeline(rxndict, vardict):
 
     drive_target_folder = config.lab_vars[globals.get_lab()]['targetfolder']
 
-    inputvalidation.postbuildvalidation(rxndict, rdict, edict)
+    inputvalidation.postbuildvalidation(rxndict, vardict, rdict, edict, chemdf)
     #generate
     if vardict['challengeproblem'] == 1:
         if rxndict['totalexperiments'] > 1:

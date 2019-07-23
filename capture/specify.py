@@ -96,8 +96,8 @@ def datapipeline(rxndict, vardict):
 
             primary_dir, secondary_dir, gdrive_uid_dict = googleio.create_drive_directories(rxndict,
                                                                                             drive_target_folder,
-                                                                                            vardict['filereqs'])
-            if rxndict['lab'] in ['LBL', 'HC', 'MIT_PVLab', 'dev']:
+                                                                                            vardict['lab_vars'][globals.get_lab()]['required_files'])
+            if rxndict['lab'] != 'ECL':
 
                 google_drive_client = googleio.get_gdrive_client()
 
@@ -112,7 +112,7 @@ def datapipeline(rxndict, vardict):
                 upload_observation_interface_data(rxndict, vardict, google_drive_client, observation_interface_uid)
 
 
-            elif rxndict['lab'] == "ECL":
+            else:
                 modlog.warn('User selected ECL run, no reagent interface generated. Please ensure the JSON is exported from ECL!')
             logfile = '%s/%s'%(os.getcwd(),rxndict['logfile'])
             googleio.upload_files_to_gdrive(primary_dir, secondary_dir, secfilelist, robotfile, rxndict['RunID'], logfile)

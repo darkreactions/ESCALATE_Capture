@@ -94,7 +94,6 @@ if __name__ == "__main__":
         'maxreagentchemicals': devconfig.maxreagentchemicals,
         'solventlist': devconfig.solventlist,
         'lab_vars': devconfig.lab_vars,
-        'filereqs': devconfig.labfiles(rxndict['lab']),
         'lab': rxndict['lab']
     }
 

@@ -92,7 +92,6 @@ if __name__ == "__main__":
         'debug': args.debug,
         'volspacing': devconfig.volspacing,
         'maxreagentchemicals': devconfig.maxreagentchemicals,
-        'solventlist': devconfig.solventlist,
         'lab_vars': devconfig.lab_vars,
         'lab': rxndict['lab']
     }

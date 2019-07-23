@@ -1,7 +1,7 @@
 import platform
 
 #######################################
-# version control todo: ian where does this get used? Not sure if we should have to manually do this
+# version control
 RoboVersion = 2.5
 
 SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
@@ -11,10 +11,6 @@ SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 
 maxreagentchemicals = 4
 volspacing = 50  # reagent microliter (uL) spacing between points in the stateset
-
-# perovskite solvent list (simple specification of what is a liquid)
-# assumes only 1 liquid / reagent
-solventlist = ['GBL', 'DMSO', 'DMF', 'DCM', 'CBz']
 
 #######################################
 # Lab-specific variables

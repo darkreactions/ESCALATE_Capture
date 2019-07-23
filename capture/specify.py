@@ -43,6 +43,8 @@ def datapipeline(rxndict, vardict):
     reagentdf = reagent.build_reagentdf(config.lab_vars[globals.get_lab()]['reagentsheetid'],
                                         config.lab_vars[globals.get_lab()]['reagent_workbook_index'])
 
+    vardict['solventlist'] = chemdf.index[chemdf['Chemical Category'] == 'solvent'].values.tolist()
+
     # dictionary of user defined chemical limits
     climits = chemical.chemicallimits(rxndict)
 

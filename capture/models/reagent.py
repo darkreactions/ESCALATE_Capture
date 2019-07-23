@@ -5,7 +5,7 @@ import gspread
 from capture.googleapi import googleio
 from oauth2client.service_account import ServiceAccountCredentials
 
-def ReagentData(reagsheetid, reagsheetworkbook):
+def build_reagentdf(reagsheetid, reagsheetworkbook):
     """Read the reagents workbook from Google Drive and return a pandas DataFrame
 
     :param reagsheetid:        TODO this is a workbook (and unused)

@@ -52,7 +52,8 @@ def expwellcount(rxndict):
 
     modlog.info("Only 1 experiment specified. Wellcount applies to only experiment")
 
-def validate_reagent_specification(rxndict , template):
+
+def used_reagents_are_specified(rxndict, template):
     """Ensure that if a reagent is used in an experiment, it is specified"""
     
 
@@ -65,7 +66,7 @@ def validate_reagent_specification(rxndict , template):
     )
 
     def validate_random_reagents(rxndict):
-        """Find the set of reagents that are used but not specified"""
+        """Find the set of reagents that are used in randomly generated experiments but not specified"""
 
         used_reagents = []
         for k in rxndict.keys():
@@ -73,10 +74,12 @@ def validate_reagent_specification(rxndict , template):
                 used_reagents.extend(rxndict[k])
         used_reagents = set(flatten(used_reagents))
 
-        return sorted(list(used_reagents - SPECIFIED_REAGENTS))
+        used_unspecified = sorted(list(used_reagents - SPECIFIED_REAGENTS))
+
+        return used_unspecified
 
     def validate_manual_reagents(template):
-        """Find the set of reagents that are used but not specified"""
+        """Find the set of reagents that are used in manually entered experiments but not specified"""
 
         reagent_pat = re.compile('Reagent(\d+) \(ul\)')
         manual_experiments = get_explicit_experiments(template)
@@ -87,8 +90,9 @@ def validate_reagent_specification(rxndict , template):
                          for reagent in used_reagents
                          if reagent_pat.search(reagent)]
                         )
+        used_unspecified = sorted(list(used_reagents - SPECIFIED_REAGENTS))
 
-        return sorted(list(used_reagents - SPECIFIED_REAGENTS))
+        return used_unspecified
 
     if config.sampler != 'wolfram':
         # TODO: discuss at code review: is it time for a better fix of this wolfram problem?
@@ -111,7 +115,7 @@ def reagconcdefs(rxndict):
     for k,v in rxndict.items():
         pass
 
-def postbuildvalidation(rxndict,rdict,edict):
+def postbuildvalidation(rxndict, rdict, edict):
     modlog = logging.getLogger('capture.postbuildvalidation')
 #        modlog.error("Fatal error. Reagents and chemicals are over constrained. Recheck user options!")
     modlog.info('Experiment successfully constructed.')
@@ -127,7 +131,7 @@ def prebuildvalidation(rxndict, vardict):
     expcount(rxndict)
     expwellcount(rxndict)
     reagconcdefs(rxndict)
-    validate_reagent_specification(rxndict, vardict['exefilename'])
+    used_reagents_are_specified(rxndict, vardict['exefilename'])
     modlog.info('User entry is configured correctly.  Proceeding with run')
 
 def reagenttesting(volmax, volmin):

@@ -154,16 +154,6 @@ def build_nominals_v1(rdict,
                     nominalsdf.loc[index, "nominal_amount"] = (total_remaining_volume * 1000).round(2)
                     nominalsdf.loc[index, "Unit"] = 'milliliter'
                     itemcount+=1
-#                print(rdict[reagentnum].concs['conc_item%s'%(itemcount)])
-#                modlog.info(('Formula target was', chemabbr, reagentname, \
-#                    rdict[reagentnum].concs['conc_item%s' %(itemcount)]))
-#                modlog.info(('row index =', index, 'calc value = ', target_final_volume[reagentname]/1000/1000 * \
-#                    rdict[reagentnum].concs['conc_item%s' %(itemcount)] * \
-#                    float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])
-#                    ))
-
-#                 If the chemical is a component, but not final, the contributing
-#                 volume is calculated and the mass or volume is returned to the dataframe
                 elif chemabbr in liquidlist or chemabbr == 'FAH':  # todo dejank
                     myvariable = rdict[reagentnum].concs['conc_item%s' %(itemcount)]
                     needed_mol = target_final_volume * rdict[reagentnum].concs['conc_item%s' %(itemcount)]
@@ -242,7 +232,7 @@ def build_reagent_spec_df(rxndict, vardict, erdf, rdict, chemdf):
     chemical_names_df = build_chemical_names_df(rdict, vardict['maxreagentchemicals'])
     reagent_target_volumes = get_reagent_target_volumes(erdf, rxndict['reagent_dead_volume'] * 1000)
     # TODO: Update HC/LBL culture to match with the actual concs branch.. until then we make them distinct
-    if globals.get_lab() in ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']:
+    if globals.get_lab() in ['LBL', 'HC', 'ECL', 'dev']:
         nominals_df = build_nominals_df(rdict, chemical_names_df, reagent_target_volumes,
                                         vardict['solventlist'], vardict['maxreagentchemicals'], chemdf)
     if globals.get_lab() in ['MIT_PVLab']:

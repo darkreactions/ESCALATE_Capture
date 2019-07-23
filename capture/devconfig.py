@@ -69,7 +69,7 @@ lab_vars = {
             'reagent_interface_amount_startrow': 16,
             'max_reagents': 8,
             'reagent_alias': 'Precursor',
-            'required_upload_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
+            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'observation_interface': {'uid_col': 'F'}
         },
 }

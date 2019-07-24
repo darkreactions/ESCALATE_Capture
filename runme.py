@@ -62,7 +62,10 @@ def build_rxndict(rxnvarfile):
                 rxndict[cell_dict_id] = ast.literal_eval(cell_dict_value)
             else:
                 rxndict[cell_dict_id.strip()] = cell_dict_value
-    data_handling.get_user_actions(rxndict, sheet)
+
+    # cannot use globals.get_lab() here since it has not been set
+    if rxndict['lab'] == 'MIT_PVLab':
+        data_handling.get_user_actions(rxndict, sheet)
     return rxndict
 
 

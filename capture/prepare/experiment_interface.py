@@ -231,6 +231,14 @@ def generate_experiment_specification_file(rxndict, vardict, erdf):
     userAction1 = list(rxndict['user_actions'][1].keys())[0]
     userActionValue0 = rxndict['user_actions'][0][userAction0]
     userActionValue1 = rxndict['user_actions'][1][userAction1]
+    if userAction0 == 0:
+        userAction0 = ""
+        userActionValue0 = ''
+    if userAction1 == 0:
+        userAction1 = ""
+        userActionValue1 = ''
+
+    # If the additional actions were not specified, just leave the cells blank.
     # todo CLEAN UP THE ABOVE AFTER THE IMMEDIATE MIT PUSH.
     
     rxn_parameters = pd.DataFrame({

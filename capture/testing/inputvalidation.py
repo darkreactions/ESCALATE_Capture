@@ -3,6 +3,9 @@ import logging
 import re
 from utils.data_handling import get_explicit_experiments, flatten
 import capture.devconfig as config
+from utils import globals
+
+modlog = logging.getLogger(__name__)
 
 def expcount(rxndict):
     modlog = logging.getLogger('capture.prebuildvalidation.expcount')
@@ -52,7 +55,8 @@ def expwellcount(rxndict):
 
     modlog.info("Only 1 experiment specified. Wellcount applies to only experiment")
 
-def validate_reagent_specification(rxndict , template):
+
+def used_reagents_are_specified(rxndict, template, reagent_alias):
     """Ensure that if a reagent is used in an experiment, it is specified"""
     
 
@@ -65,7 +69,7 @@ def validate_reagent_specification(rxndict , template):
     )
 
     def validate_random_reagents(rxndict):
-        """Find the set of reagents that are used but not specified"""
+        """Find the set of reagents that are used in randomly generated experiments but not specified"""
 
         used_reagents = []
         for k in rxndict.keys():
@@ -73,10 +77,12 @@ def validate_reagent_specification(rxndict , template):
                 used_reagents.extend(rxndict[k])
         used_reagents = set(flatten(used_reagents))
 
-        return sorted(list(used_reagents - SPECIFIED_REAGENTS))
+        used_unspecified = sorted(list(used_reagents - SPECIFIED_REAGENTS))
+
+        return used_unspecified
 
     def validate_manual_reagents(template):
-        """Find the set of reagents that are used but not specified"""
+        """Find the set of reagents that are used in manually entered experiments but not specified"""
 
         reagent_pat = re.compile('Reagent(\d+) \(ul\)')
         manual_experiments = get_explicit_experiments(template)
@@ -87,33 +93,79 @@ def validate_reagent_specification(rxndict , template):
                          for reagent in used_reagents
                          if reagent_pat.search(reagent)]
                         )
+        used_unspecified = sorted(list(used_reagents - SPECIFIED_REAGENTS))
 
-        return sorted(list(used_reagents - SPECIFIED_REAGENTS))
+        return used_unspecified
 
     if config.sampler != 'wolfram':
         # TODO: discuss at code review: is it time for a better fix of this wolfram problem?
         unspecified_random = validate_random_reagents(rxndict)
         if unspecified_random:
-            raise ValueError('Reagent(s) {} were used in random experiment specification but not specified'
-                             .format(unspecified_random))
+            raise ValueError(f'{reagent_alias}(s) {unspecified_random} were used in random experiment specification '
+                             f'but not specified')
 
     unspecified_manual = validate_manual_reagents(template)
     if unspecified_manual:
-        raise ValueError('Reagent(s) {} were used in manual experiment specification but not specified'
-                         .format(unspecified_manual))
+        raise ValueError(f'{reagent_alias}(s) {unspecified_manual} were used in manual experiment specification '
+                         f'but not specified')
 
     return
 
 def userinterface(rxndict):
     assert isinstance(rxndict['exp1'], list), 'exp1 in user XLS must be specified as a list of lists'
 
+
 def reagconcdefs(rxndict):
     for k,v in rxndict.items():
         pass
 
-def postbuildvalidation(rxndict,rdict,edict):
+
+def validate_solvent_positions(rdict, solventlist, reagent_alias, chemdf):
+    """Check that the last chemical in the reagent is a solvent, and that all other chemicals are not solvents"""
+
+    # loop over reagents in order to keep things a little prettier for the user in case of multiple failures
+    for reagent_index in sorted(rdict.keys()):
+        reagent = rdict[reagent_index]
+
+        reagent_solvents = [chemical for chemical in reagent.chemicals if chemical in solventlist]
+        num_solvents = len(reagent_solvents)
+
+        if num_solvents > 1:
+            modlog.warning(f'You are using {num_solvents} in {reagent_alias}{reagent_index}, '
+                           f'be aware of nonideal mixing')
+
+        if num_solvents >= 1 and reagent.chemicals[-1] not in solventlist :
+            raise ValueError(f'Solvents should appear last. {reagent_solvents[-1]} is a solvent ' 
+                             f'but does not appear last in {reagent_alias}{reagent_index}')
+
+        if num_solvents == 0:
+
+            densities = chemdf.filter(regex='[Dd]ensity')
+
+            if densities.shape[1] > 1:
+                raise ValueError('Multiple density columns detected in Chemical Inventory')
+
+            last_chemical = reagent.chemicals[-1]
+            density = densities.loc[last_chemical]
+
+            try:
+                float(density)
+            except ValueError:
+                # density is unspecified. We'll raise our own error here
+                raise ValueError(f'No solvents specified in {reagent_alias}{reagent_index} '
+                                 f'and {last_chemical} has no density in Chemical Inventory')
+            else:
+                # density was specified
+                modlog.warning(f'No solvents specified in {reagent_alias}{reagent_index} ')
+
+    return
+
+def postbuildvalidation(rxndict, vardict, rdict, edict, chemdf):
+    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
+
     modlog = logging.getLogger('capture.postbuildvalidation')
 #        modlog.error("Fatal error. Reagents and chemicals are over constrained. Recheck user options!")
+    validate_solvent_positions(rdict, vardict['solventlist'], reagent_alias, chemdf)
     modlog.info('Experiment successfully constructed.')
 
 def prebuildvalidation(rxndict, vardict):
@@ -122,12 +174,13 @@ def prebuildvalidation(rxndict, vardict):
     takes the rxndict as input and performs validation on the input to ensure the proper structure
     -- currently underdeveloped
     '''
+    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
     modlog = logging.getLogger('capture.prebuildvalidation')
     userinterface(rxndict)
     expcount(rxndict)
     expwellcount(rxndict)
     reagconcdefs(rxndict)
-    validate_reagent_specification(rxndict, vardict['exefilename'])
+    used_reagents_are_specified(rxndict, vardict['exefilename'], reagent_alias)
     modlog.info('User entry is configured correctly.  Proceeding with run')
 
 def reagenttesting(volmax, volmin):

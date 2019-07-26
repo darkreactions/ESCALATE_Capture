@@ -112,8 +112,8 @@ def get_user_actions(rxndict, sheet):
     :return:
     """
     userActions = {}
-    userActions[0] = {sheet.cell(106, 1).value: sheet.cell(106, 3).value}
-    userActions[1] = {sheet.cell(107, 1).value: sheet.cell(107, 3).value}
+    userActions[0] = {sheet.cell(107, 3).value: sheet.cell(106, 3).value}
+    userActions[1] = {sheet.cell(109, 3).value: sheet.cell(108, 3).value}
     # add new userActions here.
 
     rxndict['user_actions'] = userActions

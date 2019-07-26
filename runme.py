@@ -13,7 +13,7 @@ import argparse as ap
 from log import init
 from capture import specify
 from capture import devconfig
-from utils import globals
+from utils import globals, data_handling
 
 
 def escalatecapture(rxndict, vardict):
@@ -62,6 +62,10 @@ def build_rxndict(rxnvarfile):
                 rxndict[cell_dict_id] = ast.literal_eval(cell_dict_value)
             else:
                 rxndict[cell_dict_id.strip()] = cell_dict_value
+
+    # cannot use globals.get_lab() here since it has not been set
+    if rxndict['lab'] == 'MIT_PVLab':
+        data_handling.get_user_actions(rxndict, sheet)
     return rxndict
 
 

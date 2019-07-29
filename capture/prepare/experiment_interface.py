@@ -106,7 +106,7 @@ def WF3_split(erdf, splitreagents):
     splitcols = []
     normalcols = []
     for column in erdf.columns:
-        if any(item in column for item in splitreagents):
+        if any(str(item) in column for item in splitreagents):
             splitcols.append(column)
         else:
             normalcols.append(column)
@@ -182,7 +182,7 @@ def LBLrobotfile(rxndict, vardict, erdf):
 
         # For WF3 tray implementation to work
         df_Tray2 = MakeWellList_WF3(rxndict['plate_container'], rxndict['wellcount']*2)
-        erdf_new = WF3_split(erdf,rxndict['exp1_split'])
+        erdf_new = WF3_split(erdf, rxndict['WF3_split'])
         outframe1 = pd.concat([df_Tray2.iloc[:, 0],
                                erdf_new, df_Tray2.iloc[:, 1],
                                rxn_parameters, rxn_conditions],

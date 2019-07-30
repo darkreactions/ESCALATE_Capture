@@ -231,13 +231,8 @@ def build_reagent_spec_df(rxndict, vardict, erdf, rdict, chemdf):
     modlog.info('Starting reagent interface upload')
     chemical_names_df = build_chemical_names_df(rdict, vardict['maxreagentchemicals'])
     reagent_target_volumes = get_reagent_target_volumes(erdf, rxndict['reagent_dead_volume'] * 1000)
-    # TODO: Update HC/LBL culture to match with the actual concs branch.. until then we make them distinct
-    if globals.get_lab() in ['LBL', 'HC', 'ECL', 'dev']:
-        nominals_df = build_nominals_df(rdict, chemical_names_df, reagent_target_volumes,
-                                        vardict['solventlist'], vardict['maxreagentchemicals'], chemdf)
-    if globals.get_lab() in ['MIT_PVLab']:
-        nominals_df = build_nominals_v1(rdict, chemical_names_df, reagent_target_volumes,
-                                        vardict['solventlist'], vardict['maxreagentchemicals'], chemdf)
+    nominals_df = build_nominals_v1(rdict, chemical_names_df, reagent_target_volumes,
+                                    vardict['solventlist'], vardict['maxreagentchemicals'], chemdf)
     reagent_spec_df = pd.concat([chemical_names_df, nominals_df], axis=1)
     return reagent_spec_df
 

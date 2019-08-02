@@ -111,8 +111,15 @@ def used_reagents_are_specified(rxndict, template, reagent_alias):
 
     return
 
-def userinterface(rxndict):
-    assert isinstance(rxndict['exp1'], list), 'exp1 in user XLS must be specified as a list of lists'
+def validate_experiment_form_and_number(rxndict):
+    pat = re.compile("exp\d$")
+    counter = 0
+    for k, v in rxndict.items():
+        if re.search(pat, k):
+            counter += 1
+            assert isinstance(rxndict['exp1'], list), 'exp1 in user XLS must be specified as a list of lists'
+    if counter == 0:
+        modlog.warning("FYI, you have specified ZERO random sampling experiments.")
 
 
 def reagconcdefs(rxndict):
@@ -176,7 +183,7 @@ def prebuildvalidation(rxndict, vardict):
     '''
     reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
     modlog = logging.getLogger('capture.prebuildvalidation')
-    userinterface(rxndict)
+    validate_experiment_form_and_number(rxndict)
     expcount(rxndict)
     expwellcount(rxndict)
     reagconcdefs(rxndict)

@@ -138,7 +138,7 @@ def validate_solvent_positions(rdict, solventlist, reagent_alias, chemdf):
         num_solvents = len(reagent_solvents)
 
         if num_solvents > 1:
-            modlog.warning(f'You are using {num_solvents} in {reagent_alias}{reagent_index}, '
+            modlog.warning(f'You are using {num_solvents} solvents in {reagent_alias}{reagent_index}, '
                            f'be aware of nonideal mixing')
 
         if num_solvents >= 1 and reagent.chemicals[-1] not in solventlist :

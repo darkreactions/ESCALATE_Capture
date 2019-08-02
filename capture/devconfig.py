@@ -98,14 +98,19 @@ if system == "Linux":
         print('WolframKernel not successfully found, please correct devconfig')
         import sys
         sys.exit()
-        
+
 # Mac
 elif system == "Darwin":
     wolfram_kernel_path = None
 
-#Windows (or some weird unanticipated OS)
-else:
+# Windows
+# Needs to be tested on a window's machine, but the internet tells me that 'Windows' should be what system is equal to. 
+elif system == 'Windows':
     wolfram_kernel_path = None
+
+# Other
+else:
+    raise OSError("Your system is likely not supported if it's not Linux, MAC, or Windows")
 
 ######################################
 # Sampler Selection

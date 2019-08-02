@@ -117,7 +117,7 @@ def validate_experiment_form_and_number(rxndict):
     for k, v in rxndict.items():
         if re.search(pat, k):
             counter += 1
-            assert isinstance(rxndict['exp1'], list), 'exp1 in user XLS must be specified as a list of lists'
+            assert isinstance(rxndict[k], list), f'{k} in user XLS must be specified as a list of lists'
     if counter == 0:
         modlog.warning("FYI, you have specified ZERO random sampling experiments.")
 

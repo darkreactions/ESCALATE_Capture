@@ -98,8 +98,13 @@ if system == "Linux":
         print('WolframKernel not successfully found, please correct devconfig')
         import sys
         sys.exit()
+        
 # Mac
 elif system == "Darwin":
+    wolfram_kernel_path = None
+
+#Windows (or some weird unanticipated OS)
+else:
     wolfram_kernel_path = None
 
 ######################################

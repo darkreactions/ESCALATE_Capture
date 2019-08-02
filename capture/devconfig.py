@@ -81,6 +81,7 @@ lab_vars = {
 #######################################
 # Wolfram Kernel Management
 
+wolfram_kernel_path = None # ensure the value can be imported on all computers.
 
 system = platform.system()
 if system == "Linux":
@@ -98,9 +99,16 @@ if system == "Linux":
         print('WolframKernel not successfully found, please correct devconfig')
         import sys
         sys.exit()
-# Mac
-elif system == "Darwin":
+
+# Mac or Windows
+# Needs to be tested on a window's machine, but the internet
+# tells me that 'Windows' should be what system is equal to.
+elif system == "Darwin" or system == 'Windows':
     wolfram_kernel_path = None
+
+# Other
+else:
+    raise OSError("Your system is likely not supported if it's not Linux, MAC, or Windows")
 
 ######################################
 # Sampler Selection

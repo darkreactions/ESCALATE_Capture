@@ -176,8 +176,13 @@ def build_nominals_v1(rdict,
                     itemcount+=1
 
         if itemcount == (maxreagentchemicals+1):
-            nominalsdf.loc[finalvolindex, "nominal_amount"] = (target_final_volume * 1000).round(2)
-            nominalsdf.loc[finalvolindex, "Unit"] = 'milliliter'
+            if total_remaining_volume == target_final_volume:
+                nominalsdf.loc[finalvolindex, "nominal_amount"] = 'null'
+                nominalsdf.loc[finalvolindex, "Unit"] = 'null'
+                nominalsdf.loc[finalvolindex, "actualsnull"] = 'null'
+            else:
+                nominalsdf.loc[finalvolindex, "nominal_amount"] = (target_final_volume * 1000).round(2)
+                nominalsdf.loc[finalvolindex, "Unit"] = 'milliliter'
             modlog.info((reagentname, "formula calculation complete"))
     nominalsdf.sort_index(inplace=True)
     return nominalsdf

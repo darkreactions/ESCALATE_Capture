@@ -187,7 +187,12 @@ def LBLrobotfile(rxndict, vardict, erdf):
                                erdf_new, df_Tray2.iloc[:, 1],
                                rxn_parameters, rxn_conditions],
                               sort=False, axis=1)
-        robotfile = ('localfiles/%s_RUNME_RobotFile.xls' %rxndict['RunID'])
+        
+        if globals.get_lab() == 'LBL':
+            robotfile = ('localfiles/%s_RUNME_RobotFile.xls' %rxndict['RunID'])
+        else:
+            robotfile = ('localfiles/%s_RUNME_RobotFile.xls' %rxndict['RunID'])
+
 
         ## For report code to work
         df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount']*1)
@@ -204,9 +209,15 @@ def LBLrobotfile(rxndict, vardict, erdf):
         df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount'])
         outframe = pd.concat([df_Tray.iloc[:, 0], erdf, df_Tray.iloc[:, 1], rxn_parameters, rxn_conditions],
                              sort=False, axis=1)
-        robotfile = ('localfiles/%s_RobotInput.xls' % rxndict['RunID'])
+
+        if globals.get_lab() == 'LBL':
+            robotfile = ('localfiles/%s_RobotInput.xls' % rxndict['RunID'])
+        else:
+            robotfile = ('localfiles/%s_ExperimentSpecification.xls' %rxndict['RunID'])
+            
         robotfiles.append(robotfile)
         outframe.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
+
     return robotfiles
 
 def generate_experiment_specification_file(rxndict, vardict, erdf):
@@ -227,10 +238,10 @@ def generate_experiment_specification_file(rxndict, vardict, erdf):
     vol_ar = volarray(erdf, vardict['lab_vars'][vardict['lab']]['max_reagents'])
 
     # THIS IS VERY BAD PRACTICE.
-    userAction0 = list(rxndict['user_actions'][0].keys())[0]
-    userAction1 = list(rxndict['user_actions'][1].keys())[0]
-    userActionValue0 = rxndict['user_actions'][0][userAction0]
-    userActionValue1 = rxndict['user_actions'][1][userAction1]
+    userAction0 = rxndict['Additional_action_1_description']
+    userAction1 = rxndict['Additional_action_2_description']
+    userActionValue0 = rxndict['Additional_action_1_value']
+    userActionValue1 = rxndict['Additional_action_2_value']
     if userAction0 == 0:
         userAction0 = ""
         userActionValue0 = ''

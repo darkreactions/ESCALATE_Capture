@@ -28,6 +28,7 @@ lab_vars = {
             'max_reagents': 7,
             'reagent_alias': 'Reagent',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
+            'required_folders': ['xrd', 'images'],
             'observation_interface': {'uid_col': 'E'}
         },
     'LBL':
@@ -42,6 +43,7 @@ lab_vars = {
             'max_reagents': 7,
             'reagent_alias': 'Reagent',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
+            'required_folders': ['xrd', 'images'],
             'observation_interface': {'uid_col': 'E'}
         },
     'dev':
@@ -56,6 +58,7 @@ lab_vars = {
             'reagent_alias': 'Reagent',
             'max_reagents': 8,
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
+            'required_folders': [],
             'observation_interface': {'uid_col': 'F'}
         },
     'MIT_PVLab':
@@ -70,6 +73,7 @@ lab_vars = {
             'max_reagents': 8,
             'reagent_alias': 'Precursor',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
+            'required_folders': [],
             'observation_interface': {'uid_col': 'F'}
         },
 }

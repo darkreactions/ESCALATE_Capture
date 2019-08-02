@@ -81,6 +81,7 @@ lab_vars = {
 #######################################
 # Wolfram Kernel Management
 
+wolfram_kernel_path = None # ensure the value can be imported on all computers.
 
 system = platform.system()
 if system == "Linux":
@@ -99,13 +100,10 @@ if system == "Linux":
         import sys
         sys.exit()
 
-# Mac
-elif system == "Darwin":
-    wolfram_kernel_path = None
-
-# Windows
-# Needs to be tested on a window's machine, but the internet tells me that 'Windows' should be what system is equal to. 
-elif system == 'Windows':
+# Mac or Windows
+# Needs to be tested on a window's machine, but the internet
+# tells me that 'Windows' should be what system is equal to.
+elif system == "Darwin" or system == 'Windows':
     wolfram_kernel_path = None
 
 # Other

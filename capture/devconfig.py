@@ -10,7 +10,7 @@ SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 # chemistry-relevant specifications
 
 maxreagentchemicals = 4
-volspacing = 50  # reagent microliter (uL) spacing between points in the stateset
+volspacing = 5 # reagent microliter (uL) spacing between points in the stateset
 
 #######################################
 # Lab-specific variables
@@ -116,4 +116,4 @@ else:
 
 # must be 'default' or 'wolfram'
 # 'wolfram' is currently experimental and unsupported
-sampler = 'default'
+sampler = 'wolfram'

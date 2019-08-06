@@ -124,7 +124,7 @@ def upload_files_to_gdrive(opdir, secdir, secfilelist, filelist, runID, eclogfil
         outfile['title'] = secfile.split('/')[1]
         outfile.Upload()
 
-    if not config.lab_vars[globals.get_lab()]['required_folders']:
+    if config.lab_vars[globals.get_lab()]['required_folders']:
         for folder in config.lab_vars[globals.get_lab()]['required_folders']:
             create_drive_folder(folder, opdir)
 

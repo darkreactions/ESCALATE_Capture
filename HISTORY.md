@@ -1,15 +1,38 @@
 RELEASE HISTORY
 ===============
 
-1.0 (2018-06-10)
-----------------
-  * Commited first fully functioning version of the experiment generator capable of generating a psuedorandom exploration of the concentrations provided by user
-  * Updated associated files for logging and running code
 
-1.1 (2018-07-16)
-----------------
-  * Bug fixes which prevented program from generating potential reactions throughout all of the accessible physical space
-  * other minor bug fixes
+2.52 (2019-08-01)
+-----------------------------
+  * Reimplemented WF3 support
+  * Minor bug fixes for windows machines
+  * Minor bug fixes for HC support
+  * Added 'new folders' as an option to devconfig
+
+2.51 (2019-07-22)
+-----------------------------
+  * Abstracted template with wrapper
+  * (e.g. user controls 'reagent' names)
+  * renamed interaction files to be more general
+  * (e.g. CrystalScore --> ObservationInterface)
+  * Added in manual specification of experiments
+  * Protected cells the user is not allowed to edit
+  * Added more clarity to UI
+  * Added MIT as a supported lab with a (somewhat) unique pipeline
+
+2.5 (2019-06-17)
+-----------------------------
+  * New grid sampling in place of quasirandom sampling (uses mathematica in 2.5) #32 #48
+  * No grid sampling for WF3 - must set "default" sampling in devconfig 
+  * updated templates
+  * improved document readability
+
+2.4 (2019-04-20)
+----------------------------
+  * Meta data patch
+  * Updated versioning 
+  * updated templates
+  * WF3 support added and tested
 
 1.2 (2018-08-01)
 --------------------------
@@ -28,6 +51,7 @@ RELEASE HISTORY
   * Example scripts for user execution
   * Updated user interface (execution script) with a bit more flexibility
   * Improved logging --> More work still pending
+
 2.0.1 (2018-11-07)
 ---------------------------
   * Fixed FAH to reagents 6,7
@@ -64,17 +88,12 @@ RELEASE HISTORY
   * Updated templates to reflect new interface architecture 
   * Cleaned up files dumping to google drive
 
-2.4 (2019-04-20)
-----------------------------
-  * Meta data patch
-  * Updated versioning 
-  * updated templates
-  * WF3 support added and tested
+1.1 (2018-07-16)
+----------------
+  * Bug fixes which prevented program from generating potential reactions throughout all of the accessible physical space
+  * other minor bug fixes
 
-2.5 (2019-06-17)
------------------------------
-  * New grid sampling in place of quasirandom sampling (uses mathematica in 2.5) #32 #48
-  * No grid sampling for WF3 - must set "default" sampling in devconfig 
-  * updated templates
-  * improved document readability
-
+1.0 (2018-06-10)
+----------------
+  * Commited first fully functioning version of the experiment generator capable of generating a psuedorandom exploration of the concentrations provided by user
+  * Updated associated files for logging and running code

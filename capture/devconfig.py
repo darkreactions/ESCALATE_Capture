@@ -116,4 +116,4 @@ else:
 
 # must be 'default' or 'wolfram'
 # 'wolfram' is currently experimental and unsupported
-sampler = 'wolfram'
+sampler = 'default'

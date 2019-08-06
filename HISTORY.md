@@ -1,13 +1,14 @@
 RELEASE HISTORY
 ===============
 
-
 2.52 (2019-08-01)
 -----------------------------
   * Reimplemented WF3 support
   * Minor bug fixes for windows machines
   * Minor bug fixes for HC support
   * Added 'new folders' as an option to devconfig
+  * Updated templates to match current wf
+  * new data validation on chemical sheets (lives on google)
 
 2.51 (2019-07-22)
 -----------------------------
@@ -34,35 +35,13 @@ RELEASE HISTORY
   * updated templates
   * WF3 support added and tested
 
-1.2 (2018-08-01)
---------------------------
-  * Organized code, fixed some initial bugs in the data generation, automated and distributed working version of the code to stakeholders (zhi, mansoor)
-
-2.0 (2018-11-07)
----------------------------
-  * Bug fixes
-  * Added capacity for additional reagent
-  * added volume correction to workflow which records the final prepared volume of the stock solution in addition nominal and actual solvent measured out during reagent preparation
-  * Organized code into smaller portions prior to distribution and forking for challenge problem
-  * Significant revisions to the sampling regime
-  * Flexibility for multiple experiments using different chemicals
-  * New experimental data interface for support for more reagents
-  * Additional data output for post processing
-  * Example scripts for user execution
-  * Updated user interface (execution script) with a bit more flexibility
-  * Improved logging --> More work still pending
-
-2.0.1 (2018-11-07)
----------------------------
-  * Fixed FAH to reagents 6,7
-  * Debugging fixes to generator
-  * Additional CP automation
-
-2.1 (2019-02-27)
+2.3 (2019-04-16)
 ----------------------------
-  * Removed user variable entry from code to XLS file
-  * Organized code into appropriate sections for clarity
-  * Deconvoluted variable relationships (made dictionaries easier to work with)
+  * Added ECL support
+  * Reagents can be specified by model OR user input (not both)
+  * Simplified chemical specification through inclusion in reagent list
+  * Updated templates to reflect new interface architecture 
+  * Cleaned up files dumping to google drive
 
 2.2 (2019-03-27)
 ----------------------------
@@ -80,13 +59,35 @@ RELEASE HISTORY
   * Debugged multiple amines / tray (including with report functionality)
   * WARNING -- plotter is currently broken
 
-2.3 (2019-04-16)
+2.1 (2019-02-27)
 ----------------------------
-  * Added ECL support
-  * Reagents can be specified by model OR user input (not both)
-  * Simplified chemical specification through inclusion in reagent list
-  * Updated templates to reflect new interface architecture 
-  * Cleaned up files dumping to google drive
+  * Removed user variable entry from code to XLS file
+  * Organized code into appropriate sections for clarity
+  * Deconvoluted variable relationships (made dictionaries easier to work with)
+
+2.0.1 (2018-11-07)
+---------------------------
+  * Fixed FAH to reagents 6,7
+  * Debugging fixes to generator
+  * Additional CP automation
+
+2.0 (2018-11-07)
+---------------------------
+  * Bug fixes
+  * Added capacity for additional reagent
+  * added volume correction to workflow which records the final prepared volume of the stock solution in addition nominal and actual solvent measured out during reagent preparation
+  * Organized code into smaller portions prior to distribution and forking for challenge problem
+  * Significant revisions to the sampling regime
+  * Flexibility for multiple experiments using different chemicals
+  * New experimental data interface for support for more reagents
+  * Additional data output for post processing
+  * Example scripts for user execution
+  * Updated user interface (execution script) with a bit more flexibility
+  * Improved logging --> More work still pending
+
+1.2 (2018-08-01)
+--------------------------
+  * Organized code, fixed some initial bugs in the data generation, automated and distributed working version of the code to stakeholders (zhi, mansoor)
 
 1.1 (2018-07-16)
 ----------------

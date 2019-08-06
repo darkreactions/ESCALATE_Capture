@@ -2,7 +2,7 @@ import platform
 
 #######################################
 # version control
-RoboVersion = 2.5
+RoboVersion = 2.52
 
 SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 
@@ -10,7 +10,7 @@ SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 # chemistry-relevant specifications
 
 maxreagentchemicals = 4
-volspacing = 50  # reagent microliter (uL) spacing between points in the stateset
+volspacing = 5 # reagent microliter (uL) spacing between points in the stateset
 
 #######################################
 # Lab-specific variables

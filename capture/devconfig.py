@@ -2,7 +2,7 @@ import platform
 
 #######################################
 # version control
-RoboVersion = 2.5
+RoboVersion = 2.52
 
 SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 

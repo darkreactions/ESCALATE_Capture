@@ -217,8 +217,11 @@ class perovskitereagent:
                 itemlabel = 'conc_item1' 
                 if [key for key in reactantinfo.keys() if variablename in key] == []:
                         #density / molecular weight function returns mol / L of the chemical
-                        concdict[itemlabel] = (float(chemdf.loc[self.chemicals[0],"Density            (g/mL)"])/ \
-                            float(chemdf.loc[self.chemicals[0],"Molecular Weight (g/mol)"]) * 1000)
+                        try:
+                            concdict[itemlabel] = (float(chemdf.loc[self.chemicals[0],"Density            (g/mL)"])/ \
+                                                   float(chemdf.loc[self.chemicals[0],"Molecular Weight (g/mol)"]) * 1000)
+                        except:
+                            pass
             else:
                 try:
                     itemlabel = 'conc_item%s' %chemicalitem 

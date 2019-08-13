@@ -13,6 +13,7 @@ from capture.generate import statespace
 from capture.prepare import stateset
 from capture.prepare import experiment_interface as expint
 from utils.data_handling import abstract_reagent_colnames
+from utils import globals
 
 modlog = logging.getLogger('capture.generate.generator')
 
@@ -48,7 +49,7 @@ def stateset_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, volspac
 
     # Clean up dataframe for robot file -> create xls --> upload
     erdfrows = erdf.shape[0]
-    erdf = expint.cleanvolarray(erdf, vardict['robot_reagents'])
+    erdf = expint.cleanvolarray(erdf, vardict['lab_vars'][globals.get_lab()]['max_reagents'])
     abstract_reagent_colnames(erdf)
 
     ermmolcsv = 'localfiles/%s_mmolbreakout.csv' % rxndict['RunID']

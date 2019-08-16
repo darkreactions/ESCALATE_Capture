@@ -11,6 +11,7 @@ from capture.models import chemical
 from capture.generate import calcs
 import capture.devconfig as config
 from utils.data_handling import get_explicit_experiments, get_reagent_number_as_string
+from utils import globals
 
 modlog = logging.getLogger('capture.generate.qrandom')
 
@@ -144,7 +145,9 @@ def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     """Ian's original sampling implementation.
 
     # todo
+    :returns: dataframe of volume, df of mols of chemicals, version of this code
     """
+    version = 2.4
     portionnum = 0
     prdf = pd.DataFrame()
     prmmoldf = pd.DataFrame()
@@ -254,7 +257,7 @@ def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
         prmmoldf = pd.concat([prmmoldf, finalmmoldf], axis=1)
         portionnum += 1
 
-    return prdf, prmmoldf
+    return prdf, prmmoldf, version
 
 def ensuremin(rvolmindf, finalrdf, finalvolmin):
     """Its a clamp! -- https://upload.wikimedia.org/wikipedia/en/6/6e/AckbarStanding.jpg
@@ -310,10 +313,12 @@ def volume_to_mmol_wrapper(vol_df, rdict, experiment):
 
 def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
     """Sample from the convex hull defined in species concentration space with uniform probability
-     :return: dataframe of experiments
+     :return: dataframe of experiments, version of sampler
     """
     experiment_mmol_df = pd.DataFrame()
     experiment_df = pd.DataFrame()
+
+    version = 1
 
     if len(expoverview) > 1:
         raise ValueError('When using wolfram sampling, expoverview must have length 1, got {}'.format(len(expoverview)))
@@ -356,7 +361,7 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     experiment_mmol_df = pd.concat([experiment_mmol_df, portion_mmol_df], axis=1)
     experiment_df = pd.concat([experiment_df, portion_df], axis=1)
 
-    return experiment_df, experiment_mmol_df
+    return experiment_df, experiment_mmol_df, version
 
 def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
 
@@ -394,42 +399,58 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
 
         # DO THE SAMPLING
         if config.sampler == 'wolfram':
-            prdf, prmmoldf = wolfram_sampling(edict[experimentname],
+            prdf, prmmoldf, version = wolfram_sampling(edict[experimentname],
                                               rdict,
                                               vollimits,
                                               rxndict,
                                               num_wells,
                                               climits,
                                               experiment)
+            globals.set_sampler('MathematicaUniformRandom', version)
         elif config.sampler == 'default':
-            prdf, prmmoldf = default_sampling(edict[experimentname],
+            
+            prdf, prmmoldf, version = default_sampling(edict[experimentname],
                                               rdict,
                                               vollimits,
                                               rxndict,
                                               num_wells,
                                               climits,
                                               experiment)
+            globals.set_sampler('ExpertQuasiRandom', version)
         else:
             modlog.error('Encountered unexpected sampler in devconfig: {}. Exiting.'.format(config.sampler))
             sys.exit(1)
 
         erdf = pd.concat([erdf, prdf], axis=0, ignore_index=True, sort=True)
         ermmoldf = pd.concat([ermmoldf, prmmoldf], axis=0, ignore_index=True, sort=True)
+
+        model_info_dict = {'modelname': [globals.get_sampler_uid()],'participantname':['escalate']}
+        model_info_df =  pd.DataFrame.from_dict(model_info_dict)
+        exportable_model_df = pd.concat([model_info_df]*erdf.shape[0], ignore_index=True)
+
         # Return the reagent data frame with the volumes for that particular portion of the plate
         modlog.info('Succesfully built experiment %s which returned.... ' %(experiment))
         experiment += 1
 
     if not rxndict['manual_wells'] == 0:
+
+        manual_model_info_dict = {'modelname': [globals.get_manualruns_uid()],'participantname':[globals.get_manualruns_author()]}
+        manual_model_info_df =  pd.DataFrame.from_dict(manual_model_info_dict)
+        manual_exportable_model_df = pd.concat([manual_model_info_df]*int(rxndict['manual_wells']), ignore_index=True)
+        
         specifiedExperiments = get_explicit_experiments(vardict['exefilename'])
         erdf = pd.concat([erdf, specifiedExperiments], axis=0, ignore_index=True, sort=True)
         specified_mmol_df = volume_to_mmol_wrapper(specifiedExperiments, rdict, 'f')
         ermmoldf = pd.concat([ermmoldf, specified_mmol_df], axis=0, ignore_index=True, sort=True)
+        exportable_model_df = pd.concat([exportable_model_df, manual_exportable_model_df], axis=0, ignore_index=True, sort=True)
+
 
     # Final reagent volumes dataframe
     erdf.fillna(value=0, inplace=True)
     if not erdf.shape[0] == rxndict['wellcount']:
         raise ValueError("Too few reactions specified: \n" +\
                          "Ensure that all exp<index>_wells and manual_well sum to wellcount")
+        
     # Final reagent mmol dataframe broken down by experiment, protion, reagent, and chemical
     ermmoldf.fillna(value=0, inplace=True)
     clist = chemical.exp_chem_list(rdict)
@@ -444,4 +465,4 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
     
     # for chemical in rdict['2'].chemicals:
     #    print(rxndict['chem%s_abbreviation' %chemical])
-    return erdf, ermmoldf, emsumdf
+    return erdf, ermmoldf, emsumdf, exportable_model_df

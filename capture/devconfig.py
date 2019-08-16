@@ -2,7 +2,7 @@ import platform
 
 #######################################
 # version control
-RoboVersion = 2.52
+RoboVersion = 2.53
 
 SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 
@@ -29,7 +29,9 @@ lab_vars = {
             'reagent_alias': 'Reagent',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': ['xrd', 'images'],
-            'observation_interface': {'uid_col': 'E'}
+            'observation_interface': {'uid_col': 'E',
+                                      'modeluid_col': 'J',
+                                      'participantuid_col': 'K'}
         },
     'LBL':
         {
@@ -44,7 +46,9 @@ lab_vars = {
             'reagent_alias': 'Reagent',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': ['xrd', 'images'],
-            'observation_interface': {'uid_col': 'E'}
+            'observation_interface': {'uid_col': 'E',
+                                      'modeluid_col': 'J',
+                                      'participantuid_col': 'K'}
         },
     'dev':
         {
@@ -59,7 +63,9 @@ lab_vars = {
             'max_reagents': 8,
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': [],
-            'observation_interface': {'uid_col': 'F'}
+            'observation_interface': {'uid_col': 'E',
+                                      'modeluid_col': 'J',
+                                      'participantuid_col': 'K'}
         },
     'MIT_PVLab':
         {
@@ -74,7 +80,9 @@ lab_vars = {
             'reagent_alias': 'Precursor',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': [],
-            'observation_interface': {'uid_col': 'F'}
+            'observation_interface': {'uid_col': 'F',
+                                      'modeluid_col': 'H',
+                                      'participantuid_col': 'I'}
         },
 }
 
@@ -114,6 +122,6 @@ else:
 # Sampler Selection
 
 
-# must be 'default' or 'wolfram'
 # 'wolfram' is currently experimental and unsupported
-sampler = 'default'
+# must be 'default' or 'wolfram'
+sampler = 'wolfram'

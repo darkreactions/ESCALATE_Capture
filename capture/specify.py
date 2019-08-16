@@ -12,6 +12,7 @@ from pandas import ExcelWriter
 import capture.googleapi.googleio
 from capture.prepare import reagent_interface as interface
 from capture.prepare.observation_interface import upload_observation_interface_data
+from capture.prepare.observation_interface import upload_modelinfo_observation_interface
 from capture.testing import inputvalidation
 from capture.generate import generator
 from capture.models import reagent
@@ -81,12 +82,12 @@ def datapipeline(rxndict, vardict):
     # generate
     if not vardict['challengeproblem']:
         # Create experiment file and relevant experiment associated data
-        erdf, robotfile, secfilelist = generator.generate_ESCALATE_run(vardict,
-                                                                       chemdf,
-                                                                       rxndict,
-                                                                       edict,
-                                                                       rdict,
-                                                                       climits)
+        erdf, robotfile, secfilelist, model_info_df = generator.generate_ESCALATE_run(vardict,
+                                                                                      chemdf,
+                                                                                      rxndict,
+                                                                                      edict,
+                                                                                      rdict,
+                                                                                      climits)
         # disable uploading if debug is activated
         if not vardict['debug']:
             modlog.info('Starting file preparation for upload')
@@ -104,15 +105,32 @@ def datapipeline(rxndict, vardict):
                 google_drive_client = googleio.get_gdrive_client()
 
                 # upload reagent preparation_interface
-                reagent_interface_uid = googleio.get_uid_by_name(gdrive_uid_dict, '(ExpDataEntry|preparation_interface)')
-                regent_spec_df = interface.build_reagent_spec_df(rxndict, vardict, erdf, rdict, chemdf)
-                interface.upload_reagent_interface(rxndict, vardict, rdict,
-                                                   regent_spec_df, google_drive_client, reagent_interface_uid)
-
+                reagent_interface_uid = googleio.get_uid_by_name(
+                                        gdrive_uid_dict,
+                                        '(ExpDataEntry|preparation_interface)')
+                regent_spec_df = interface.build_reagent_spec_df(
+                                 rxndict,
+                                 vardict,
+                                 erdf,
+                                 rdict,
+                                 chemdf)
+                interface.upload_reagent_interface(rxndict,
+                                                   vardict,
+                                                   rdict,
+                                                   regent_spec_df,
+                                                   google_drive_client,
+                                                   reagent_interface_uid)
                 # upload data to observation_interace
-                observation_interface_uid = googleio.get_uid_by_name(gdrive_uid_dict, 'observation_interface')
-                upload_observation_interface_data(rxndict, vardict, google_drive_client, observation_interface_uid)
-
+                observation_interface_uid = googleio.get_uid_by_name(
+                                            gdrive_uid_dict,
+                                            'observation_interface')
+                upload_observation_interface_data(rxndict,
+                                                  vardict,
+                                                  google_drive_client,
+                                                  observation_interface_uid)
+                upload_modelinfo_observation_interface(model_info_df,
+                                                       google_drive_client,
+                                                       observation_interface_uid)
 
             else:
                 modlog.warn('User selected ECL run, no reagent interface generated. Please ensure the JSON is exported from ECL!')

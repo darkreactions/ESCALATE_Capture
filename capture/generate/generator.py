@@ -110,12 +110,12 @@ def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, clim
     :param climits:
     :return:
     """
-    erdf, ermmoldf, emsumdf = qrandom.preprocess_and_sample(chemdf,
-                                                            vardict,
-                                                            rxndict,
-                                                            edict,
-                                                            rdict,
-                                                            climits)
+    erdf, ermmoldf, emsumdf, model_info_df = qrandom.preprocess_and_sample(chemdf,
+                                                                           vardict,
+                                                                           rxndict,
+                                                                           edict,
+                                                                           rdict,
+                                                                           climits)
     # Clean up dataframe for robot file -> create xls --> upload
     erdf = expint.cleanvolarray(erdf, maxr=vardict['lab_vars'][rxndict['lab']]['max_reagents'])
 
@@ -127,18 +127,18 @@ def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, clim
     emsumdf.to_csv(emsumcsv)
     # List to send for uploads
     secfilelist = [ermmolcsv, emsumcsv, vardict['exefilename']]
-    return emsumdf, secfilelist, erdf
+    return emsumdf, secfilelist, erdf, model_info_df
 
 
 def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, climits):
     """Wrapper to quasirandompipe
     """
-    emsumdf, secfilelist, erdf = quasirandom_generation_pipeline(vardict,
-                                                                 chemdf,
-                                                                 rxndict,
-                                                                 edict,
-                                                                 rdict,
-                                                                 climits)
+    emsumdf, secfilelist, erdf, model_info_df = quasirandom_generation_pipeline(vardict,
+                                                                                chemdf,
+                                                                                rxndict,
+                                                                                edict,
+                                                                                rdict,
+                                                                                climits)
 
     # TODO fix plotter
     # if rxndict['plotter_on'] == 1:
@@ -151,7 +151,6 @@ def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, climits):
     # TODO this is brittle
     # Generate a different robot file depending on the user specified lab
 
-
     if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
         robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
     elif rxndict['lab'] in ['MIT_PVLab', 'dev']:
@@ -161,4 +160,4 @@ def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, climits):
     else:
         modlog.error('No path for lab {}'.format(rxndict['lab']))
         sys.exit()
-    return erdf, robotfile, secfilelist
+    return erdf, robotfile, secfilelist, model_info_df

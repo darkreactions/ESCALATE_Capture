@@ -71,13 +71,11 @@ def get_sampler_author():
 
 
 def get_user_author_name():
-    message = ('''Enter the name you would like to appear for
-               manual submissions (e.g., Ian Pendleton):''')
+    message = ("Enter the name you would like to appear for manual submissions (e.g., Ian Pendleton):")
     user_input = input(message)
 
     with open('./capture/user_cli_variables.py', 'w') as fout:
-        fout.write('''# This file acts as a local cache to the user's
-                    preferred author name\n''')
+        fout.write("# This file acts as a local cache to the user's preferred author name\n")
         fout.write("user_author_name = '%s'\n" % user_input)
     # import the repo_path from the python file cache we just created
     from capture.user_cli_variables import user_author_name

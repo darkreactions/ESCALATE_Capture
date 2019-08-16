@@ -109,8 +109,6 @@ if system == "Linux":
         sys.exit()
 
 # Mac or Windows
-# Needs to be tested on a window's machine, but the internet
-# tells me that 'Windows' should be what system is equal to.
 elif system == "Darwin" or system == 'Windows':
     wolfram_kernel_path = None
 
@@ -124,4 +122,4 @@ else:
 
 # 'wolfram' is currently experimental and unsupported
 # must be 'default' or 'wolfram'
-sampler = 'wolfram'
+sampler = 'default'

@@ -1,6 +1,12 @@
 RELEASE HISTORY
 ===============
 
+2.53 (2019-08-16)
+----------------------------- 
+  * Native model reporting for escalate and manual runs
+  * Syntax fixes
+  * Pep8 fixes
+
 2.52 (2019-08-01)
 -----------------------------
   * Reimplemented WF3 support

@@ -25,6 +25,9 @@ To build the proper environment using anaconda (https://conda.io/docs/user-guide
 4. Download or request access from ipendleton . at . haverford.edu for access to the google drive folder of secure keys at: https://drive.google.com/drive/u/1/folders/1cN12AMZSvM5T5yVpFy9tkM_NEle7caQd
 5. Place the keys in main folder of the ESCALATE_Capture code.
 
+* If you need to run the mathematica sampler please install wolfram engine on your operating system.  Follow instructions here: https://www.wolfram.com/engine/
+* Once installed please change the sampler option from 'default' to 'wolfram' in the file capture/devconfig.py
+
 If during the installation process you encounter any issues, please submit a bug report / issue to https://github.com/darkreactions/ESCALATE_Capture
 
 Running The Code

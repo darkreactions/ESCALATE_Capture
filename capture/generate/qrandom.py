@@ -375,6 +375,7 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
     modlog.info('Making a total of %s unique experiments on the tray' % rxndict['totalexperiments'])
     erdf = pd.DataFrame() 
     ermmoldf = pd.DataFrame()
+    exportable_model_df = pd.DataFrame()
 
     # outer loop over experiments in Template
     while experiment < rxndict['totalexperiments']+1:

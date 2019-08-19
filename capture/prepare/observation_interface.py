@@ -28,7 +28,7 @@ def upload_observation_interface_data(rxndict, vardict, gc, interface_uid):
 def upload_modelinfo_observation_interface(model_info_df, gc, interface_uid):
     '''push the model information to the observation interface
 
-    :param model_info_df: 2xN data frame with 'molelname' and 'participantname' 
+    :param model_info_df: 2xN data frame with 'modelname' and 'participantname' 
                           as columns and N being the total number of experiments
     :param interface_uid: google sheets observation UID 
     :return: NULL

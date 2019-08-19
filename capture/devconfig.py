@@ -63,7 +63,7 @@ lab_vars = {
             'max_reagents': 8,
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': [],
-            'observation_interface': {'uid_col': 'E',
+            'observation_interface': {'uid_col': 'B',
                                       'modeluid_col': 'J',
                                       'participantuid_col': 'K'}
         },
@@ -80,7 +80,7 @@ lab_vars = {
             'reagent_alias': 'Precursor',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': [],
-            'observation_interface': {'uid_col': 'F',
+            'observation_interface': {'uid_col': 'B',
                                       'modeluid_col': 'H',
                                       'participantuid_col': 'I'}
         },

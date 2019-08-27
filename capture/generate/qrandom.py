@@ -318,7 +318,7 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     experiment_mmol_df = pd.DataFrame()
     experiment_df = pd.DataFrame()
 
-    version = 1
+    version = 1.1
 
     if len(expoverview) > 1:
         raise ValueError('When using wolfram sampling, expoverview must have length 1, got {}'.format(len(expoverview)))

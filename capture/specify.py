@@ -50,7 +50,7 @@ def datapipeline(rxndict, vardict):
     climits = chemical.chemicallimits(rxndict)
 
     # dictionary of perovskitereagent objects
-    rdict = reagent.buildreagents(rxndict, chemdf, reagentdf, vardict['solventlist'])
+    rdict, old_reagents = reagent.buildreagents(rxndict, chemdf, reagentdf, vardict['solventlist'])
     rxndict['totalexperiments'] = exptotal(rxndict, rdict)
 
     # dictionary of experiments

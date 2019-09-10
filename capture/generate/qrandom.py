@@ -341,17 +341,17 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
     reagent_vectors = build_reagent_vectors(portion_reagents, portion_species_names)
 
     if rxndict['multi_stock_sampling']:
-        old_regent_species_names = get_unique_chemical_names(old_reagents)
-        if old_regent_species_names != portion_species_names:
+        old_regeant_species_names = get_unique_chemical_names(old_reagents)
+        if old_regeant_species_names != portion_species_names:
             raise ValueError("Old and new reagents must reside in same chemical concentration basis")
-        old_reagent_vectors = build_reagent_vectors(old_reagents, old_regent_species_names)
+        old_reagent_vectors = build_reagent_vectors(old_reagents, old_regeant_species_names)
     else:
         old_reagent_vectors = None
 
 
     ws = WolframSampler()
-    """TODO: get wolfram code integrated here"""
     experiments = ws.randomlySample(reagent_vectors,
+                                    old_reagent_vectors,
                                     int(wellnum),
                                     float(maxconc),
                                     float(volmax))

@@ -15,7 +15,7 @@ class WolframSampler:
         self._randomlySample = self.session.function('generateExperiments')
         self._enumerativelySample = self.session.function('generateEnumerations')
 
-    def randomlySample(self, reagentVectors, nExpt=96, maxMolarity=9., finalVolume=500.):
+    def randomlySample(self, reagentVectors, oldReagents=None, nExpt=96, maxMolarity=9., finalVolume=500.):
         """Randomly sample possible experiments in the convex hull of concentration space defined by the reagentVectors
 
         Runs Josh's Mathematica function called `generateExperiments` defined in `randomSampling.wls`
@@ -37,8 +37,14 @@ class WolframSampler:
             raise TypeError('maxMolarity must be float, got {}'.format(type(maxMolarity)))
         if not isinstance(finalVolume, float):
             raise TypeError('finalVolume must be float, got {}'.format(type(finalVolume)))
+        if oldReagents:
+            if not isinstance(oldReagents, dict):
+                raise TypeError('oldReagents must be dict, got {}'.format(type(oldReagents)))
 
-        return self._randomlySample(reagentVectors, nExpt, maxMolarity, finalVolume)
+        if oldReagents:
+            return self._randomlySample(reagentVectors, oldReagents, nExpt, maxMolarity, finalVolume)
+        else:
+            return self._randomlySample(reagentVectors, nExpt, maxMolarity, finalVolume)
 
     def enumerativelySample(self, reagentVectors, uniqueChemNames, deltaV=10., maxMolarity=9., finalVolume=500.):
         """Enumeratively sample possible experiments in the convex hull of concentration space defined by the reagentVectors

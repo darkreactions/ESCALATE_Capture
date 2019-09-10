@@ -87,6 +87,7 @@ def datapipeline(rxndict, vardict):
                                                                                       rxndict,
                                                                                       edict,
                                                                                       rdict,
+                                                                                      old_reagents,
                                                                                       climits)
         # disable uploading if debug is activated
         if not vardict['debug']:

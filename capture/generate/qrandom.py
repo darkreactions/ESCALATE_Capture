@@ -276,6 +276,8 @@ def get_unique_chemical_names(reagents):
     :return: a list of the unique chemical names in all of the reagent
     """
     chemical_species = set()
+    if isinstance(reagents, dict):
+        reagents = [v for v in reagents.values()]
     for reagent in reagents:
         chemical_species.update(reagent.chemicals)
     return sorted(list(chemical_species))
@@ -294,6 +296,8 @@ def build_reagent_vectors(portion_reagents, portion_chemicals):
 
     # find the vector representation of the reagents in concentration space
     reagent_vectors = {}
+    if isinstance(portion_reagents, dict):
+        portion_reagents = [v for v in portion_reagents.values()]
     for reagent in portion_reagents:
         name = 'Reagent{} (ul)'.format(reagent.name)
         comp_dict = reagent.component_dict
@@ -311,8 +315,9 @@ def volume_to_mmol_wrapper(vol_df, rdict, experiment):
 
     return portion_mmol_df
 
-def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
+def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardict, wellnum, userlimits, experiment):
     """Sample from the convex hull defined in species concentration space with uniform probability
+     :param vardict:
      :return: dataframe of experiments, version of sampler
     """
     experiment_mmol_df = pd.DataFrame()
@@ -335,7 +340,17 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     portion_species_names = get_unique_chemical_names(portion_reagents)
     reagent_vectors = build_reagent_vectors(portion_reagents, portion_species_names)
 
+    if rxndict['multi_stock_sampling']:
+        old_regent_species_names = get_unique_chemical_names(old_reagents)
+        if old_regent_species_names != portion_species_names:
+            raise ValueError("Old and new reagents must reside in same chemical concentration basis")
+        old_reagent_vectors = build_reagent_vectors(old_reagents, old_regent_species_names)
+    else:
+        old_reagent_vectors = None
+
+
     ws = WolframSampler()
+    """TODO: get wolfram code integrated here"""
     experiments = ws.randomlySample(reagent_vectors,
                                     int(wellnum),
                                     float(maxconc),
@@ -363,7 +378,7 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
 
     return experiment_df, experiment_mmol_df, version
 
-def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
+def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, old_reagents, climits):
 
     """generates a set of random reactions within given reagent and user constraints
 
@@ -402,8 +417,10 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
         if config.sampler == 'wolfram':
             prdf, prmmoldf, version = wolfram_sampling(edict[experimentname],
                                               rdict,
+                                              old_reagents,
                                               vollimits,
                                               rxndict,
+                                              vardict,
                                               num_wells,
                                               climits,
                                               experiment)

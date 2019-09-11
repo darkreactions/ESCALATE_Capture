@@ -59,7 +59,7 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
                 entry_num = reagentname.split('t')[1]
 
                 for variable, value in rxndict.items():
-                    if reagentname in variable and '(ul)' not in variable:
+                    if re.search(f"^{reagentname}", variable) and '(ul)' not in variable:
                         variable = variable.split('_', 1)
                         reagentvariables[variable[1]] = value
 

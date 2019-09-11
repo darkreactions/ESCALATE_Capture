@@ -340,7 +340,7 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
     portion_species_names = get_unique_chemical_names(portion_reagents)
     reagent_vectors = build_reagent_vectors(portion_reagents, portion_species_names)
 
-    if rxndict['multi_stock_sampling']:
+    if rxndict.get('multi_stock_sampling'):
         old_regeant_species_names = get_unique_chemical_names(old_reagents)
         # todo: move to validation
         if old_regeant_species_names != portion_species_names:
@@ -427,10 +427,10 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, old_reagents, 
                                               num_wells,
                                               climits,
                                               experiment)
-            if rxndict['multi_stock_sampling']:
+            if rxndict.get('multi_stock_sampling'):
                 sampler_name = 'MathematicaMultiStock'
             else:
-                sampler_name = 'MathematicaUniformRandom'
+                sampler_name = 'MathematicaUniformßRandom'
             globals.set_sampler(sampler_name, version)
 
         elif config.sampler == 'default':

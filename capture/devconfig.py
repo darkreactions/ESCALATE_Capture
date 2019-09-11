@@ -122,4 +122,4 @@ else:
 
 # 'wolfram' is currently experimental and unsupported
 # must be 'default' or 'wolfram'
-sampler = 'default'
+sampler = 'wolfram'

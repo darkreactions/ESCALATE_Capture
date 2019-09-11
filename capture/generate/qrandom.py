@@ -348,7 +348,7 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
                           f"\nNew reagent chemicals: {portion_species_names}" +
                           f"\nOld reagent chemicals: {old_reagent_species_names}"))
             sys.exit(1)
-        old_reagent_vectors = build_reagent_vectors(old_reagents, old_regeant_species_names)
+        old_reagent_vectors = build_reagent_vectors(old_reagents, old_reagent_species_names)
     else:
         old_reagent_vectors = None
 

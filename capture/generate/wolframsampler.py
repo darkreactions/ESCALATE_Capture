@@ -42,9 +42,13 @@ class WolframSampler:
                 raise TypeError('oldReagents must be dict, got {}'.format(type(oldReagents)))
 
         if oldReagents:
-            return self._randomlySample(reagentVectors, oldReagents, nExpt, maxMolarity, finalVolume)
+            result = self._randomlySample(reagentVectors, oldReagents, nExpt, maxMolarity, finalVolume)
+            if "Volume of remaining space is zero" in result:
+                raise ValueError('New reagents define a convex hull that is covered by that of old reagents.')
         else:
-            return self._randomlySample(reagentVectors, nExpt, maxMolarity, finalVolume)
+            result = self._randomlySample(reagentVectors, nExpt, maxMolarity, finalVolume)
+            
+        return result
 
     def enumerativelySample(self, reagentVectors, uniqueChemNames, deltaV=10., maxMolarity=9., finalVolume=500.):
         """Enumeratively sample possible experiments in the convex hull of concentration space defined by the reagentVectors

@@ -342,8 +342,11 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
 
     if rxndict['multi_stock_sampling']:
         old_regeant_species_names = get_unique_chemical_names(old_reagents)
+        # todo: move to validation
         if old_regeant_species_names != portion_species_names:
-            raise ValueError("Old and new reagents must reside in same chemical concentration basis")
+            raise ValueError("Old and new reagents must be made out of the same chemicals.",
+                             f"\nNew reagent chemicals: {portion_species_names}",
+                             f"\nOld reagent chemicals: {old_reagent_species_names}")
         old_reagent_vectors = build_reagent_vectors(old_reagents, old_regeant_species_names)
     else:
         old_reagent_vectors = None

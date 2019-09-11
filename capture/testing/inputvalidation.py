@@ -188,6 +188,11 @@ def prebuildvalidation(rxndict, vardict):
     expwellcount(rxndict)
     reagconcdefs(rxndict)
     used_reagents_are_specified(rxndict, vardict['exefilename'], reagent_alias)
+
+    if rxndict['multi_stock_sampling'] and config.sampler != 'wolfram':
+        raise ValueError('Multistock sampling is activated but sampler is set to "{}"'.format(config.sampler),
+                         'Sampler must be "wolfram" to sue multistock samplingß')
+
     modlog.info('User entry is configured correctly.  Proceeding with run')
 
 def reagenttesting(volmax, volmin):

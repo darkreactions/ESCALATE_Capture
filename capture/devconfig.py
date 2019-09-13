@@ -2,7 +2,7 @@ import platform
 
 #######################################
 # version control
-RoboVersion = 2.54
+RoboVersion = 2.55
 
 SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 
@@ -122,4 +122,4 @@ else:
 
 # 'wolfram' is currently experimental and unsupported
 # must be 'default' or 'wolfram'
-sampler = 'default'
+sampler = 'wolfram'

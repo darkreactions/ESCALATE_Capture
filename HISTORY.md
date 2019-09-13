@@ -1,6 +1,12 @@
 RELEASE HISTORY
 ===============
 
+2.54 (2019-09-13)
+-----------------------------
+  * Union - Intersect mathematica sampling (now sampler 1.2)
+  * Small fixes to default template
+  * adjusted devconfig defaults
+
 2.53 (2019-08-16)
 ----------------------------- 
   * Native model reporting for escalate and manual runs

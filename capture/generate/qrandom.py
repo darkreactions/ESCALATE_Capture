@@ -431,7 +431,7 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, old_reagents, 
             if rxndict.get('multi_stock_sampling'):
                 sampler_name = 'MathematicaMultiStock'
             else:
-                sampler_name = 'MathematicaUniformßRandom'
+                sampler_name = 'MathematicaUniformRandom'
             globals.set_sampler(sampler_name, version)
 
         elif config.sampler == 'default':

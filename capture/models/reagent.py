@@ -1,6 +1,5 @@
 import logging
 import pandas as pd
-import re
 
 import gspread
 from capture.googleapi import googleio
@@ -34,22 +33,19 @@ def build_reagentdf(reagsheetid, reagsheetworkbook):
 
 
 def buildreagents(rxndict, chemdf, reagentdf, solventlist):
-    """Return rdict, old_reagents, two dicts each  mapping from reagent IDs to perovskitereagent objects
+    """Return rdict, a mapping from reagent IDs to perovskitereagent objects
 
     Checks that reagents were only specified in one manner in the Template: 'list-style' or with a ModelID
-    Old reagents are used for multi-stock sampling.
     """
     modlog = logging.getLogger('capture.models.reagent.buildreagents')
     reagentdict = {}
-    old_reagents = {}
 
     for item in rxndict:
 
         # parse 'list-style' reagent specifications from Template
         if 'Reagent' in item and "chemical_list" in item:
-            item_is_reagent = True
             reagentname = item.split('_')[0]
-            # ensure that the reagent definition is not being defined in two different ways
+            ## ensure that the reagent definition is not being defined in two different ways
             idflag = reagentname + "_ID"
             if idflag in rxndict:
                 print('too many %s' % reagentname)
@@ -59,7 +55,7 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
                 entry_num = reagentname.split('t')[1]
 
                 for variable, value in rxndict.items():
-                    if re.search(f"^{reagentname}", variable) and '(ul)' not in variable:
+                    if reagentname in variable and '(ul)' not in variable:
                         variable = variable.split('_', 1)
                         reagentvariables[variable[1]] = value
 
@@ -69,14 +65,10 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
                                             chemdf,
                                             solventlist)
 
-                if 'Old' in item:
-                    old_reagents[entry_num] = reagent
-                else:
-                    reagentdict[entry_num] = reagent
+                reagentdict[entry_num] = reagent
 
         #parse specifications from reagent model ID
         elif "Reagent" in item and "_ID" in item:
-            item_is_reagent = True
             reagentvariables = {}
             reagentname = item.split('_')[0]
             entry_num = reagentname.split('t')[1]
@@ -96,15 +88,18 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
 
             reagentvariables['chemical_list'] = chemical_list
 
-            if 'Old' in item:
-                old_reagents[entry_num] = reagent
-            else:
-                reagentdict[entry_num] = reagent
+            reagent = perovskitereagent(reagentvariables,
+                                        rxndict,
+                                        entry_num,
+                                        chemdf,
+                                        solventlist)
 
-    for k, v in reagentdict.items():
+            reagentdict[entry_num] = reagent
+
+    for k,v in reagentdict.items():
         modlog.info("%s : %s" %(k,vars(v)))
 
-    return reagentdict, old_reagents
+    return reagentdict
 
 
 class perovskitereagent:

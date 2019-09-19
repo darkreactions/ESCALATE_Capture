@@ -276,8 +276,6 @@ def get_unique_chemical_names(reagents):
     :return: a list of the unique chemical names in all of the reagent
     """
     chemical_species = set()
-    if isinstance(reagents, dict):
-        reagents = [v for v in reagents.values()]
     for reagent in reagents:
         chemical_species.update(reagent.chemicals)
     return sorted(list(chemical_species))
@@ -296,8 +294,6 @@ def build_reagent_vectors(portion_reagents, portion_chemicals):
 
     # find the vector representation of the reagents in concentration space
     reagent_vectors = {}
-    if isinstance(portion_reagents, dict):
-        portion_reagents = [v for v in portion_reagents.values()]
     for reagent in portion_reagents:
         name = 'Reagent{} (ul)'.format(reagent.name)
         comp_dict = reagent.component_dict
@@ -315,15 +311,14 @@ def volume_to_mmol_wrapper(vol_df, rdict, experiment):
 
     return portion_mmol_df
 
-def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardict, wellnum, userlimits, experiment):
+def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
     """Sample from the convex hull defined in species concentration space with uniform probability
-     :param vardict:
      :return: dataframe of experiments, version of sampler
     """
     experiment_mmol_df = pd.DataFrame()
     experiment_df = pd.DataFrame()
 
-    version = 1.2
+    version = 1.1
 
     if len(expoverview) > 1:
         raise ValueError('When using wolfram sampling, expoverview must have length 1, got {}'.format(len(expoverview)))
@@ -340,22 +335,8 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
     portion_species_names = get_unique_chemical_names(portion_reagents)
     reagent_vectors = build_reagent_vectors(portion_reagents, portion_species_names)
 
-    if rxndict.get('multi_stock_sampling'):
-        old_reagent_species_names = get_unique_chemical_names(old_reagents)
-        # todo: move to validation
-        if old_reagent_species_names != portion_species_names:
-            modlog.error(("Old and new reagents must be made out of the same chemicals." +
-                          f"\nNew reagent chemicals: {portion_species_names}" +
-                          f"\nOld reagent chemicals: {old_reagent_species_names}"))
-            sys.exit(1)
-        old_reagent_vectors = build_reagent_vectors(old_reagents, old_reagent_species_names)
-    else:
-        old_reagent_vectors = None
-
-
     ws = WolframSampler()
     experiments = ws.randomlySample(reagent_vectors,
-                                    old_reagent_vectors,
                                     int(wellnum),
                                     float(maxconc),
                                     float(volmax))
@@ -382,7 +363,7 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
 
     return experiment_df, experiment_mmol_df, version
 
-def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, old_reagents, climits):
+def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, climits):
 
     """generates a set of random reactions within given reagent and user constraints
 
@@ -421,19 +402,12 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, old_reagents, 
         if config.sampler == 'wolfram':
             prdf, prmmoldf, version = wolfram_sampling(edict[experimentname],
                                               rdict,
-                                              old_reagents,
                                               vollimits,
                                               rxndict,
-                                              vardict,
                                               num_wells,
                                               climits,
                                               experiment)
-            if rxndict.get('multi_stock_sampling'):
-                sampler_name = 'MathematicaMultiStock'
-            else:
-                sampler_name = 'MathematicaUniformRandom'
-            globals.set_sampler(sampler_name, version)
-
+            globals.set_sampler('MathematicaUniformRandom', version)
         elif config.sampler == 'default':
             
             prdf, prmmoldf, version = default_sampling(edict[experimentname],

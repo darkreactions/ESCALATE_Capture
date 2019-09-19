@@ -91,33 +91,4 @@ generateExperiments[
   ]](*returns a dictionary (keys=reagent names, values=lists of dispense volumes*)
 
 
-(* overloaded generalization of generateExperiments;
-first argument is the reagents def datastructure for all reagents;
-second argument is the defs for the excluded (e.g., old) reagents
-Otherwise behavior is the same; samples points only points not in the second experimental space;
-added by jschrier on 08.31.2019
-*)
-
-generateExperiments[
-  reagentsDef_Association,(*key=reagents,value=list of species concentrations*)
-  excludedReagentsDef_Association,(*region to excluded*)
-  nExpt_Integer:96,(*number of experiments to generate*)
-  maxMolarity_Real:9.,(*maximum concentrations for all species*)
-  finalVolume_Real:500.,(*scale up the unit volumes to this total volume*)
-  processValues_Symbol:Round (*optional function to apply to volumes*)]:=
-  With[
-    {nonzeroReagentsDef=dropZeroColumns[reagentsDef],
-     nonzeroExcludedReagentsDef=dropZeroColumns[excludedReagentsDef]},
-    With[ (*this is the primary difference from the single-set definition*)
-      {hull=Apply[RegionDifference,
-                    Map[allowedExperiments[#,maxMolarity]&,
-                        {nonzeroReagentsDef,nonzeroExcludedReagentsDef}]
-                 ]//BoundaryDiscretizeRegion},
-     If[Volume[hull]>0,(*this proceeds as in the other version*)
-	  Map[processValues,(*level 2 map on to each entry in the lists to round to int*)
-        finalVolume*(*scale up volume*)
-        convertConcentrationsToVolumes[nonzeroReagentsDef,sampleConcentrations[hull,nExpt]],{2}], (*return usual key/value pair*)
-        "Volume of remaining space is zero" (*goofy error message*)
-        ]
-        ]]
 

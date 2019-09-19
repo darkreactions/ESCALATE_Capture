@@ -99,7 +99,7 @@ def stateset_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, volspac
 ## QUASI RANDOM GENERATION FUNCTIONS
 
 
-def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, old_reagents, climits):
+def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, climits):
     """
 
     :param vardict:
@@ -115,7 +115,6 @@ def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, old_
                                                                            rxndict,
                                                                            edict,
                                                                            rdict,
-                                                                           old_reagents,
                                                                            climits)
     # Clean up dataframe for robot file -> create xls --> upload
     erdf = expint.cleanvolarray(erdf, maxr=vardict['lab_vars'][rxndict['lab']]['max_reagents'])
@@ -131,7 +130,7 @@ def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, old_
     return emsumdf, secfilelist, erdf, model_info_df
 
 
-def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, old_reagents, climits):
+def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, climits):
     """Wrapper to quasirandompipe
     """
     emsumdf, secfilelist, erdf, model_info_df = quasirandom_generation_pipeline(vardict,
@@ -139,7 +138,6 @@ def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, old_reagents, 
                                                                                 rxndict,
                                                                                 edict,
                                                                                 rdict,
-                                                                                old_reagents,
                                                                                 climits)
 
     # TODO fix plotter

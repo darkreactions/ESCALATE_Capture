@@ -16,6 +16,8 @@ __pycache__/
 *.log
 *.ipynb_checkpoints
 *.xlsx#
+user_cli_variables.py
+!0040.v4.perovskitedata.csv
 !WF1_Template.xlsx
 !WF1_DevTemplate.xlsx
 !WF1_Alloy_Template.xlsx

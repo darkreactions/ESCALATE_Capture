@@ -60,8 +60,10 @@ def stateset_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, volspac
     emsumcsv = 'localfiles/%s_nominalMolarity.csv' % rxndict['RunID']
     emsumdf.to_csv(emsumcsv)
 
-    statesetfile = 'localfiles/%sstateset.csv' % rdict['2'].chemicals
-    prerun = 'localfiles/%sstateset.link.csv' % rdict['2'].chemicals
+    extended_name = f'{rdict["2"].chemicals}_{rxndict["old_name"]}'
+
+    statesetfile = 'localfiles/%sstateset.csv' % extended_name
+    prerun = 'localfiles/%sstateset.link.csv' % extended_name
 
     # Hardcode the inchikey lookup for the "amine" aka chemical 3 for the time being, though there must be a BETTER WAY!
     inchilist = [(chemdf.loc[rdict['2'].chemicals[1], "InChI Key (ID)"])]*erdfrows

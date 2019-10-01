@@ -14,6 +14,26 @@ from log import init
 from capture import specify
 from capture import devconfig
 from utils import globals, data_handling
+import build_reagent_inventory
+
+
+def iter_state_gen(rxndict, vardict):
+    conc_dict = build_reagent_inventory.all_unique_experiments_v0()
+    for uid, dict in conc_dict.items():
+        if 'HC' in uid:
+            pass
+        else:
+            rxndict['old_name'] = uid
+            rxndict['Reagent1_chemical_list'] = [dict['chemical_info']['solvent'][1]]
+            # Reagent-chemical list update
+            reagent_2_chemlist = [dict['chemical_info']['inorganic'][1], dict['chemical_info']['organic-1'][1], dict['chemical_info']['solvent'][1]]
+            rxndict['Reagent2_chemical_list'] = reagent_2_chemlist
+            rxndict['Reagent2_item1_formulaconc'] = dict['chemical_info']['inorganic'][2]
+            rxndict['Reagent2_item2_formulaconc'] = dict['chemical_info']['organic-1'][2]
+            reagent_3_chemlist = [dict['chemical_info']['organic-2'][1], dict['chemical_info']['solvent'][1]]
+            rxndict['Reagent3_chemical_list'] = reagent_3_chemlist
+            rxndict['Reagent3_item1_formulaconc'] = dict['chemical_info']['organic-2'][2]
+            escalatecapture(rxndict, vardict)
 
 
 def escalatecapture(rxndict, vardict):
@@ -107,9 +127,12 @@ if __name__ == "__main__":
     loggerfile = init.buildlogger(rxndict)
     rxndict['logfile'] = loggerfile
 
+
+
     # log the initial state of the run
     init.initialize(rxndict, vardict)
 
+    iter_state_gen(rxndict, vardict)
     # TODO: >>>> insert variable tests here <<<<
 
-    escalatecapture(rxndict, vardict)
+

@@ -323,7 +323,7 @@ def _add_proportional_conc(perovskite_df):
 
 # Section 3
 ### Some analysis and perovskite dataframe preprocessing that might be useful
-def _prepare(perovskite_df):
+def _prepare(perovskite_df, returnfail=0):
     ''' reads in perovskite dataframe and returns only experiments that meet specific criteria for analysis
 
     --> Data preparation occurs here
@@ -362,7 +362,7 @@ def _prepare(perovskite_df):
     successful_perov = successful_perov[successful_perov['_rxn_organic-inchikey'] != 'JMXLWMIFDJCGBV-UHFFFAOYSA-N'].reset_index(drop=True)
 
     shuffle = 0
-    deep_shuffle = 1
+    deep_shuffle = 0
     ## Shuffle options for these unique runs
     out_hold = pd.DataFrame()
     out_hold['out_crystalscore'] = successful_perov['_out_crystalscore']
@@ -388,6 +388,9 @@ def _prepare(perovskite_df):
         successful_perov.reset_index(drop=True)
         successful_perov = pd.concat([out_hold_deep_df, successful_perov], axis=1)
 
-    return successful_perov
+    if returnfail == 1:
+        return failed_groups
+    if returnfail == 0:
+        return successful_perov
 
 #%%

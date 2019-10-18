@@ -153,9 +153,34 @@ def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, old_reagents, 
     #     else:
     #         modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
 
+    erdfrows = erdf.shape[0]
+    extended_name = f'{rdict["2"].chemicals}_{rxndict["old_name"]}'
+    prerun = 'localfiles/%sstateset.link.csv' % extended_name
 
-    # TODO this is brittle
-    # Generate a different robot file depending on the user specified lab
+    # Hardcode the inchikey lookup for the "amine" aka chemical 3 for the time being, though there must be a BETTER WAY!
+    inchilist = [(chemdf.loc[rdict['2'].chemicals[1], "InChI Key (ID)"])]*erdfrows
+    inchidf = pd.DataFrame(inchilist, columns=['_rxn_organic-inchikey'])
+
+    #highly specific curation for the wf1 cp dataflow # drops solvent column
+    for chemical in emsumdf.columns:
+        chemicalname = chemical.split(' ')[0]
+        if chemicalname in vardict['solventlist'] and chemicalname != "FAH":
+            solventheader = chemical
+
+
+    emsumdf.drop(columns=[solventheader], inplace=True)
+    emsumdf.rename(columns={"%s [M]" % rdict['2'].chemicals[0]: "_rxn_M_inorganic",
+                            "%s [M]" % rdict['2'].chemicals[1]: "_rxn_M_organic",
+                            "%s [M]" % rdict['7'].chemicals[0]: "_rxn_M_acid"}, inplace=True)
+
+    modlog.warning("The following chemicals have been assigned generic column names:")
+    modlog.warning("%s [M] --> _rxn_M_inorganic" % rdict['2'].chemicals[0])
+    modlog.warning("%s [M] --> _rxn_M_organic" % rdict['2'].chemicals[1])
+    modlog.warning("%s [M] --> _rxn_M_acid" % rdict['7'].chemicals[0])
+
+    ddf = stateset.augdescriptors(inchidf, rxndict, erdfrows)
+    prerun_df = pd.concat([erdf, emsumdf, ddf], axis=1)
+    prerun_df.to_csv(prerun)
 
     if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
         robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)

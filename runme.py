@@ -13,27 +13,37 @@ import argparse as ap
 from log import init
 from capture import specify
 from capture import devconfig
+import json
 from utils import globals, data_handling
 import build_reagent_inventory
 
 
+
 def iter_state_gen(rxndict, vardict):
     conc_dict = build_reagent_inventory.all_unique_experiments_v0()
+    with open('runsforediting.json', 'r') as f:
+        conc_dict = json.load(f)
+#    print(conc_dict)
+#    failed_rxns = build_reagent_inventory._prepare('0041.perovskitedata.csv', returnfail=1)
+#    mynewdict={}
+#        if dict['chemical_info']['organic-1'][0] in failed_rxns:
+#            mynewdict[uid] = dict['chemical_info']
+#    with open('runsforediting.json', 'w') as fp:
+#        json.dump(mynewdict, fp, indent=1)
     for uid, dict in conc_dict.items():
-        if 'HC' in uid:
-            pass
-        else:
-            rxndict['old_name'] = uid
-            rxndict['Reagent1_chemical_list'] = [dict['chemical_info']['solvent'][1]]
-            # Reagent-chemical list update
-            reagent_2_chemlist = [dict['chemical_info']['inorganic'][1], dict['chemical_info']['organic-1'][1], dict['chemical_info']['solvent'][1]]
-            rxndict['Reagent2_chemical_list'] = reagent_2_chemlist
-            rxndict['Reagent2_item1_formulaconc'] = dict['chemical_info']['inorganic'][2]
-            rxndict['Reagent2_item2_formulaconc'] = dict['chemical_info']['organic-1'][2]
-            reagent_3_chemlist = [dict['chemical_info']['organic-2'][1], dict['chemical_info']['solvent'][1]]
-            rxndict['Reagent3_chemical_list'] = reagent_3_chemlist
-            rxndict['Reagent3_item1_formulaconc'] = dict['chemical_info']['organic-2'][2]
-            escalatecapture(rxndict, vardict)
+        reagent_2_chemlist = [dict['inorganic'][1], dict['organic-1'][1], dict['solvent'][1]]
+##        testtarget = [['PbI2', 'Me2NH2I', 'DMF'], ['PbI2', 'EtNH3I', 'GBL'],['PbI2', 'n-BuNH3I', 'GBL']]
+##        if reagent_2_chemlist in testtarget:
+        rxndict['old_name'] = uid
+        rxndict['Reagent1_chemical_list'] = [dict['solvent'][1]]
+        # Reagent-chemical list update
+        rxndict['Reagent2_chemical_list'] = reagent_2_chemlist
+        rxndict['Reagent2_item1_formulaconc'] = dict['inorganic'][2]
+        rxndict['Reagent2_item2_formulaconc'] = dict['organic-1'][2]
+        reagent_3_chemlist = [dict['organic-2'][1], dict['solvent'][1]]
+        rxndict['Reagent3_chemical_list'] = reagent_3_chemlist
+        rxndict['Reagent3_item1_formulaconc'] = dict['organic-2'][2]
+        escalatecapture(rxndict, vardict)
 
 
 def escalatecapture(rxndict, vardict):

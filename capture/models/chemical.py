@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 import gspread
 from capture.googleapi import googleio
@@ -16,16 +17,21 @@ def build_chemdf(chemsheetid, chemsheetworkbook):
     :return:
     """
     print('Obtaining chemical information from Google Drive.. \n', end='')
-    scope = ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc = gspread.authorize(credentials)
-    ChemicalBook = gc.open_by_key(chemsheetid)
-    chemicalsheet = ChemicalBook.get_worksheet(chemsheetworkbook)
-    chemical_list = chemicalsheet.get_all_values()
-    chemdf = pd.DataFrame(chemical_list, columns=chemical_list[0])
-    chemdf = chemdf.iloc[1:]
-    chemdf = chemdf.reset_index(drop=True)
-    chemdf = chemdf.set_index(['Chemical Abbreviation'])
+    if not os.path.exists('chemdf.csv'):
+        scope = ['https://spreadsheets.google.com/feeds']
+        credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
+        gc = gspread.authorize(credentials)
+        ChemicalBook = gc.open_by_key(chemsheetid)
+        chemicalsheet = ChemicalBook.get_worksheet(chemsheetworkbook)
+        chemical_list = chemicalsheet.get_all_values()
+        chemdf = pd.DataFrame(chemical_list, columns=chemical_list[0])
+        chemdf = chemdf.iloc[1:]
+        chemdf = chemdf.reset_index(drop=True)
+        chemdf.to_csv('chemdf.csv')
+        chemdf = chemdf.set_index(['Chemical Abbreviation'])
+    else:
+        chemdf = pd.read_csv('chemdf.csv')
+        chemdf = chemdf.set_index(['Chemical Abbreviation'])
     return chemdf
 
 

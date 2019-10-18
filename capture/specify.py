@@ -38,7 +38,7 @@ def datapipeline(rxndict, vardict):
     """
 
     modlog = logging.getLogger('capture.specify.datapipeline')
-    inputvalidation.prebuildvalidation(rxndict, vardict)
+    #inputvalidation.prebuildvalidation(rxndict, vardict)
     chemdf = chemical.build_chemdf(config.lab_vars[globals.get_lab()]['chemsheetid'],
                                    config.lab_vars[globals.get_lab()]['chem_workbook_index'])
     reagentdf = reagent.build_reagentdf(config.lab_vars[globals.get_lab()]['reagentsheetid'],

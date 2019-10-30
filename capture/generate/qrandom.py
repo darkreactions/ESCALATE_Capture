@@ -141,20 +141,23 @@ def calcvollimitdf(rdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, r
     # Return the relevant datasets as int values (robot can't dispense anything smaller so lose the unsignificant figures /s)
     return(outvolmaxdf.astype(int), outvolmindf.astype(int))
 
-def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
+
+def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment, portion_start_idx=0):
     """Ian's original sampling implementation.
 
-    # todo
-    :returns: dataframe of volume, df of mols of chemicals, version of this code
+    Performs samplings within portions of the expoverview, starting from portion_start_idx
+
+    :return: (experiment volume df, experiment mmol df, version number of this sampler)
     """
-    version = 2.4
-    portionnum = 0
+    version = 2.5 #extended for mathematica wf3 subsampling of secondary portions
     prdf = pd.DataFrame()
     prmmoldf = pd.DataFrame()
-    for portion in expoverview:
+
+    portionnum = portion_start_idx
+    while portionnum < len(expoverview):
         # need the volume minimum and maximum and well count
-        reagentcount = 1  # todo: excuse me?
-        reagenttotal = len(portion)
+        reagentcount = 1
+        reagenttotal = len(expoverview[portionnum])
 
         # Determine from the chemicals and the remaining volume the maximum and
         # minimum volume possible for the sobol method
@@ -169,10 +172,10 @@ def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
         finalrdf = pd.DataFrame()
         finalmmoldf = pd.DataFrame()
 
-        for reagent in portion:
+        for reagent in expoverview[portionnum]:
             finalvolmin = vollimits[portionnum][0]
             if reagentcount == 1:
-                if len(portion) == 1:
+                if len(expoverview[portionnum]) == 1:
                     volmin = vollimits[portionnum][0]
                     volmax = vollimits[portionnum][1] + 0.00001
                 else:
@@ -185,7 +188,7 @@ def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                                                 volmax,
                                                 volmin,
                                                 experiment,
-                                                portion,
+                                                expoverview[portionnum],
                                                 reagent,
                                                 wellnum)
 
@@ -211,7 +214,7 @@ def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                                                       volmax,
                                                       volmin,
                                                       experiment,
-                                                      portion,
+                                                      expoverview[portionnum],
                                                       reagent,
                                                       wellnum,
                                                       rxndict)
@@ -233,7 +236,7 @@ def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                                                           volmax,
                                                           volmin,
                                                           experiment,
-                                                          portion,
+                                                          expoverview[portionnum],
                                                           reagent,
                                                           wellnum,
                                                           rxndict)
@@ -242,14 +245,14 @@ def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                     mmoldf = calcs.mmolextension((rdf['Reagent%s (ul)' % reagent]), rdict, experiment, reagent)
                 else:
                     rvolmaxdf, rvolmindf = calcvollimitdf(finalrdf, mmoldf, userlimits, rdict, volmax, volmin,
-                                                          experiment, portion, reagent, wellnum, rxndict)
+                                                          experiment, expoverview[portionnum], reagent, wellnum, rxndict)
                     rvolmindf = ensuremin(rvolmindf, finalrdf, finalvolmin)
                     rdf = rdfbuilder(rvolmaxdf, rvolmindf, reagent, wellnum)
                     mmoldf = calcs.mmolextension(rdf['Reagent%s (ul)' % reagent], rdict, experiment, reagent)
                 reagentcount += 1
             else:
                 modlog.error("Fatal error.  Unable to effectively parse reagent%s in portion %s.  \
-                Please make sure that the selected values make chemical sense!" % (reagent, portion))
+                Please make sure that the selected values make chemical sense!" % (reagent, expoverview[portionnum]))
             finalrdf = pd.concat([finalrdf, rdf], axis=1)
             finalmmoldf = pd.concat([finalmmoldf, mmoldf], axis=1)
 
@@ -313,7 +316,10 @@ def volume_to_mmol_wrapper(vol_df, rdict, experiment):
 
 def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
     """Sample from the convex hull defined in species concentration space with uniform probability
-     :return: dataframe of experiments, version of sampler
+
+    Any portions defined in the experiment overview beyond the first will be sampled by the default_sampler
+
+    :return: (experiment volume df, experiment mmol df, version number of this sampler)
     """
     experiment_mmol_df = pd.DataFrame()
     experiment_df = pd.DataFrame()
@@ -321,12 +327,9 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     version = 1.1
 
     if len(expoverview) > 1:
-        raise ValueError('When using wolfram sampling, expoverview must have length 1, got {}'.format(len(expoverview)))
-    else:
-        # portions don't make sense when using wolfram sampling
-        # as a holdover we assume we have one an only one poriton and we hard code it here
-        portionnum = 0
-        portion = expoverview[portionnum]
+        modlog.warning('only first portion will use mathematica sampler')
+    portionnum = 0
+    portion = expoverview[portionnum]
 
     volmax = vollimits[portionnum][1]
     maxconc = rxndict.get('max_conc', 15)
@@ -348,9 +351,12 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     # how long can a fix remain this hot?
     # todo calculate the joules in this fix
     # We're serving fixes hot, boys, lets let this one cool down a bit
-    portion_df['Reagent6 (ul)'] = np.floor(portion_df['Reagent7 (ul)'] / 2).astype(int)
-    portion_df['Reagent7 (ul)'] = np.ceil(portion_df['Reagent7 (ul)'] / 2).astype(int)
-    rdict['6'] = rdict['7']
+    if rxndict['ExpWorkflowVer'] < 1.1:
+        if rxndict['lab'] == 'LBL':
+            portion_df['Reagent6 (ul)'] = np.floor(portion_df['Reagent7 (ul)'] / 2).astype(int)
+            portion_df['Reagent7 (ul)'] = np.ceil(portion_df['Reagent7 (ul)'] / 2).astype(int)
+            rdict['6'] = rdict['7']
+
 
     portion_mmol_df = pd.DataFrame()
     for col in portion_df.columns:
@@ -360,6 +366,19 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
 
     experiment_mmol_df = pd.concat([experiment_mmol_df, portion_mmol_df], axis=1)
     experiment_df = pd.concat([experiment_df, portion_df], axis=1)
+
+    portionnum +=1
+    if portionnum < len(expoverview):
+        prdf, prmmoldf, version = default_sampling(expoverview,
+                                           rdict,
+                                           vollimits,
+                                           rxndict,
+                                           wellnum,
+                                           userlimits,
+                                           experiment,
+                                           portion_start_idx=portionnum)
+        experiment_mmol_df = pd.concat([experiment_mmol_df, prmmoldf], axis=1)
+        experiment_df = pd.concat([experiment_df, prdf], axis=1)
 
     return experiment_df, experiment_mmol_df, version
 

@@ -1,6 +1,12 @@
 RELEASE HISTORY
 ===============
 
+2.54 (2019-10-30)
+-----------------------------
+  * WF3 mathematica support 
+  * lowered the hotness of some fixes
+  * brought in documentation from experimentalist (LBL, HC)
+
 2.53 (2019-08-16)
 ----------------------------- 
   * Native model reporting for escalate and manual runs

@@ -344,9 +344,11 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     # how long can a fix remain this hot?
     # todo calculate the joules in this fix
     # We're serving fixes hot, boys, lets let this one cool down a bit
-    portion_df['Reagent6 (ul)'] = np.floor(portion_df['Reagent7 (ul)'] / 2).astype(int)
-    portion_df['Reagent7 (ul)'] = np.ceil(portion_df['Reagent7 (ul)'] / 2).astype(int)
-    rdict['6'] = rdict['7']
+    if rxndict['ExpWorkflowVer'] < 1.1:
+        if rxndict['lab'] == 'LBL':
+            portion_df['Reagent6 (ul)'] = np.floor(portion_df['Reagent7 (ul)'] / 2).astype(int)
+            portion_df['Reagent7 (ul)'] = np.ceil(portion_df['Reagent7 (ul)'] / 2).astype(int)
+            rdict['6'] = rdict['7']
 
 
     portion_mmol_df = pd.DataFrame()

@@ -16,6 +16,6 @@ __pycache__/
 *.log
 *.ipynb_checkpoints
 *.xlsx#
-!fixed_wf3_template.xlsx
+!WF3_LBL_SpecificationInterface.xlsx
 !HC_LBL_SpecificationInterface.xlsx
 !MIT_SpecificationInterface.xlsx

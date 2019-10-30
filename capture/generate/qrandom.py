@@ -141,18 +141,22 @@ def calcvollimitdf(rdf, mmoldf, userlimits, rdict, volmax, volmin, experiment, r
     # Return the relevant datasets as int values (robot can't dispense anything smaller so lose the unsignificant figures /s)
     return(outvolmaxdf.astype(int), outvolmindf.astype(int))
 
-def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment, portionnum=0):
+
+def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment, portion_start_idx=0):
     """Ian's original sampling implementation.
 
-    # todo
-    :returns: dataframe of volume, df of mols of chemicals, version of this code
+    Performs samplings within portions of the expoverview, starting from portion_start_idx
+
+    :return: (experiment volume df, experiment mmol df, version number of this sampler)
     """
     version = 2.5 #extended for mathematica wf3 subsampling of secondary portions
     prdf = pd.DataFrame()
     prmmoldf = pd.DataFrame()
+
+    portionnum = portion_start_idx
     while portionnum < len(expoverview):
         # need the volume minimum and maximum and well count
-        reagentcount = 1  # todo: excuse me?
+        reagentcount = 1
         reagenttotal = len(expoverview[portionnum])
 
         # Determine from the chemicals and the remaining volume the maximum and
@@ -312,7 +316,10 @@ def volume_to_mmol_wrapper(vol_df, rdict, experiment):
 
 def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits, experiment):
     """Sample from the convex hull defined in species concentration space with uniform probability
-     :return: dataframe of experiments, version of sampler
+
+    Any portions defined in the experiment overview beyond the first will be sampled by the default_sampler
+
+    :return: (experiment volume df, experiment mmol df, version number of this sampler)
     """
     experiment_mmol_df = pd.DataFrame()
     experiment_df = pd.DataFrame()
@@ -320,7 +327,7 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     version = 1.1
 
     if len(expoverview) > 1:
-        modlog.warn('only first portion will use mathematica sampler')
+        modlog.warning('only first portion will use mathematica sampler')
     portionnum = 0
     portion = expoverview[portionnum]
 
@@ -369,7 +376,7 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
                                            wellnum,
                                            userlimits,
                                            experiment,
-                                           portionnum=portionnum)
+                                           portion_start_idx=portionnum)
         experiment_mmol_df = pd.concat([experiment_mmol_df, prmmoldf], axis=1)
         experiment_df = pd.concat([experiment_df, prdf], axis=1)
 

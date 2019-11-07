@@ -5,6 +5,8 @@ import gspread
 from capture.googleapi import googleio
 from oauth2client.service_account import ServiceAccountCredentials
 
+from utils.data_handling import get_used_reagent_nums
+
 def build_reagentdf(reagsheetid, reagsheetworkbook):
     """Read the reagents workbook from Google Drive and return a pandas DataFrame
 
@@ -40,6 +42,8 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
     modlog = logging.getLogger('capture.models.reagent.buildreagents')
     reagentdict = {}
 
+
+    used_reagent_nums = get_used_reagent_nums(rxndict)
     for item in rxndict:
 
         # parse 'list-style' reagent specifications from Template
@@ -50,9 +54,12 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
             if idflag in rxndict:
                 print('too many %s' % reagentname)
             else:
+                entry_num = reagentname.split('t')[1]
                 reagentvariables = {}
                 reagentvariables['reagent'] = reagentname
-                entry_num = reagentname.split('t')[1]
+
+                if int(entry_num) not in used_reagent_nums:
+                    continue
 
                 for variable, value in rxndict.items():
                     if reagentname in variable and '(ul)' not in variable:
@@ -72,6 +79,8 @@ def buildreagents(rxndict, chemdf, reagentdf, solventlist):
             reagentvariables = {}
             reagentname = item.split('_')[0]
             entry_num = reagentname.split('t')[1]
+            if int(entry_num) not in used_reagent_nums:
+                continue
             reagentid = rxndict[item]
             reagentvariables['reagent'] = reagentname
             chemical_list = []

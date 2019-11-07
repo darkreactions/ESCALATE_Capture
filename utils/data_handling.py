@@ -117,3 +117,8 @@ def get_user_actions(rxndict, sheet):
     # add new userActions here.
 
     rxndict['user_actions'] = userActions
+
+
+def get_used_reagent_nums(rxndict):
+    expoverviews = [rxndict[k] for k in rxndict.keys() if re.match('^exp\d+$', k)]
+    return flatten(expoverviews)

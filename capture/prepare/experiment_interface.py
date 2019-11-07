@@ -237,11 +237,11 @@ def generate_experiment_specification_file(rxndict, vardict, erdf):
     """
     vol_ar = volarray(erdf, vardict['lab_vars'][vardict['lab']]['max_reagents'])
 
-    # THIS IS VERY BAD PRACTICE.
-    userAction0 = rxndict['Additional_action_1_description']
-    userAction1 = rxndict['Additional_action_2_description']
-    userActionValue0 = rxndict['Additional_action_1_value']
-    userActionValue1 = rxndict['Additional_action_2_value']
+    # THIS IS (STILL) VERY BAD PRACTICE.
+    userAction0 = rxndict.get('Additional_action_1_description', 0)
+    userAction1 = rxndict.get('Additional_action_2_description', '')
+    userActionValue0 = rxndict.get('Additional_action_1_value', 0)
+    userActionValue1 = rxndict.get('Additional_action_2_value', '')
     if userAction0 == 0:
         userAction0 = ""
         userActionValue0 = ''

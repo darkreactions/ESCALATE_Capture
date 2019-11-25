@@ -348,9 +348,6 @@ def wolfram_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
     portion_df = pd.DataFrame.from_dict(experiments)
 
     # todo How long can this reagent 6/7 hotfix remain like this?
-    # how long can a fix remain this hot?
-    # todo calculate the joules in this fix
-    # We're serving fixes hot, boys, lets let this one cool down a bit
     if rxndict['ExpWorkflowVer'] < 1.1:
         if rxndict['lab'] == 'LBL':
             portion_df['Reagent6 (ul)'] = np.floor(portion_df['Reagent7 (ul)'] / 2).astype(int)

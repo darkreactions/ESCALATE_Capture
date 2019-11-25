@@ -281,13 +281,19 @@ def upload_run_information(rxndict, vardict, sheet):
     sheet.update_acell('B9', rxndict['challengeproblem'])
 
     # Notes section - blank values as default
-    sheet.update_acell('B10', 'null')
-    sheet.update_acell('B11', 'null')
     sheet.update_acell('B12', 'null')
+    sheet.update_acell('B13', 'null')
+    sheet.update_acell('B14', 'null')
 
 def upload_reagent_specifications(finalexportdf, sheet):
     """upload rxndict, finalexportdf to gc target, returns the used gsheets object
 
+    :param finalexportdf: datframe containing pre-ordered and normalized abbreviations, nomial amounts and units \n
+    :type finalexportdf: pandas dataframe object \n 
+    :param sheet: google sheet string indicating the target file for uploading the finalexport df \n
+    :type sheet: str \n
+
+    :return: NONE - creates online object in run directory
     """
 
     # get lab-specific config variables
@@ -315,12 +321,12 @@ def upload_reagent_specifications(finalexportdf, sheet):
    # update_sheet_column(sheet, nulls, col_index='D', start_row=null_start)
 
 def upload_reagent_prep_info(rdict, sheetobject):
-    uploadtarget = sheetobject.range('D3:F10')
+    uploadtarget = sheetobject.range('D3:F11')
     uploadlist = []
     reagentcount = 1
     for reagentnum, reagentobject in rdict.items():
         while int(reagentnum) > reagentcount:
-            uploadlist.extend(['null']*3)
+            uploadlist.extend(['null']*3) #3 setby number of steps in reagent prep (see if section below)
             reagentcount += 1
         if int(reagentnum) == reagentcount:
             uploadlist.append(reagentobject.preptemperature)

@@ -99,14 +99,16 @@ def stateset_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, volspac
 ## QUASI RANDOM GENERATION FUNCTIONS
 
 
-def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, climits):
+def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, old_reagents, climits):
     """
 
-    :param vardict:
-    :param chemdf:
-    :param rxndict:
-    :param edict:
-    :param rdict:
+    TODO: Document rdict
+    :param vardict: dictionary built from devconfig
+    :param chemdf: chemical dataframe with descriptions of all chemicals in the reaction
+    :param rxndict: complete key-value pairing from specification interface (front end xlsx as of 2.56)
+    :param edict: dictionary of experiments (see documentation)
+    :param rdict: dictionary of reagents defining the concentration space to be sampled.  (see documentation)
+    :param old_reagents: dictionary of reagents to subtract from statespace (same structure as rdict)
     :param climits:
     :return:
     """
@@ -115,6 +117,7 @@ def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, clim
                                                                            rxndict,
                                                                            edict,
                                                                            rdict,
+                                                                           old_reagents,
                                                                            climits)
     # Clean up dataframe for robot file -> create xls --> upload
     erdf = expint.cleanvolarray(erdf, maxr=vardict['lab_vars'][rxndict['lab']]['max_reagents'])
@@ -130,7 +133,7 @@ def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, clim
     return emsumdf, secfilelist, erdf, model_info_df
 
 
-def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, climits):
+def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, old_reagents, climits):
     """Wrapper to quasirandompipe
     """
     emsumdf, secfilelist, erdf, model_info_df = quasirandom_generation_pipeline(vardict,
@@ -138,6 +141,7 @@ def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, climits):
                                                                                 rxndict,
                                                                                 edict,
                                                                                 rdict,
+                                                                                old_reagents,
                                                                                 climits)
 
     # TODO fix plotter

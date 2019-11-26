@@ -2,7 +2,7 @@ import platform
 
 #######################################
 # version control
-RoboVersion = 2.55
+RoboVersion = 2.56
 
 SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 
@@ -24,8 +24,8 @@ lab_vars = {
             'chem_workbook_index': 0,
             'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
             'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 15,
-            'max_reagents': 7,
+            'reagent_interface_amount_startrow': 17,
+            'max_reagents': 9,
             'reagent_alias': 'Reagent',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': ['xrd', 'images'],
@@ -41,8 +41,8 @@ lab_vars = {
             'chem_workbook_index': 0,
             'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
             'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 15,
-            'max_reagents': 7,
+            'reagent_interface_amount_startrow': 17,
+            'max_reagents': 9,
             'reagent_alias': 'Reagent',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': ['xrd', 'images'],
@@ -58,9 +58,9 @@ lab_vars = {
             'chem_workbook_index': 0,
             'reagentsheetid': '1uj6A3TH2oMSQwzhPapfmr1t-CbevEGmQjKIyfg9aSgk',
             'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 16,
+            'reagent_interface_amount_startrow': 17,
             'reagent_alias': 'Reagent',
-            'max_reagents': 8,
+            'max_reagents': 9,
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': [],
             'observation_interface': {'uid_col': 'B',
@@ -75,8 +75,8 @@ lab_vars = {
             'chem_workbook_index': 0,
             'reagentsheetid': '1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI',
             'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 16,
-            'max_reagents': 8,
+            'reagent_interface_amount_startrow': 17,
+            'max_reagents': 9,
             'reagent_alias': 'Precursor',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': [],

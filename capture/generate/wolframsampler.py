@@ -15,7 +15,7 @@ class WolframSampler:
         self._randomlySample = self.session.function('generateExperiments')
         self._enumerativelySample = self.session.function('generateEnumerations')
 
-    def randomlySample(self, reagentVectors, nExpt=96, maxMolarity=9., finalVolume=500.):
+    def randomlySample(self, reagentVectors, oldReagents=None, nExpt=96, maxMolarity=9., finalVolume=500.):
         """Randomly sample possible experiments in the convex hull of concentration space defined by the reagentVectors
 
         Runs Josh's Mathematica function called `generateExperiments` defined in `randomSampling.wls`
@@ -29,6 +29,9 @@ class WolframSampler:
         :return: a dictionary mapping: {reagents => list(volumes)} where list(volumes) has length nExpt
         :raises TypeError: since Mathematica will fail silently on incorrect types
         """
+        ## Easy mathematica debugging (get an error, uncomment here for vectors)
+        #print("new", reagentVectors, '\n')
+        #print('to be removed', oldReagents, '\n')
         if not isinstance(reagentVectors, dict):
             raise TypeError('reagentVectors must be dict, got {}'.format(type(reagentVectors)))
         if not isinstance(nExpt, int):
@@ -37,8 +40,18 @@ class WolframSampler:
             raise TypeError('maxMolarity must be float, got {}'.format(type(maxMolarity)))
         if not isinstance(finalVolume, float):
             raise TypeError('finalVolume must be float, got {}'.format(type(finalVolume)))
+        if oldReagents:
+            if not isinstance(oldReagents, dict):
+                raise TypeError('oldReagents must be dict, got {}'.format(type(oldReagents)))
+        if oldReagents:
+            result = self._randomlySample(reagentVectors, oldReagents, nExpt, maxMolarity, finalVolume)
+#            result = self._randomlySample(oldReagents, reagentVectors, nExpt, maxMolarity, finalVolume)
+            if "Volume of remaining space is zero" in result:
+                raise ValueError('New reagents define a convex hull that is covered by that of old reagents.')
+        else:
+            result = self._randomlySample(reagentVectors, nExpt, maxMolarity, finalVolume)
 
-        return self._randomlySample(reagentVectors, nExpt, maxMolarity, finalVolume)
+        return result
 
     def enumerativelySample(self, reagentVectors, uniqueChemNames, deltaV=10., maxMolarity=9., finalVolume=500.):
         """Enumeratively sample possible experiments in the convex hull of concentration space defined by the reagentVectors
@@ -58,7 +71,7 @@ class WolframSampler:
         if not isinstance(reagentVectors, dict):
             raise TypeError('reagentVectors must be dict, got {}'.format(type(reagentVectors)))
         if not isinstance(uniqueChemNames, list):
-            raise TypeError('uniqueChemNames must be a list, got {}').format(type(uniqueChemNames))
+            raise TypeError('uniqueChemNames must be a list, got {}'.format(type(uniqueChemNames)))
         if not isinstance(maxMolarity, float):
             raise TypeError('maxMolarity must be float, got {}'.format(type(maxMolarity)))
         if not isinstance(deltaV, float):

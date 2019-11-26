@@ -1,6 +1,16 @@
 RELEASE HISTORY
 ===============
 
+2.56 (2019-11-22)
+------------------------------
+  * Union - Intersect mathematica sampling prototype (now sampler 1.2)
+  * !!!Difference sampling is currently disabled!!!
+  * Small fixes to default template
+  * adjusted devconfig defaults
+  * migrated all labs over to 9 reagent preparation interface
+  * updated templates
+  * prep for reagent model and reagent object dictionaries
+
 2.54 (2019-10-30)
 -----------------------------
   * WF3 mathematica support 

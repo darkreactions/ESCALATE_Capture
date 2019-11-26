@@ -41,6 +41,8 @@ def datapipeline(rxndict, vardict):
     inputvalidation.prebuildvalidation(rxndict, vardict)
     chemdf = chemical.build_chemdf(config.lab_vars[globals.get_lab()]['chemsheetid'],
                                    config.lab_vars[globals.get_lab()]['chem_workbook_index'])
+
+    # TODO: reviatalize the reagentdf sans ECL
     reagentdf = reagent.build_reagentdf(config.lab_vars[globals.get_lab()]['reagentsheetid'],
                                         config.lab_vars[globals.get_lab()]['reagent_workbook_index'])
 
@@ -50,7 +52,7 @@ def datapipeline(rxndict, vardict):
     climits = chemical.chemicallimits(rxndict)
 
     # dictionary of perovskitereagent objects
-    rdict = reagent.buildreagents(rxndict, chemdf, reagentdf, vardict['solventlist'])
+    rdict, old_reagents = reagent.buildreagents(rxndict, chemdf, reagentdf, vardict['solventlist'])
     rxndict['totalexperiments'] = exptotal(rxndict, rdict)
 
     # dictionary of experiments
@@ -87,6 +89,7 @@ def datapipeline(rxndict, vardict):
                                                                                       rxndict,
                                                                                       edict,
                                                                                       rdict,
+                                                                                      old_reagents,
                                                                                       climits)
         # disable uploading if debug is activated
         if not vardict['debug']:

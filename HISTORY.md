@@ -8,8 +8,9 @@ RELEASE HISTORY
   * Small fixes to default template
   * adjusted devconfig defaults
   * migrated all labs over to 9 reagent preparation interface
-  * updated templates
+  * updated templates to all similar
   * prep for reagent model and reagent object dictionaries
+  * Added basic test interfaces in ./capture/teststing/TestXLSSheets/ (needs documentation)
 
 2.54 (2019-10-30)
 -----------------------------

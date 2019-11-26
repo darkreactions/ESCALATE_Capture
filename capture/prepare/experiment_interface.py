@@ -160,13 +160,41 @@ def LBLrobotfile(rxndict, vardict, erdf):
     reagent in each experiment to be performed.
     """
     vol_ar = volarray(erdf, vardict['lab_vars'][vardict['lab']]['max_reagents'])
+
+    # THIS IS (STILL) VERY BAD PRACTICE.
+    # If the additional actions were not specified, just leave the cells blank.
+    # TODO: CLEAN UP THE ABOVE AFTER THE IMMEDIATE MIT PUSH.
+    # TODO: Merge with the MIT / general action specifciation, move named actions to dictionary, etc
+    userAction0 = rxndict.get('Additional_action_1_description', 0)
+    userAction1 = rxndict.get('Additional_action_2_description', '')
+    userActionValue0 = rxndict.get('Additional_action_1_value', 0)
+    userActionValue1 = rxndict.get('Additional_action_2_value', '')
+    if userAction0 == 0:
+        userAction0 = ""
+        userActionValue0 = ''
+    if userAction1 == 0:
+        userAction1 = ""
+        userActionValue1 = ''
+
     rxn_parameters = pd.DataFrame({
-        'Reaction Parameters': ['Temperature (C):', 'Stir Rate (rpm):',
-                                        'Mixing time1 (s):', 'Mixing time2 (s):',
-                                        'Reaction time (s):', ""],
-        'Parameter Values': [rxndict['temperature2_nominal'], rxndict['stirrate'],
-                             rxndict['duratation_stir1'], rxndict['duratation_stir2'],
-                             rxndict['duration_reaction'], ''],
+        'Reaction Parameters': ['Temperature (C):', 
+                                'Stir Rate (rpm):',
+                                'Mixing time1 (s):',
+                                'Mixing time2 (s):',
+                                'Reaction time (s):',
+                                'Preheat Temperature (C):',
+                                userAction0,
+                                userAction1
+                                ],
+        'Parameter Values': [rxndict['temperature2_nominal'],
+                             rxndict['stirrate'],
+                             rxndict['duratation_stir1'], 
+                             rxndict['duratation_stir2'],
+                             rxndict['duration_reaction'], 
+                             rxndict['temperature1_nominal'],
+                             userActionValue0,
+                             userActionValue1
+                             ],
     })
 
     rxn_conditions = pd.DataFrame({
@@ -176,6 +204,28 @@ def LBLrobotfile(rxndict, vardict, erdf):
         'Reagent Temperature': [rxndict['reagents_prerxn_temperature']] * len(vol_ar)
     })
 
+    
+    #rxn_parameters = pd.DataFrame({
+    #    'Reaction Parameters': ['Spincoating Temperature ( C )',
+    #                            'Spincoating Speed (rpm):',
+    #                            'Spincoating Duration (s)',
+    #                            'Spincoating Duration 2 (s)',
+    #                            'Annealing Temperature ( C )',
+    #                            'Annealing Duration (s)',
+    #                            userAction0,
+    #                            userAction1,
+    #                            ""],
+
+    #    'Parameter Values': [rxndict['temperature1_nominal'],
+    #                         rxndict['stirrate'],
+    #                         rxndict['duratation_stir1'],
+    #                         rxndict['duratation_stir2'],
+    #                         rxndict['temperature2_nominal'],
+    #                         rxndict['duration_reaction'],
+    #                         userActionValue0,
+    #                         userActionValue1,
+    #                         ''],
+    #})
     robotfiles = []
 
     if rxndict['ExpWorkflowVer'] == 3:

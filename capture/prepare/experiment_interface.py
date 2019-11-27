@@ -181,19 +181,19 @@ def LBLrobotfile(rxndict, vardict, erdf):
                                 'Stir Rate (rpm):',
                                 'Mixing time1 (s):',
                                 'Mixing time2 (s):',
-                                'Reaction time (s):',
-                                'Preheat Temperature (C):',
-                                userAction0,
-                                userAction1
+                                'Reaction time (s):'
+                                #'Preheat Temperature (C):',
+                                #userAction0,
+                                #userAction1
                                 ],
         'Parameter Values': [rxndict['temperature2_nominal'],
                              rxndict['stirrate'],
                              rxndict['duratation_stir1'], 
                              rxndict['duratation_stir2'],
-                             rxndict['duration_reaction'], 
-                             rxndict['temperature1_nominal'],
-                             userActionValue0,
-                             userActionValue1
+                             rxndict['duration_reaction']
+                             #rxndict['temperature1_nominal'],
+                             #userActionValue0,
+                             #userActionValue1
                              ],
     })
 

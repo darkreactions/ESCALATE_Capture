@@ -334,7 +334,7 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
     experiment_mmol_df = pd.DataFrame()
     experiment_df = pd.DataFrame()
 
-    version = 1.2
+    version = 1.3
 
     if len(expoverview) > 1:
         modlog.warning('only first portion will use mathematica sampler')

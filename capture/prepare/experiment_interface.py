@@ -204,28 +204,6 @@ def LBLrobotfile(rxndict, vardict, erdf):
         'Reagent Temperature': [rxndict['reagents_prerxn_temperature']] * len(vol_ar)
     })
 
-    
-    #rxn_parameters = pd.DataFrame({
-    #    'Reaction Parameters': ['Spincoating Temperature ( C )',
-    #                            'Spincoating Speed (rpm):',
-    #                            'Spincoating Duration (s)',
-    #                            'Spincoating Duration 2 (s)',
-    #                            'Annealing Temperature ( C )',
-    #                            'Annealing Duration (s)',
-    #                            userAction0,
-    #                            userAction1,
-    #                            ""],
-
-    #    'Parameter Values': [rxndict['temperature1_nominal'],
-    #                         rxndict['stirrate'],
-    #                         rxndict['duratation_stir1'],
-    #                         rxndict['duratation_stir2'],
-    #                         rxndict['temperature2_nominal'],
-    #                         rxndict['duration_reaction'],
-    #                         userActionValue0,
-    #                         userActionValue1,
-    #                         ''],
-    #})
     robotfiles = []
 
     if rxndict['ExpWorkflowVer'] == 3:

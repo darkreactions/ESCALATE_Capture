@@ -1,7 +1,7 @@
 from utils.data_handling import build_experiment_names_df, update_sheet_column
 from utils import globals
 import capture.devconfig as config
-
+from capture.prepare.experiment_interface import MakeWellList, MakeWellList_WF3, MakeWellList_WF3_small
 
 def upload_observation_interface_data(rxndict, vardict, gc, interface_uid):
     """
@@ -15,9 +15,64 @@ def upload_observation_interface_data(rxndict, vardict, gc, interface_uid):
 
     # todo: only build this once: we now read the manual spec sheet three times...
     experiment_names = build_experiment_names_df(rxndict, vardict)
-    experiment_index = range(1, len(experiment_names) + 1)
-    update_sheet_column(sheet, data=experiment_index,
-                        col_index='A', start_row=2)
+#    experiment_index = range(1, len(experiment_names) + 1)
+    total_exp_entries = int(rxndict['wellcount'])
+    #TODO: organize code around workflow handling... at this moment moving to specify level seems appropriate
+    # Maybe setting the variables for actions in dictionaries that can be created through some interface
+    uploadlist = []
+    if rxndict['ExpWorkflowVer'] > 3 and rxndict['ExpWorkflowVer'] < 4:
+        uploadtarget = sheet.range(f'A2:D{total_exp_entries+1}')
+
+        df = MakeWellList_WF3_small("nothing", total_exp_entries)
+
+        exp_counter = list(range(1,total_exp_entries+1)) # +1 to fix off by 1
+        wellnamelist = df['Vial Site'].values.tolist()
+        letter_list = [x[:1] for x in wellnamelist]
+        number_list = [x[1:] for x in wellnamelist]
+
+        count = 0
+        while count < len(exp_counter):
+            uploadlist.append(exp_counter[count])
+            uploadlist.append(letter_list[count])
+            uploadlist.append(number_list[count])
+            uploadlist.append(wellnamelist[count])
+            count += 1
+
+        count = 0
+        for cell in uploadtarget:
+            try:
+                cell.value = uploadlist[count]
+                count += 1  
+            except:
+                count += 1
+        sheet.update_cells(uploadtarget)
+
+    else:
+        uploadtarget = sheet.range(f'A2:D{total_exp_entries+1}')
+
+        df = MakeWellList("nothing", total_exp_entries)
+
+        exp_counter = list(range(1,total_exp_entries+1)) # +1 to fix off by 1
+        wellnamelist = df['Vial Site'].values.tolist()
+        letter_list = [x[:1] for x in wellnamelist]
+        number_list = [x[1:] for x in wellnamelist]
+
+        count = 0
+        while count < len(exp_counter):
+            uploadlist.append(exp_counter[count])
+            uploadlist.append(letter_list[count])
+            uploadlist.append(number_list[count])
+            uploadlist.append(wellnamelist[count])
+            count += 1
+
+        count = 0
+        for cell in uploadtarget:
+            try:
+                cell.value = uploadlist[count]
+                count += 1  
+            except:
+                count += 1
+        sheet.update_cells(uploadtarget)
 
     uid_col = config.lab_vars[globals.get_lab()]['observation_interface']['uid_col']
     update_sheet_column(sheet, data=experiment_names['Experiment Names'],

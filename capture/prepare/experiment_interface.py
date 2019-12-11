@@ -76,6 +76,26 @@ def MakeWellList(platecontainer, wellcount):
     df_VialInfo = df_VialInfo.truncate(after=(wellcount-1))
     return(df_VialInfo)
 
+def MakeWellList_WF3_small(platecontainer, wellcount):
+    # Remove the antisolvent experiment wells from the make well list above
+    # TODO: move these to UID gen utility or similar (these are really just assigning values to individual wells for later use)
+    wellorder = ['A', 'C', 'E', 'G']  # order is set by how the robot draws from the solvent wells
+    VialList = []
+    welllimit = wellcount/4
+    numberlist = list(range(1,12,2))
+    count = 0
+    while count < welllimit:
+        for item in wellorder:
+            countstr=str(numberlist[count])
+            Viallabel = item + countstr
+            VialList.append(Viallabel)
+        count += 1
+    df_VialInfo = pd.DataFrame(VialList)
+    df_VialInfo.columns = ['Vial Site']
+    df_VialInfo['Labware ID:'] = platecontainer
+    df_VialInfo = df_VialInfo.truncate(after=(wellcount-1))
+    return(df_VialInfo)
+
 def MakeWellList_WF3(platecontainer, wellcount):
     wellorder=['A', 'C', 'E', 'G'] 
     wellorder2=['B', 'D', 'F', 'H'] 
@@ -155,13 +175,13 @@ def cleanvolarray(erdf, maxr):
 
 def LBLrobotfile(rxndict, vardict, erdf):
     """Write to excel file for LBL Nimbus and return filename
+    TODO: denote these as LBL specific, generalize action specification and sequences
 
     :param erdf: should contain the experimental reaction data frame which consists of the volumes of each
     reagent in each experiment to be performed.
     """
     vol_ar = volarray(erdf, vardict['lab_vars'][vardict['lab']]['max_reagents'])
 
-    # THIS IS (STILL) VERY BAD PRACTICE.
     # If the additional actions were not specified, just leave the cells blank.
     # TODO: CLEAN UP THE ABOVE AFTER THE IMMEDIATE MIT PUSH.
     # TODO: Merge with the MIT / general action specifciation, move named actions to dictionary, etc
@@ -176,66 +196,63 @@ def LBLrobotfile(rxndict, vardict, erdf):
         userAction1 = ""
         userActionValue1 = ''
 
-    rxn_parameters = pd.DataFrame({
-        'Reaction Parameters': ['Temperature (C):', 
-                                'Stir Rate (rpm):',
-                                'Mixing time1 (s):',
-                                'Mixing time2 (s):',
-                                'Reaction time (s):',
-                                'Preheat Temperature (C):',
-                                userAction0,
-                                userAction1
-                                ],
-        'Parameter Values': [rxndict['temperature2_nominal'],
-                             rxndict['stirrate'],
-                             rxndict['duratation_stir1'], 
-                             rxndict['duratation_stir2'],
-                             rxndict['duration_reaction'], 
-                             rxndict['temperature1_nominal'],
-                             userActionValue0,
-                             userActionValue1
-                             ],
-    })
-
     rxn_conditions = pd.DataFrame({
         'Reagents': ['Reagent{}'.format(i+1) for i in range(len(vol_ar))],
         'Reagent identity': [str(i+1) for i in range(len(vol_ar))],
         'Liquid Class': vol_ar,
         'Reagent Temperature': [rxndict['reagents_prerxn_temperature']] * len(vol_ar)
     })
-
-    
-    #rxn_parameters = pd.DataFrame({
-    #    'Reaction Parameters': ['Spincoating Temperature ( C )',
-    #                            'Spincoating Speed (rpm):',
-    #                            'Spincoating Duration (s)',
-    #                            'Spincoating Duration 2 (s)',
-    #                            'Annealing Temperature ( C )',
-    #                            'Annealing Duration (s)',
-    #                            userAction0,
-    #                            userAction1,
-    #                            ""],
-
-    #    'Parameter Values': [rxndict['temperature1_nominal'],
-    #                         rxndict['stirrate'],
-    #                         rxndict['duratation_stir1'],
-    #                         rxndict['duratation_stir2'],
-    #                         rxndict['temperature2_nominal'],
-    #                         rxndict['duration_reaction'],
-    #                         userActionValue0,
-    #                         userActionValue1,
-    #                         ''],
-    #})
     robotfiles = []
 
-    if rxndict['ExpWorkflowVer'] == 3:
+    if rxndict['ExpWorkflowVer'] > 3 and rxndict['ExpWorkflowVer'] < 4:
+        rxn_parameters = pd.DataFrame({
+            'Reaction Parameters': ['Temperature (C):', 
+                                    'Stir Rate (rpm):',
+                                    'Mixing time (s):',
+                                    'Mixing time2 (s):',
+                                    'Reaction time (s):',
+                                    'Temperature Cool (C):',
+                                    userAction0,
+                                    userAction1
+                                    ],
+            'Parameter Values': [rxndict['temperature1_nominal'],
+                                 rxndict['stirrate'],
+                                 rxndict['duratation_stir1'], 
+                                 rxndict['duratation_stir2'],
+                                 rxndict['duration_reaction'],
+                                 rxndict['temperature2_nominal'],
+                                 userActionValue0,
+                                 userActionValue1
+                                 ],
+        })
+
+        rxn_parameters_small = pd.DataFrame({
+            'Reaction Parameters': ['Temperature (C):', 
+                                    'Stir Rate (rpm):',
+                                    'Mixing time (s):',
+                                    '',
+                                    '',
+                                    '',
+                                    '',
+                                    ''
+                                    ],
+            'Parameter Values': [rxndict['temperature1_nominal'],
+                                 rxndict['stirrate'],
+                                 rxndict['duratation_stir1'],
+                                    '',
+                                    '',
+                                    '',
+                                    '',
+                                    ''
+                                 ],
+        })
 
         # For WF3 tray implementation to work
         df_Tray2 = MakeWellList_WF3(rxndict['plate_container'], rxndict['wellcount']*2)
         erdf_new = WF3_split(erdf, rxndict['WF3_split'])
         outframe1 = pd.concat([df_Tray2.iloc[:, 0],
                                erdf_new, df_Tray2.iloc[:, 1],
-                               rxn_parameters, rxn_conditions],
+                               rxn_parameters_small, rxn_conditions],
                               sort=False, axis=1)
         
         if globals.get_lab() == 'LBL':
@@ -243,9 +260,8 @@ def LBLrobotfile(rxndict, vardict, erdf):
         else:
             robotfile = ('localfiles/%s_RUNME_RobotFile.xls' %rxndict['RunID'])
 
-
         ## For report code to work
-        df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount']*1)
+        df_Tray = MakeWellList_WF3_small(rxndict['plate_container'], rxndict['wellcount']*1)
         outframe2 = pd.concat([df_Tray.iloc[:, 0], erdf, df_Tray.iloc[:,1],rxn_parameters, rxn_conditions],
                               sort=False, axis=1)
         robotfile2 = ('localfiles/%s_RobotInput.xls' % rxndict['RunID'])
@@ -256,6 +272,26 @@ def LBLrobotfile(rxndict, vardict, erdf):
         robotfiles.append(robotfile2)
 
     else:
+        rxn_parameters = pd.DataFrame({
+                'Reaction Parameters': ['Temperature (C):', 
+                                        'Stir Rate (rpm):',
+                                        'Mixing time1 (s):',
+                                        'Mixing time2 (s):',
+                                        'Reaction time (s):',
+                                        'Preheat Temperature (C):',
+                                        userAction0,
+                                        userAction1
+                                        ],
+                'Parameter Values': [rxndict['temperature2_nominal'],
+                                     rxndict['stirrate'],
+                                     rxndict['duratation_stir1'], 
+                                     rxndict['duratation_stir2'],
+                                     rxndict['duration_reaction'], 
+                                     rxndict['temperature1_nominal'],
+                                     userActionValue0,
+                                     userActionValue1
+                                     ],
+        })
         df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount'])
         outframe = pd.concat([df_Tray.iloc[:, 0], erdf, df_Tray.iloc[:, 1], rxn_parameters, rxn_conditions],
                              sort=False, axis=1)

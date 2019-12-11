@@ -1,6 +1,13 @@
 RELEASE HISTORY
 ===============
 
+2.57 (2019-12-09)
+------------------------------
+  * Mathematica >3 dimensions use guess and check
+  * WF3 updates to new workflow specs (actions, defaults, template)
+  * fixed well alignment issues with WF3 at LBL
+  * Additional documentation updates
+
 2.56 (2019-11-22)
 ------------------------------
   * Union - Intersect mathematica sampling prototype (now sampler 1.2)

@@ -334,7 +334,7 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
     experiment_mmol_df = pd.DataFrame()
     experiment_df = pd.DataFrame()
 
-    version = 1.2
+    version = 1.3
 
     if len(expoverview) > 1:
         modlog.warning('only first portion will use mathematica sampler')
@@ -370,7 +370,7 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
     portion_df = pd.DataFrame.from_dict(experiments)
 
     # todo How long can this reagent 6/7 hotfix remain like this?
-    if rxndict['ExpWorkflowVer'] < 1.1:
+    if rxndict['ExpWorkflowVer'] <= 1.1:
         if rxndict['lab'] == 'LBL':
             portion_df['Reagent6 (ul)'] = np.floor(portion_df['Reagent7 (ul)'] / 2).astype(int)
             portion_df['Reagent7 (ul)'] = np.ceil(portion_df['Reagent7 (ul)'] / 2).astype(int)

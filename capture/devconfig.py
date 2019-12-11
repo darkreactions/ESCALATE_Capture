@@ -2,7 +2,7 @@ import platform
 
 #######################################
 # version control
-RoboVersion = 2.56
+RoboVersion = 2.57
 
 SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 
@@ -25,7 +25,7 @@ lab_vars = {
             'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
             'reagent_workbook_index': 1,
             'reagent_interface_amount_startrow': 17,
-            'max_reagents': 7,
+            'max_reagents': 9,
             'reagent_alias': 'Reagent',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': ['xrd', 'images'],
@@ -42,7 +42,7 @@ lab_vars = {
             'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
             'reagent_workbook_index': 1,
             'reagent_interface_amount_startrow': 17,
-            'max_reagents': 7,
+            'max_reagents': 9,
             'reagent_alias': 'Reagent',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': ['xrd', 'images'],

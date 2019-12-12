@@ -149,7 +149,7 @@ def default_sampling(expoverview, rdict, vollimits, rxndict, wellnum, userlimits
 
     :return: (experiment volume df, experiment mmol df, version number of this sampler)
     """
-    version = 2.5 #extended for mathematica wf3 subsampling of secondary portions
+    version = 2.7 # random sampling >3 chemicals (non-zero), maintains random sampling on secondary portions
     prdf = pd.DataFrame()
     prmmoldf = pd.DataFrame()
 
@@ -334,7 +334,7 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
     experiment_mmol_df = pd.DataFrame()
     experiment_df = pd.DataFrame()
 
-    version = 1.3
+    version = 1.2 # original "expert sampling"
 
     if len(expoverview) > 1:
         modlog.warning('only first portion will use mathematica sampler')

@@ -204,7 +204,7 @@ def LBLrobotfile(rxndict, vardict, erdf):
     })
     robotfiles = []
 
-    if rxndict['ExpWorkflowVer'] > 3 and rxndict['ExpWorkflowVer'] < 4:
+    if rxndict['ExpWorkflowVer'] >= 3 and rxndict['ExpWorkflowVer'] < 4:
         rxn_parameters = pd.DataFrame({
             'Reaction Parameters': ['Temperature (C):', 
                                     'Stir Rate (rpm):',

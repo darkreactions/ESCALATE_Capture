@@ -20,7 +20,7 @@ def upload_observation_interface_data(rxndict, vardict, gc, interface_uid):
     #TODO: organize code around workflow handling... at this moment moving to specify level seems appropriate
     # Maybe setting the variables for actions in dictionaries that can be created through some interface
     uploadlist = []
-    if rxndict['ExpWorkflowVer'] > 3 and rxndict['ExpWorkflowVer'] < 4:
+    if rxndict['ExpWorkflowVer'] >= 3 and rxndict['ExpWorkflowVer'] < 4:
         uploadtarget = sheet.range(f'A2:D{total_exp_entries+1}')
 
         df = MakeWellList_WF3_small("nothing", total_exp_entries)

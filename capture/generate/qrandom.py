@@ -462,7 +462,6 @@ def preprocess_and_sample(chemdf, vardict, rxndict, edict, rdict, old_reagents, 
                                               num_wells,
                                               climits,
                                               experiment)
-            globals.set_sampler('ExpertQuasiRandom', version)
         else:
             modlog.error('Encountered unexpected sampler in devconfig: {}. Exiting.'.format(config.sampler))
             sys.exit(1)

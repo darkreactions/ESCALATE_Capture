@@ -28,7 +28,7 @@ lab_vars = {
             'max_reagents': 9,
             'reagent_alias': 'Reagent',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
-            'required_folders': ['xrd', 'images'],
+            'required_folders': ['xrd', 'images', 'cytation_image'],
             'observation_interface': {'uid_col': 'E',
                                       'modeluid_col': 'J',
                                       'participantuid_col': 'K'}
@@ -45,7 +45,7 @@ lab_vars = {
             'max_reagents': 9,
             'reagent_alias': 'Reagent',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
-            'required_folders': ['xrd', 'images'],
+            'required_folders': ['xrd', 'images','cytation_image'],
             'observation_interface': {'uid_col': 'E',
                                       'modeluid_col': 'J',
                                       'participantuid_col': 'K'}
@@ -62,7 +62,7 @@ lab_vars = {
             'reagent_alias': 'Reagent',
             'max_reagents': 9,
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
-            'required_folders': [],
+            'required_folders': ['cytation_image'],
             'observation_interface': {'uid_col': 'B',
                                       'modeluid_col': 'J',
                                       'participantuid_col': 'K'}

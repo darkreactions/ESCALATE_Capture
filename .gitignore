@@ -16,21 +16,11 @@ __pycache__/
 *.log
 *.ipynb_checkpoints
 *.xlsx#
-<<<<<<< HEAD
+!runsforediting.json
+!0040.v4.perovskitedata.csv
 !WF3_LBL_SpecificationInterface.xlsx
 !HC_LBL_SpecificationInterface.xlsx
 !MIT_SpecificationInterface.xlsx
 !WF1_NewRegionSampling_v2.xlsx
 !WF1-2_Alloying_LBL.xlsx
 !WF3-1_Alloying_LBL.xlsx
-=======
-user_cli_variables.py
-!runsforediting.json
-!0040.v4.perovskitedata.csv
-!WF1_Template.xlsx
-!WF1_DevTemplate.xlsx
-!WF1_Alloy_Template.xlsx
-!WF3_template.xlsx
-!WF3_DevTemplate.xlsx
-!MIT_PVLab_Template.xlsx
->>>>>>> branch for generating reagent dictionary and associated state spaces for all dataset

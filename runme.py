@@ -23,13 +23,14 @@ def iter_state_gen(rxndict, vardict):
     conc_dict = build_reagent_inventory.all_unique_experiments_v0()
     with open('runsforediting.json', 'r') as f:
         conc_dict = json.load(f)
-#    print(conc_dict)
+    print(conc_dict)
 #    failed_rxns = build_reagent_inventory._prepare('0041.perovskitedata.csv', returnfail=1)
 #    mynewdict={}
 #        if dict['chemical_info']['organic-1'][0] in failed_rxns:
 #            mynewdict[uid] = dict['chemical_info']
 #    with open('runsforediting.json', 'w') as fp:
 #        json.dump(mynewdict, fp, indent=1)
+    # Store the values in the reaction dictionary for use by the main escalate code (rapid reproducibility possible)
     for uid, dict in conc_dict.items():
         reagent_2_chemlist = [dict['inorganic'][1], dict['organic-1'][1], dict['solvent'][1]]
 ##        testtarget = [['PbI2', 'Me2NH2I', 'DMF'], ['PbI2', 'EtNH3I', 'GBL'],['PbI2', 'n-BuNH3I', 'GBL']]
@@ -43,7 +44,8 @@ def iter_state_gen(rxndict, vardict):
         reagent_3_chemlist = [dict['organic-2'][1], dict['solvent'][1]]
         rxndict['Reagent3_chemical_list'] = reagent_3_chemlist
         rxndict['Reagent3_item1_formulaconc'] = dict['organic-2'][2]
-        escalatecapture(rxndict, vardict)
+    #TODO: generalize this for use in report (no with state space generation)
+    #    escalatecapture(rxndict, vardict)
 
 
 def escalatecapture(rxndict, vardict):
@@ -57,7 +59,7 @@ def escalatecapture(rxndict, vardict):
     """
     modlog = logging.getLogger('capture.escalatecapture')
     modlog.info("Initializing specify")
-    specify.datapipeline(rxndict, vardict)
+#    specify.datapipeline(rxndict, vardict)
 
 
 def linkprocess(linkfile):

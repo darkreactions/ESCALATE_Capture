@@ -1,5 +1,5 @@
 ## Ian Pendleton
-## Dependent upon assumptions made in 0040.v4.perovksitedata.csv
+## Dependent upon assumptions made in 0045.perovksitedata.csv
 ## Many assumptions are denoted at the appropriate location in the code -- some may have been overlooked
 ## Toward a script for assembling complete reagent inventory from the escalate generated perovskite dataframe
 
@@ -9,8 +9,6 @@ import numpy as np
 import os
 import sys
 
-
-# import a name to INCHI list conversion dictionary
 INCHI_TO_CHEMNAME = {'null':'null',
 'YEJRWHAVMIAJKC-UHFFFAOYSA-N':'Gamma-Butyrolactone',
 'IAZDPXIOMUYVGZ-UHFFFAOYSA-N':'Dimethyl sulfoxide',
@@ -76,7 +74,7 @@ INCHI_TO_CHEMNAME = {'null':'null',
 'LYHPZBKXSHVBDW-UHFFFAOYSA-N':'Quinuclidin-1-ium iodide',
 'UXYJHTKQEFCXBJ-UHFFFAOYSA-N':'tert-Octylammonium iodide',
 'BJDYCCHRZIFCGN-UHFFFAOYSA-N':'Pyridinium Iodide',
-'QVSYMURKUJHLGE-UHFFFAOYSA-N':'Cyclohexylmethylammonium iodide',
+'ZEVRFFCPALTVDN-UHFFFAOYSA-N':'Cyclohexylmethylammonium iodide',
 'WGYRINYTHSORGH-UHFFFAOYSA-N':'Cyclohexylammonium iodide',
 'XZUCBFLUEBDNSJ-UHFFFAOYSA-N':'Butane-1,4-diammonium Iodide',
 'RYYSZNVPBLKLRS-UHFFFAOYSA-N':'1,4-Benzene diammonium iodide',
@@ -86,6 +84,8 @@ INCHI_TO_CHEMNAME = {'null':'null',
 'BAMDIFIROXTEEM-UHFFFAOYSA-N':'N,N-Dimethylethane- 1,2-diammonium iodide',
 'JERSPYRKVMAEJY-UHFFFAOYSA-N':'N,N-dimethylpropane- 1,3-diammonium iodide',
 'NXRUEVJQMBGVAT-UHFFFAOYSA-N':'N,N-Diethylpropane-1,3-diammonium iodide',
+'PBGZCCFVBVEIAS-UHFFFAOYSA-N':'Di-isopropylammonium iodide',
+'QNNYEDWTOZODAS-UHFFFAOYSA-N':'4-methoxy-phenethylammonium-iodide',
 'N/A':'None'}
 
 INCHI_TO_ABBR = {'null':'null',
@@ -153,7 +153,7 @@ INCHI_TO_ABBR = {'null':'null',
 'LYHPZBKXSHVBDW-UHFFFAOYSA-N':'QuinuclidiniumIodide',
 'UXYJHTKQEFCXBJ-UHFFFAOYSA-N':'TertOctylammoniumIodide',
 'BJDYCCHRZIFCGN-UHFFFAOYSA-N':'PyridiniumIodide',
-'QVSYMURKUJHLGE-UHFFFAOYSA-N':'CyclohexylmethylammoniumIodide',
+'ZEVRFFCPALTVDN-UHFFFAOYSA-N':'CyclohexylmethylammoniumIodide',
 'WGYRINYTHSORGH-UHFFFAOYSA-N':'CyclohexylammoniumIodide',
 'XZUCBFLUEBDNSJ-UHFFFAOYSA-N':'Butane14diammoniumIodide',
 'RYYSZNVPBLKLRS-UHFFFAOYSA-N':'Benzenediaminedihydroiodide',
@@ -163,6 +163,8 @@ INCHI_TO_ABBR = {'null':'null',
 'BAMDIFIROXTEEM-UHFFFAOYSA-N':'NNDimethylethane12diammoniumiodide',
 'JERSPYRKVMAEJY-UHFFFAOYSA-N':'NNdimethylpropane13diammoniumiodide',
 'NXRUEVJQMBGVAT-UHFFFAOYSA-N':'NNDiethylpropane13diammoniumiodide',
+'PBGZCCFVBVEIAS-UHFFFAOYSA-N':'Diisopropylammoniumiodide',
+'QNNYEDWTOZODAS-UHFFFAOYSA-N':'4methoxyphenethylammoniumiodide',
 'N/A':'None'}
 
 def UID_generator():
@@ -211,7 +213,7 @@ def build_conc_df(df):
             pass
         else:
             reagent_num = int(column.split("_")[3]) # 3 is the value of the split for reagent num
-            if reagent_num > 2 and reagent_num < 5:
+            if reagent_num > 10 and reagent_num < 11:
                 secondary_reagent_columns.append(column)
     experiment_inchis_df.drop(secondary_reagent_columns, axis=1, inplace=True) 
     experiment_inchis_df.drop_duplicates(inplace=True)
@@ -219,6 +221,7 @@ def build_conc_df(df):
     experiment_inchis_df['name'] = experiment_inchis_df.index
 
     # get the concentration of the relevant associated inchi keys for all included reageagents
+
     def get_chemical_conc(reagent, inchi, index):
         reagent_inorg_header = f'_raw_reagent_{reagent}_v1-conc_{inchi}'
         try:
@@ -239,6 +242,35 @@ def build_conc_df(df):
     prototype_df = pd.concat([df['_rxn_organic-inchikey'], prototype_df], axis=1, join='inner')
     return prototype_df
 
+
+def get_tray_set(rxn_uids):
+    '''
+    take a rxn_uid and returns the tray
+    '''
+    tray_uids = {}
+    for item in rxn_uids:
+        tray_uid = item.rsplit('_', 1)[0]
+        tray_uids[tray_uid] = item
+    return(tray_uids)
+
+
+def get_unique_volumes(perovskite_df):
+    '''
+    Get the volume amounts from the downselected unique reagent preparations
+    '''
+    rxn_uids = perovskite_df['name'].tolist()
+    tray_uids = get_tray_set(rxn_uids)
+
+    unique_df = perovskite_df.loc[perovskite_df['name'].isin(tray_uids.values())]
+
+    volume_columns = [column for column in unique_df if 'volume' in column]
+
+    volume_columns = [x for x in volume_columns if 'units' not in x]
+    volume_columns.extend(['name','_rxn_organic-inchikey'])
+    vol_df = unique_df[volume_columns]
+    vol_df.to_csv('unique_reagents_preps.csv')
+
+
 def all_unique_experiments_v0():
     '''
     Reads in most recent perovskite dataframe and returns dictionary 
@@ -247,12 +279,15 @@ def all_unique_experiments_v0():
 
     :param perovskite_csv: perovskite dataframe generated using version 0.7 of the report code
     '''
-#    if os.path.exists('0040.v4.perovskitedata.csv'):
+#    if os.path.exists('0045.perovskitedata.csv'):
 #    else:
 #        print('Need to included perovskitedata.csv cranks 28-40')
 #        sys.exit()
-    perovskite_df = pd.read_csv('0040.v4.perovskitedata.csv', skiprows=4)
+    perovskite_df = pd.read_csv('0045.perovskitedata.csv', skiprows=4)
     conc_df = build_conc_df(perovskite_df)
+
+    get_unique_volumes(perovskite_df)
+
     conc_df.fillna(value='null', inplace=True)
     conc_dict_out = {}
     for index, row in conc_df.iterrows():
@@ -303,8 +338,7 @@ def _compute_proportional_conc(perovRow, v1=True, chemtype='organic'):
         ## acid assumes FAH (as of writing this the only one in the dataset)
         'acid': 'BDAGIHXWWSANSR-UHFFFAOYSA-N'
     }
-    
-    speciesExperimentConc = perovRow[f"{'_raw_v1-' if v1 else '_rxn_'}M_{chemtype}"]
+    speciesExperimentConc = perovRow[f"{'_rxn_M_' if v1 else '_rxn_v0-M_'}{chemtype}"]
     
     reagentConcPattern = f"_raw_reagent_[0-9]_{'v1-' if v1 else ''}conc_{inchis[chemtype]}"
     speciesReagentConc = perovRow.filter(regex=reagentConcPattern)
@@ -314,23 +348,14 @@ def _compute_proportional_conc(perovRow, v1=True, chemtype='organic'):
     else: 
         return speciesExperimentConc / np.max(speciesReagentConc)
 
-def _add_proportional_conc(perovskite_df):
-    chemtypes = ['organic', 'inorganic', 'acid']
-    
-    for v1 in [False, True]:
-        for chemtype in chemtypes:
-             perovskite_df[f'_rxn_proportionalConc_{"v1-" if v1 else ""}{chemtype }'] = perov.apply(_compute_proportional_conc, axis=1, v1=v1, chemtype=chemtype) 
-
-# Section 3
-### Some analysis and perovskite dataframe preprocessing that might be useful
-def _prepare(perovskite_df, returnfail=0):
-    ''' reads in perovskite dataframe and returns only experiments that meet specific criteria for analysis
+def _prepare(shuffle=0, deep_shuffle=0):
+    ''' reads in perovskite dataframe and returns only experiments that meet specific criteria
 
     --> Data preparation occurs here
     criteria for main dataset include experiment version 1.1 (workflow 1 second generation), only
-    reactions that use GBL, and PbI2
+    reactions that use GBL, and 
     '''
-    perov = pd.read_csv(perovskite_df, skiprows=4, low_memory=False)
+    perov = pd.read_csv(os.path.join(VERSION_DATA_PATH, CRANK_FILE), skiprows=4, low_memory=False)
     perov = perov[perov['_raw_ExpVer'] == 1.1].reset_index(drop=True)
 
     # only reaction that use GBL as a solvent (1:1 comparisons -- DMF and other solvents could convolute analysis)    
@@ -342,6 +367,7 @@ def _prepare(perovskite_df, returnfail=0):
     #We need to know which reactions have no succes and which have some
     organickeys = perov['_rxn_organic-inchikey']
     uniquekeys = organickeys.unique()
+
     df_key_dict = {}
     #find an remove all organics with no successes (See SI for reasoning)
     for key in uniquekeys:
@@ -361,8 +387,15 @@ def _prepare(perovskite_df, returnfail=0):
     successful_perov = (perov[perov['_rxn_organic-inchikey'].isin(successful_groups)])
     successful_perov = successful_perov[successful_perov['_rxn_organic-inchikey'] != 'JMXLWMIFDJCGBV-UHFFFAOYSA-N'].reset_index(drop=True)
 
-    shuffle = 0
-    deep_shuffle = 0
+    # we need to do this so we can drop nans and such while keeping the data consistent
+    # we couldnt do this on the full perov data since dropna() would nuke the entire dataset (rip)
+    all_columns = successful_perov.columns
+    
+    full_data = successful_perov[all_columns].reset_index(drop=True)
+
+    full_data = full_data.fillna(0).reset_index(drop=True)
+    successful_perov = full_data[full_data['_out_crystalscore'] != 0].reset_index(drop=True)
+    
     ## Shuffle options for these unique runs
     out_hold = pd.DataFrame()
     out_hold['out_crystalscore'] = successful_perov['_out_crystalscore']
@@ -375,22 +408,19 @@ def _prepare(perovskite_df, returnfail=0):
 
         #build holdout (not shuffled)
         out_hold_deep_df = pd.DataFrame()
-        out_hold_deep_df = successful_perov.loc[:, '_raw_model_predicted':'_prototype_ECFP4_hexstring']
+        out_hold_deep_df = successful_perov.loc[:, '_raw_model_predicted':'_prototype_heteroatomINT']
         out_hold_deep_df = pd.concat([successful_perov['_rxn_organic-inchikey'], out_hold_deep_df], axis=1) 
 
         #isolate shuffle set
         shuffle_deep_df = pd.DataFrame()
-        shuffle_deep_df = pd.concat([successful_perov.loc[:, 'name':'_raw_v1-M_organic'], 
-                                     successful_perov.loc[:, '_rxn_temperatureC_actual_bulk' : '_feat_fr_pyridine']], 
+        shuffle_deep_df = pd.concat([successful_perov.loc[:, 'name':'_rxn_M_organic'], 
+                                     successful_perov.loc[:, '_rxn_temperatureC_actual_bulk' : '_feat_Hacceptorcount']], 
                                      axis = 1)
         successful_perov = shuffle_deep_df.apply(np.random.permutation)
 
         successful_perov.reset_index(drop=True)
         successful_perov = pd.concat([out_hold_deep_df, successful_perov], axis=1)
 
-    if returnfail == 1:
-        return failed_groups
-    if returnfail == 0:
-        return successful_perov
+    successful_perov.rename(columns={"_raw_v0-M_acid": "_rxn_v0-M_acid", "_raw_v0-M_inorganic": "_rxn_v0-M_inorganic", "_raw_v0-M_organic":"_rxn_v0-M_organic"}, inplace=True)
 
-#%%
+    return successful_perov

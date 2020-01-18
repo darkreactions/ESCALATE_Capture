@@ -1,20 +1,32 @@
 import platform
+import os
+import sys
+
+cwd = os.getcwd()
+
 
 #######################################
 # version control
 RoboVersion = 2.57
+ReportVersion = 0.81 
 
-SUPPORTED_LABS = ['LBL', 'HC', 'MIT_PVLab', 'ECL', 'dev']
 
 #######################################
-# chemistry-relevant specifications
+# General Functions (Report and Capture)
+SUPPORTED_LABS = ['LBL', 'LBL_WF3_Iodides', 'HC', 'MIT_PVLab', 'ECL']
+
+#######################################
+# ESCALATE_Capture settings
 
 maxreagentchemicals = 4
-volspacing = 5 # reagent microliter (uL) spacing between points in the stateset
+volspacing = 50  # reagent microliter (uL) spacing between points in the stateset
 
-#######################################
+# perovskite solvent list (simple specification of what is a liquid)
+# assumes only 1 liquid / reagent
+#TODO: read these values from the chemical inventory!
+solventlist = ['GBL', 'DMSO', 'DMF', 'DCM', 'CBz']
+
 # Lab-specific variables
-
 lab_vars = {
     'HC':
         {
@@ -123,3 +135,14 @@ else:
 # 'wolfram' is currently experimental and unsupported
 # must be 'default' or 'wolfram'
 sampler = 'wolfram'
+
+
+######################################
+# ESCALATE_report settings
+
+valid_input_files = {
+    'preparation_interface': ['ExpDataEntry.json'],  # reagent prep
+    'experiment_specification': ['ExperimentSpecification.xls', 'RobotInput.xls'],  # volume file
+    'observation_interface': ['observation_interface.csv', 'CrystalScoring.csv'],  # results
+    'specification_interface': ['Template', 'SpecificationInterface']  # user input file
+}

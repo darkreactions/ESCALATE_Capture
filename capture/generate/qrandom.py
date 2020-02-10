@@ -389,7 +389,8 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
     portionnum +=1
     if portionnum < len(expoverview):
         modlog.warn("Using default sampler for portion 2, mathematica sampling not supported for greater than first portion")
-        prdf, prmmoldf, version = default_sampling(expoverview,
+        # version2 variable doesn't get used in this case, toss to a garbage variable and retain the mathematica version
+        prdf, prmmoldf, version2 = default_sampling(expoverview,
                                            rdict,
                                            vollimits,
                                            rxndict,

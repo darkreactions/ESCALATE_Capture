@@ -35,7 +35,7 @@ Running The Code
 
 1. Ensure that your computer local time is updated and accurate. If necessary look up how to syncronize your system with internet time.
 2. Open the variable container XLSX file of your choice (ex. MIT_SpecificationInterface.xlsx)
-3. Update the variables in the XLSX
+3. Update the variables in the XLSX ([see this example for more deatailed instructions](https://drive.google.com/file/d/1OorISnTc4cHbzKQWDPsKaXGcw20fOcIA/view?usp=sharing))
 4. **Please ensure that the conditions fall within the indicated ranges and are compatible with the workflow (see solubility data tabs)** 
   * (https://docs.google.com/spreadsheets/d/1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg/edit?usp=sharing) 
 5. Follow additional guidelines for each variable as outlined in MIT_SpecificationInterface.xlsx

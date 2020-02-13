@@ -1,1 +1,170 @@
-{}
+{
+ "2018-11-04T01_21_18.950306+00_00_LBL_A1": {
+  "solvent": [
+   "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+   "GBL"
+  ],
+  "inorganic": [
+   "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+   "PbI2",
+   1.66
+  ],
+  "organic-1": [
+   "UPHCENSIMPJEIS-UHFFFAOYSA-N",
+   "PhEtNH3I",
+   0.83
+  ],
+  "organic-2": [
+   "UPHCENSIMPJEIS-UHFFFAOYSA-N",
+   "PhEtNH3I",
+   1.27
+  ]
+ },
+ "2018-12-03T19_53_16.905932+00_00_LBL_A1": {
+  "solvent": [
+   "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+   "GBL"
+  ],
+  "inorganic": [
+   "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+   "PbI2",
+   1.14
+  ],
+  "organic-1": [
+   "PPCHYMCMRUGLHR-UHFFFAOYSA-N",
+   "BenzylammoniumIodide",
+   1.14
+  ],
+  "organic-2": [
+   "PPCHYMCMRUGLHR-UHFFFAOYSA-N",
+   "BenzylammoniumIodide",
+   2.97
+  ]
+ },
+ "2019-02-21T17_06_08.308424+00_00_LBL_A1": {
+  "solvent": [
+   "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+   "GBL"
+  ],
+  "inorganic": [
+   "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+   "PbI2",
+   1.14
+  ],
+  "organic-1": [
+   "PXWSKGXEHZHFJA-UHFFFAOYSA-N",
+   "nDodecylammoniumIodide",
+   1.14
+  ],
+  "organic-2": [
+   "PXWSKGXEHZHFJA-UHFFFAOYSA-N",
+   "nDodecylammoniumIodide",
+   0.75
+  ]
+ },
+ "2019-05-29T17_22_53.471261+00_00_LBL_A1": {
+  "solvent": [
+   "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+   "GBL"
+  ],
+  "inorganic": [
+   "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+   "PbI2",
+   1.27
+  ],
+  "organic-1": [
+   "GIAPQOZCVIEHNY-UHFFFAOYSA-N",
+   "NPropylammoniumIodide",
+   1.41
+  ],
+  "organic-2": [
+   "GIAPQOZCVIEHNY-UHFFFAOYSA-N",
+   "NPropylammoniumIodide",
+   3.41
+  ]
+ },
+ "2019-05-29T19_49_43.354126+00_00_LBL_A1": {
+  "solvent": [
+   "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+   "GBL"
+  ],
+  "inorganic": [
+   "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+   "PbI2",
+   1.51
+  ],
+  "organic-1": [
+   "UZHWWTHDRVLCJU-UHFFFAOYSA-N",
+   "IPentylammoniumIodide",
+   1.67
+  ],
+  "organic-2": [
+   "UZHWWTHDRVLCJU-UHFFFAOYSA-N",
+   "IPentylammoniumIodide",
+   2.82
+  ]
+ },
+ "2019-06-18T20_49_29.598214+00_00_LBL_A1": {
+  "solvent": [
+   "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+   "GBL"
+  ],
+  "inorganic": [
+   "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+   "PbI2",
+   1.72
+  ],
+  "organic-1": [
+   "SQXJHWOXNLTOOO-UHFFFAOYSA-N",
+   "4TrifluoromethylBenzylammoniumIodide",
+   1.72
+  ],
+  "organic-2": [
+   "SQXJHWOXNLTOOO-UHFFFAOYSA-N",
+   "4TrifluoromethylBenzylammoniumIodide",
+   2.38
+  ]
+ },
+ "2019-06-18T21_01_05.033086+00_00_LBL_A1": {
+  "solvent": [
+   "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+   "GBL"
+  ],
+  "inorganic": [
+   "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+   "PbI2",
+   1.40
+  ],
+  "organic-1": [
+   "UXYJHTKQEFCXBJ-UHFFFAOYSA-N",
+   "TertOctylammoniumIodide",
+   1.40
+  ],
+  "organic-2": [
+   "UXYJHTKQEFCXBJ-UHFFFAOYSA-N",
+   "TertOctylammoniumIodide",
+   1.12
+  ]
+ },
+ "2019-08-28T18_53_30.435495+00_00_LBL_A1": {
+  "solvent": [
+   "YEJRWHAVMIAJKC-UHFFFAOYSA-N",
+   "GBL"
+  ],
+  "inorganic": [
+   "RQQRAHKHDFPBMC-UHFFFAOYSA-L",
+   "PbI2",
+   1.50
+  ],
+  "organic-1": [
+   "YYMLRIWBISZOMT-UHFFFAOYSA-N",
+   "Diethylammoniumiodide",
+   1.63
+  ],
+  "organic-2": [
+   "YYMLRIWBISZOMT-UHFFFAOYSA-N",
+   "Diethylammoniumiodide",
+   2.84
+  ]
+ }
+}

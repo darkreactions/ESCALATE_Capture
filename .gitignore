@@ -17,10 +17,5 @@ __pycache__/
 *.ipynb_checkpoints
 *.xlsx#
 !runsforediting.json
-!0040.v4.perovskitedata.csv
-!WF3_LBL_SpecificationInterface.xlsx
+!0048.perovskitedata.csv
 !HC_LBL_SpecificationInterface.xlsx
-!MIT_SpecificationInterface.xlsx
-!WF1_NewRegionSampling_v2.xlsx
-!WF1-2_Alloying_LBL.xlsx
-!WF3-1_Alloying_LBL.xlsx

@@ -20,17 +20,9 @@ import build_reagent_inventory
 
 
 def iter_state_gen(rxndict, vardict):
-#    conc_dict = build_reagent_inventory.all_unique_experiments_v0()
-    with open('runsforediting.json', 'r') as f:
-        conc_dict = json.load(f)
-#    print('i am here')
-#    failed_rxns = build_reagent_inventory._prepare('0045.perovskitedata.csv', returnfail=1)
-#    mynewdict={}
-#    if dict['chemical_info']['organic-1'][0] in failed_rxns:
-#            mynewdict[uid] = dict['chemical_info']
-#    with open('runsforediting.json', 'w') as fp:
-#        json.dump(mynewdict, fp, indent=1)
-    for uid, dict in conc_dict.items():
+    conc_dict = build_reagent_inventory.all_unique_experiments_v0()
+    for uid, my_dict in conc_dict.items():
+        dict = my_dict['chemical_info']
         reagent_2_chemlist = [dict['inorganic'][1], dict['organic-1'][1], dict['solvent'][1]]
 ##        testtarget = [['PbI2', 'Me2NH2I', 'DMF'], ['PbI2', 'EtNH3I', 'GBL'],['PbI2', 'n-BuNH3I', 'GBL']]
 ##        if reagent_2_chemlist in testtarget:

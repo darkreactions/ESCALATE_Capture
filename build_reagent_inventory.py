@@ -230,6 +230,7 @@ def build_conc_df(df):
             inorg_conc = 0
         return inorg_conc
     
+    
     prototype_df = experiment_inchis_df.copy()
     for column in experiment_inchis_df.columns:
         if column in ignore_list:
@@ -283,7 +284,7 @@ def all_unique_experiments_v0():
 #    else:
 #        print('Need to included perovskitedata.csv cranks 28-40')
 #        sys.exit()
-    perovskite_df = pd.read_csv('0045.perovskitedata.csv', skiprows=4)
+    perovskite_df = pd.read_csv('0048.perovskitedata.csv', skiprows=4)
     conc_df = build_conc_df(perovskite_df)
 
     get_unique_volumes(perovskite_df)
@@ -309,6 +310,7 @@ def all_unique_experiments_v0():
                                                             conc_df.loc[index,'_raw_reagent_2_chemicals_0_v1conc']                                                               
                                                             ) 
         conc_dict_out[index]['organic_inchi'] = conc_df.loc[index, '_rxn_organic-inchikey']
+    print(conc_dict_out)
     return conc_dict_out
 
 #%%

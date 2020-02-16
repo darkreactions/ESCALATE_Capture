@@ -1,5 +1,6 @@
 import logging
 import pandas as pd
+import os
 import re
 
 import gspread
@@ -17,21 +18,25 @@ def build_reagentdf(reagsheetid, reagsheetworkbook):
     """
 
     # Setup google drive connection
-    scope = ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc = gspread.authorize(credentials)
-    reagsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+    if not os.path.exists('reagentdf.csv'):
+        scope = ['https://spreadsheets.google.com/feeds']
+        credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
+        gc = gspread.authorize(credentials)
+        reagsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
 
-    # open sheet, or book? todo notice the inconsistencies in nomenclature here
-    ReagentBook = gc.open_by_key(reagsheetid)
-    reagentsheet = ReagentBook.get_worksheet(reagsheetworkbook)
-    reagent_list = reagentsheet.get_all_values()
+        # open sheet, or book? todo notice the inconsistencies in nomenclature here
+        ReagentBook = gc.open_by_key(reagsheetid)
+        reagentsheet = ReagentBook.get_worksheet(reagsheetworkbook)
+        reagent_list = reagentsheet.get_all_values()
 
-    # Parse sheet to df
-    reagdf = pd.DataFrame(reagent_list, columns=reagent_list[0])
-    reagdf = reagdf.iloc[1:]
-    reagdf = reagdf.reset_index(drop=True)
-    reagdf = reagdf.set_index('ECL_Model_ID')
+        # Parse sheet to df
+        reagdf = pd.DataFrame(reagent_list, columns=reagent_list[0])
+        reagdf = reagdf.iloc[1:]
+        reagdf = reagdf.reset_index(drop=True)
+        reagdf = reagdf.set_index('ECL_Model_ID')
+    else:
+        reagdf = pd.read_csv('reagentdf.csv')
+        reagdf = reagdf.set_index('ECL_Model_ID')
     return reagdf
 
 

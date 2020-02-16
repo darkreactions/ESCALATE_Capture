@@ -272,7 +272,7 @@ def get_unique_volumes(perovskite_df):
     vol_df.to_csv('unique_reagents_preps.csv')
 
 
-def all_unique_experiments_v0():
+def all_unique_experiments_v0(dataset_csv):
     '''
     Reads in most recent perovskite dataframe and returns dictionary 
     of structure {organic_inchi: {(Chemical-Inchi, Chemical-Name, concentration) x 3}} 
@@ -284,7 +284,7 @@ def all_unique_experiments_v0():
 #    else:
 #        print('Need to included perovskitedata.csv cranks 28-40')
 #        sys.exit()
-    perovskite_df = pd.read_csv('0048.perovskitedata.csv', skiprows=4)
+    perovskite_df = pd.read_csv(dataset_csv, skiprows=4, low_memory=False)
     conc_df = build_conc_df(perovskite_df)
 
     get_unique_volumes(perovskite_df)
@@ -310,7 +310,6 @@ def all_unique_experiments_v0():
                                                             conc_df.loc[index,'_raw_reagent_2_chemicals_0_v1conc']                                                               
                                                             ) 
         conc_dict_out[index]['organic_inchi'] = conc_df.loc[index, '_rxn_organic-inchikey']
-    print(conc_dict_out)
     return conc_dict_out
 
 #%%
@@ -398,31 +397,6 @@ def _prepare(shuffle=0, deep_shuffle=0):
     full_data = full_data.fillna(0).reset_index(drop=True)
     successful_perov = full_data[full_data['_out_crystalscore'] != 0].reset_index(drop=True)
     
-    ## Shuffle options for these unique runs
-    out_hold = pd.DataFrame()
-    out_hold['out_crystalscore'] = successful_perov['_out_crystalscore']
-    if shuffle == 1:
-        out_hold['out_crystalscore'] = successful_perov['_out_crystalscore']
-        successful_perov = successful_perov.reindex(np.random.permutation(successful_perov.index)).reset_index(drop=True)
-        successful_perov['_out_crystalscore'] = out_hold['out_crystalscore']
-    if deep_shuffle == 1:
-        # Only want to shuffle particular columns (some shuffles will break processing), we will attempt to describe each selection in text
-
-        #build holdout (not shuffled)
-        out_hold_deep_df = pd.DataFrame()
-        out_hold_deep_df = successful_perov.loc[:, '_raw_model_predicted':'_prototype_heteroatomINT']
-        out_hold_deep_df = pd.concat([successful_perov['_rxn_organic-inchikey'], out_hold_deep_df], axis=1) 
-
-        #isolate shuffle set
-        shuffle_deep_df = pd.DataFrame()
-        shuffle_deep_df = pd.concat([successful_perov.loc[:, 'name':'_rxn_M_organic'], 
-                                     successful_perov.loc[:, '_rxn_temperatureC_actual_bulk' : '_feat_Hacceptorcount']], 
-                                     axis = 1)
-        successful_perov = shuffle_deep_df.apply(np.random.permutation)
-
-        successful_perov.reset_index(drop=True)
-        successful_perov = pd.concat([out_hold_deep_df, successful_perov], axis=1)
-
     successful_perov.rename(columns={"_raw_v0-M_acid": "_rxn_v0-M_acid", "_raw_v0-M_inorganic": "_rxn_v0-M_inorganic", "_raw_v0-M_organic":"_rxn_v0-M_organic"}, inplace=True)
 
     return successful_perov

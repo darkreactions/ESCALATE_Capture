@@ -48,7 +48,7 @@ def state_space_edges(linkcsv):
 
 def run_me():
 #    all_files_in_dir = os.listdir('/mnt/d/HaverfordGoogleDrive/ESCALATE_Development/Scripts/Reagent_StateSpaces_Small')
-    all_files_in_dir = os.listdir('/Users/ipendleton/HaverDrive/ESCALATE_Development/Scripts/Reagent_StateSpaces_Small')
+    all_files_in_dir = os.listdir('./')
     link_files = get_link_files(all_files_in_dir)
     print(link_files)
     state_space_node_dicts = []

@@ -13,7 +13,6 @@ import argparse as ap
 from log import init
 from capture import specify
 from capture import devconfig
-import time
 import json
 from utils import globals, data_handling
 import build_reagent_inventory

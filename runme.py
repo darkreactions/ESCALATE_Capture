@@ -113,3 +113,4 @@ if __name__ == "__main__":
     # TODO: >>>> insert variable tests here <<<<
 
     escalatecapture(rxndict, vardict)
+    os.remove("./localfiles/mycred.txt")

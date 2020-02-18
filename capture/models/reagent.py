@@ -34,6 +34,7 @@ def build_reagentdf(reagsheetid, reagsheetworkbook):
         reagdf = reagdf.iloc[1:]
         reagdf = reagdf.reset_index(drop=True)
         reagdf = reagdf.set_index('ECL_Model_ID')
+        reagdf.to_csv('reagentdf.csv')
     else:
         reagdf = pd.read_csv('reagentdf.csv')
         reagdf = reagdf.set_index('ECL_Model_ID')

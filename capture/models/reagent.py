@@ -1,5 +1,6 @@
 import logging
 import pandas as pd
+import os
 import re
 
 import gspread
@@ -8,32 +9,36 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from utils.data_handling import get_used_reagent_nums
 
-def build_reagentdf(reagsheetid, reagsheetworkbook):
+def build_reagentdf(reagsheetid, reagsheetworkbook, debug_bool):
     """Read the reagents workbook from Google Drive and return a pandas DataFrame
 
     :param reagsheetid:        TODO this is a workbook (and unused)
-    :param reagsheetworkbook:  TODO this is a sheet    (Rest in a Pendletonian manner)
+    :param reagsheetworkbook:  TODO this is a sheet
+    :param debug_bool: CLI debug boolean
     :return reagdf: pandas DF representation of the reagent worksheet
     """
 
-    # Setup google drive connection
-    scope = ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
-    gc = gspread.authorize(credentials)
-    reagsheetid = "1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg"
+    if not os.path.exists('reagentdf.csv'): 
+        scope = ['https://spreadsheets.google.com/feeds']
+        credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
+        gc = gspread.authorize(credentials)
 
-    # open sheet, or book? todo notice the inconsistencies in nomenclature here
-    ReagentBook = gc.open_by_key(reagsheetid)
-    reagentsheet = ReagentBook.get_worksheet(reagsheetworkbook)
-    reagent_list = reagentsheet.get_all_values()
+        # open sheet, or book? todo notice the inconsistencies in nomenclature here
+        ReagentBook = gc.open_by_key(reagsheetid)
+        reagentsheet = ReagentBook.get_worksheet(reagsheetworkbook)
+        reagent_list = reagentsheet.get_all_values()
 
-    # Parse sheet to df
-    reagdf = pd.DataFrame(reagent_list, columns=reagent_list[0])
-    reagdf = reagdf.iloc[1:]
-    reagdf = reagdf.reset_index(drop=True)
-    reagdf = reagdf.set_index('ECL_Model_ID')
+        # Parse sheet to df
+        reagdf = pd.DataFrame(reagent_list, columns=reagent_list[0])
+        reagdf = reagdf.iloc[1:]
+        reagdf = reagdf.reset_index(drop=True)
+        reagdf = reagdf.set_index('ECL_Model_ID')
+        if debug_bool > 0:
+            reagdf.to_csv('reagentdf.csv')
+    else:
+        reagdf = pd.read_csv('reagentdf.csv')
+        reagdf = reagdf.set_index('ECL_Model_ID')
     return reagdf
-
 
 def buildreagents(rxndict, chemdf, reagentdf, solventlist):
     """Return rdict, old_reagents, two dicts each  mapping from reagent IDs to perovskitereagent objects

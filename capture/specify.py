@@ -40,11 +40,13 @@ def datapipeline(rxndict, vardict):
     modlog = logging.getLogger('capture.specify.datapipeline')
     inputvalidation.prebuildvalidation(rxndict, vardict)
     chemdf = chemical.build_chemdf(config.lab_vars[globals.get_lab()]['chemsheetid'],
-                                   config.lab_vars[globals.get_lab()]['chem_workbook_index'])
+                                   config.lab_vars[globals.get_lab()]['chem_workbook_index'],
+                                   vardict['debug'])
 
     # TODO: reviatalize the reagentdf sans ECL
     reagentdf = reagent.build_reagentdf(config.lab_vars[globals.get_lab()]['reagentsheetid'],
-                                        config.lab_vars[globals.get_lab()]['reagent_workbook_index'])
+                                        config.lab_vars[globals.get_lab()]['reagent_workbook_index'],
+                                        vardict['debug'])
 
     vardict['solventlist'] = chemdf.index[chemdf['Chemical Category'] == 'solvent'].values.tolist()
 
@@ -74,7 +76,7 @@ def datapipeline(rxndict, vardict):
                                                                   edict,
                                                                   rdict,
                                                                   climits)
-            if not vardict['debug']:
+            if vardict['debug'] is False:
                 googleio.upload_cp_files_to_drive(uploadlist,
                                                   secfilelist,
                                                   rxndict['RunID'],
@@ -91,8 +93,7 @@ def datapipeline(rxndict, vardict):
                                                                                       rdict,
                                                                                       old_reagents,
                                                                                       climits)
-        # disable uploading if debug is activated
-        if not vardict['debug']:
+        if vardict['debug'] < 2:
             modlog.info('Starting file preparation for upload')
             # Lab specific handling - different labs require different files for tracking
 
@@ -140,6 +141,9 @@ def datapipeline(rxndict, vardict):
             logfile = '%s/%s'%(os.getcwd(),rxndict['logfile'])
             googleio.upload_files_to_gdrive(primary_dir, secondary_dir, secfilelist, robotfile, rxndict['RunID'], logfile)
             modlog.info('File upload completed successfully')
+        else:
+            modlog.info('Offline debugging enabled.  No file upload was performed')
+            print('Offline debugging enabled.  No file upload was performed')
     modlog.info("Job Creation Complete")
     print("Job Creation Complete")
 

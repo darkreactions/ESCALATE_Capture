@@ -21,30 +21,25 @@ from utils import globals
 
 modlog = logging.getLogger('initialize.googleio')
 
-##############################################################################################
-### Authentication for pydrive, designed globally to minimally generate token (a slow process)
-##  TODO discuss where this should happen or if this google auth really should be global
+def get_drive_auth():
+    gauth = GoogleAuth(settings_file='settings.yaml')
 
-gauth = GoogleAuth(settings_file='settings.yaml')
+    # We have to check this path here, rather than in runme.py, if this is global because
+    # global code gets executed when a module is imported
 
-# We have to check this path here, rather than in runme.py, if this is global because
-# global code gets executed when a module is imported
+    # TODO put this in a config
+    GOOGLE_CRED_FILE = "./mycred.txt"
+    if not os.path.exists(GOOGLE_CRED_FILE):
+        open(GOOGLE_CRED_FILE, 'w+').close()
 
-# TODO put this in a config
-GOOGLE_CRED_FILE = "./mycred.txt"
-if not os.path.exists(GOOGLE_CRED_FILE):
-    open(GOOGLE_CRED_FILE, 'w+').close()
-
-gauth.LoadCredentialsFile(GOOGLE_CRED_FILE)
-if gauth.credentials is None or gauth.access_token_expired:
-    gauth.LocalWebserverAuth()  # Creates local webserver and auto handles authentication.
-else:
-    gauth.Authorize()  # Just run because everything is loaded properly
-gauth.SaveCredentialsFile(GOOGLE_CRED_FILE)
-drive = GoogleDrive(gauth)
-
-##############################################################################################
-
+    gauth.LoadCredentialsFile(GOOGLE_CRED_FILE)
+    if gauth.credentials is None or gauth.access_token_expired:
+        gauth.LocalWebserverAuth()  # Creates local webserver and auto handles authentication.
+    else:
+        gauth.Authorize()  # Just run because everything is loaded properly
+    gauth.SaveCredentialsFile(GOOGLE_CRED_FILE)
+    drive = GoogleDrive(gauth)
+    return(drive)
 
 def create_drive_folder(title, tgt_folder_id):
     """Create template directory for later copying of relevant files
@@ -52,6 +47,7 @@ def create_drive_folder(title, tgt_folder_id):
     :param tgt_folder_id: ID of the parent folder in which to create the new folder
     :return: ID of new folder
     """
+    drive = get_drive_auth()
 
     file_metadata = {
         'title': title,
@@ -80,6 +76,7 @@ def copy_drive_templates(opdir, RunID, includedfiles):
     :param includedfiles: files to be copied from template gdrive directory
     :return: a referenced dictionary of files (title, Gdrive ID)
     """
+    drive = get_drive_auth()
     template_folder = config.lab_vars[globals.get_lab()]['template_folder']
     file_template_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % template_folder}).GetList()
     for templatefile in file_template_list:
@@ -107,6 +104,7 @@ def upload_files_to_gdrive(opdir, secdir, secfilelist, filelist, runID, eclogfil
     :param eclogfile: local path to logfile for the run
     :return: None
     """
+    drive = get_drive_auth()
 
     for file in filelist:
         outfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})

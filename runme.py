@@ -79,9 +79,10 @@ if __name__ == "__main__":
         help='0 - quasi-random experiments generate, 1 - Generates stateset\
              for exp_1 user specified reagents, 2 - generate prototype run for\
              exp_1 user specified reagents') 
-    parser.add_argument('-d', '--debug', default=0, type=int, choices=[0, 1],
+    parser.add_argument('-d', '--debug', default=0, type=int, choices=[0,1,2],
         help='0 - complete run generation and upload to google drive,\
-             1 - local debugging with no data upload,')
+              1 - retain all tables from gdrive & keep runtime content,\
+              2 - full offline debugging (no uploading)')
 
     args = parser.parse_args()
     challengeproblem = args.ss
@@ -99,6 +100,8 @@ if __name__ == "__main__":
         'lab_vars': devconfig.lab_vars,
         'lab': rxndict['lab']
     }
+    if not os.path.exists('./localfiles'):
+        os.mkdir('./localfiles')
 
     globals.set_lab(rxndict['lab'])
 
@@ -113,3 +116,5 @@ if __name__ == "__main__":
     # TODO: >>>> insert variable tests here <<<<
 
     escalatecapture(rxndict, vardict)
+    if vardict['debug'] == 0: # if no debuggin
+        os.remove("./mycred.txt")

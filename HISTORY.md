@@ -1,6 +1,13 @@
 RELEASE HISTORY
 ===============
 
+2.58 (2020-02-15)
+-----------------------------
+  * Cleaned debugging processes
+  * Reagent specification via interface optimized and now reflects gdrive 
+  * Reagentdf now restructured for specification (non-ECL, old ECL runs still supported)
+  * Improved authentication, fixed scopes
+
 2.57 (2019-12-09)
 ------------------------------
   * Mathematica >3 dimensions use guess and check

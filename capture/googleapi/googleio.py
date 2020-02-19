@@ -25,15 +25,13 @@ modlog = logging.getLogger('initialize.googleio')
 ### Authentication for pydrive, designed globally to minimally generate token (a slow process)
 ##  TODO discuss where this should happen or if this google auth really should be global
 
-gauth = GoogleAuth()
+gauth = GoogleAuth(settings_file='settings.yaml')
 
 # We have to check this path here, rather than in runme.py, if this is global because
 # global code gets executed when a module is imported
-if not os.path.exists('./localfiles'):
-    os.mkdir('./localfiles')
 
 # TODO put this in a config
-GOOGLE_CRED_FILE = "./localfiles/mycred.txt"
+GOOGLE_CRED_FILE = "./mycred.txt"
 if not os.path.exists(GOOGLE_CRED_FILE):
     open(GOOGLE_CRED_FILE, 'w+').close()
 
@@ -82,7 +80,6 @@ def copy_drive_templates(opdir, RunID, includedfiles):
     :param includedfiles: files to be copied from template gdrive directory
     :return: a referenced dictionary of files (title, Gdrive ID)
     """
-
     template_folder = config.lab_vars[globals.get_lab()]['template_folder']
     file_template_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % template_folder}).GetList()
     for templatefile in file_template_list:

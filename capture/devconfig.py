@@ -7,7 +7,7 @@ cwd = os.getcwd()
 
 #######################################
 # version control
-RoboVersion = 2.57
+RoboVersion = 2.58
 ReportVersion = 0.83 
 
 #######################################

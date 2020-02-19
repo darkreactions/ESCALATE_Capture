@@ -1,9 +1,13 @@
 import pandas as pd
+import logging
 import os
 
 import gspread
 from capture.googleapi import googleio
 from oauth2client.service_account import ServiceAccountCredentials
+
+
+modlog = logging.getLogger('capture.chemicalmodels')
 
 class perovskitechemical:
     def __init__(self, rxndict, chemdf):
@@ -17,8 +21,9 @@ def build_chemdf(chemsheetid, chemsheetworkbook, debug_bool):
     :return:
     """
 
-    print('Obtaining chemical information from Google Drive.. \n', end='')
     if not os.path.exists('chemdf.csv'):
+        print('Obtaining chemical information from Google Drive... \n', end='')
+        modlog.info('Obtaining chemical information from Google Drive...')
         scope = ['https://spreadsheets.google.com/feeds']
         credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope) 
         gc = gspread.authorize(credentials)
@@ -34,6 +39,8 @@ def build_chemdf(chemsheetid, chemsheetworkbook, debug_bool):
         if debug_bool > 0:
             chemdf.to_csv('chemdf.csv')
     else:
+        print('Obtaining chemical information from local copy... \n', end='')
+        modlog.info('Obtaining chemical information from local copy..')
         chemdf = pd.read_csv('chemdf.csv')
         chemdf = chemdf.set_index(['Chemical Abbreviation'])
     return chemdf

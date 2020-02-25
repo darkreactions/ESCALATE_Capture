@@ -118,3 +118,4 @@ if __name__ == "__main__":
     escalatecapture(rxndict, vardict)
     if vardict['debug'] == 0: # if no debuggin
         os.remove("./mycred.txt")
+        os.remove("./capture/user_cli_variables.py")

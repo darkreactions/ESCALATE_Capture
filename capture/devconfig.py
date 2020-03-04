@@ -20,7 +20,7 @@ SUPPORTED_LABS = ['LBL', 'LBL_WF3_Iodides', 'HC', 'MIT_PVLab', 'ECL']
 # ESCALATE_Capture settings
 
 maxreagentchemicals = 4
-volspacing = 50  # reagent microliter (uL) spacing between points in the stateset
+volspacing = 12  # reagent microliter (uL) spacing between points in the stateset
 
 # perovskite solvent list (simple specification of what is a liquid)
 # assumes only 1 liquid / reagent

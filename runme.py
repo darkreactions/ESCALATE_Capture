@@ -117,4 +117,7 @@ if __name__ == "__main__":
 
     escalatecapture(rxndict, vardict)
     if vardict['debug'] == 0: # if no debuggin
-        os.remove("./mycred.txt")
+        if os.path.exists("./mycred.txt"):
+            os.remove("./mycred.txt")
+        if os.path.exists("./capture/user_cli_variables.py"):
+            os.remove("./capture/user_cli_variables.py")

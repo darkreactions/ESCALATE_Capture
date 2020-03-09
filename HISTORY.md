@@ -1,6 +1,12 @@
 RELEASE HISTORY
 ===============
 
+2.58 (2020-03-08)
+-----------------------------
+  * Cleaned the devconfig workflow and organization
+  * Debugged the MIT process (fully functional)
+  * Debugged quasi random (non-mathematica sampler)
+
 2.58 (2020-02-15)
 -----------------------------
   * Cleaned debugging processes

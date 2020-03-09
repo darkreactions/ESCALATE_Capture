@@ -93,3 +93,19 @@ def get_manualruns_author():
     except ModuleNotFoundError:
         user_author_name = get_user_author_name()
     return user_author_name
+
+def lab_safeget(dct, lab_key, key_1):
+    '''
+    used for retrieving either the default values or lab specific if specified
+    from devconfig/lab_vars dictionary
+    
+    :param dct: lab_vars dictionary (includes default as well, from devconfig)
+    :keys: key entries that are associted with the query (i.e. chemsheetid)
+
+    :return either specified dictionary, or default lab dictionary if key error
+    '''
+    try:
+        dct = dct[lab_key][key_1]
+    except KeyError:
+        dct = dct['default'][key_1]
+    return dct

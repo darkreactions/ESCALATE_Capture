@@ -4,135 +4,61 @@ import sys
 
 cwd = os.getcwd()
 
-
 #######################################
-# version control
-RoboVersion = 2.58
-ReportVersion = 0.83 
-
-#######################################
-# General Functions (Report and Capture)
-SUPPORTED_LABS = ['LBL', 'LBL_WF3_Iodides', 'HC', 'MIT_PVLab', 'ECL']
-#SUPPORTED_LABS = ['4-Data-Iodides', '4-Data-WF3_Iodide', 'HC', 'MIT_PVLab', 'ECL',\
-#                  '4-Data-WF3_Alloying', '4-Data-Bromides', 'LBL']
-
-#######################################
+# Version Control
+RoboVersion = 2.59
+ReportVersion = 0.84
+######################################
+# Sampler Selection
+sampler = 'wolfram' # options are 'default' or 'wolfram'
+# 'wolfram' is default, if wolfram fails, fall back to default using this toggle
+######################################
 # ESCALATE_Capture settings
-
-maxreagentchemicals = 4
-volspacing = 12  # reagent microliter (uL) spacing between points in the stateset
-
-# perovskite solvent list (simple specification of what is a liquid)
-# assumes only 1 liquid / reagent
-#TODO: read these values from the chemical inventory!
-solventlist = ['GBL', 'DMSO', 'DMF', 'DCM', 'CBz']
-
-# Lab-specific variables
-#TODO: Separate out the capture and report config options (dataset versus lab operation)
-#       a lab can have multiple datasets asssociated, and datasets can be generated at multiple labs
+volspacing = 50  # reagent microliter (uL) spacing between points in the stateset generation
+'''
+  Targets for lab specific will overrides (defaults used otherwise)
+target folder MUST be set for a lab, no default will be provided
+new labs should be added to the specification interfaces after testing
+'''
 lab_vars = {
-    'HC':
+    'default':
         {
-            'remote_directory' : '13xmOpwh-uCiSeJn8pSktzMlr7BaPDo7B',
+            ## Template Handling START ##
             'template_folder': '131G45eK7o9ZiDb4a2yV7l2E1WVQrz16d',
-            'targetfolder': '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe',
+            'maxreagentchemicals' : 4,
+            'max_reagents': 9,
+            'reagent_interface_amount_startrow': 17,
+            ## Template Handling END ##
+            ## Inventory START ##
             'chemsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
             'chem_workbook_index': 0,
             'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
             'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 17,
-            'max_reagents': 9,
+            ## Inventory END ##
+            ## Semantic Start ##
             'reagent_alias': 'Reagent',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
+            'required_folders': ['experiment_characterizations'],
+            'observation_interface': {'uid_col': 'E',
+                                      'modeluid_col': 'J',
+                                      'participantuid_col': 'K'}
+            ## Semantic END ##
+        },
+    'HC':
+        {
+            ## LAB START ##
+            'newrun_remote_folder': '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe',
+            ## LAB END ##
+            ## Semantic START ##
             'required_folders': ['xrd', 'images', 'cytation_image'],
             'observation_interface': {'uid_col': 'E',
                                       'modeluid_col': 'J',
                                       'participantuid_col': 'K'}
+            ## Semantic END ##
         },
     'LBL':
         {
-            'remote_directory' : '13xmOpwh-uCiSeJn8pSktzMlr7BaPDo7B',
-            'template_folder': '131G45eK7o9ZiDb4a2yV7l2E1WVQrz16d',
-            'targetfolder': '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe',
-            'chemsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
-            'chem_workbook_index': 0,
-            'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
-            'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 17,
-            'max_reagents': 9,
-            'reagent_alias': 'Reagent',
-            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
-            'required_folders': ['xrd', 'images','cytation_image'],
-            'observation_interface': {'uid_col': 'E',
-                                      'modeluid_col': 'J',
-                                      'participantuid_col': 'K'}
-        },
-    '4-Data-Bromides':
-        {
-            'remote_directory' : '147uGb_15iwpqb082KOYBE2xyT9djEmKv',
-            'template_folder': '131G45eK7o9ZiDb4a2yV7l2E1WVQrz16d',
-            'targetfolder': '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe',
-            'chemsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
-            'chem_workbook_index': 0,
-            'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
-            'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 17,
-            'max_reagents': 9,
-            'reagent_alias': 'Reagent',
-            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
-            'required_folders': ['xrd', 'images','cytation_image'],
-            'observation_interface': {'uid_col': 'E',
-                                      'modeluid_col': 'J',
-                                      'participantuid_col': 'K'}
-        },
-    '4-Data-WF3_Iodide':
-        {
-            'remote_directory' : '11CcFTLw7mu4tnnv8QO1opSE7XQiEP32L',
-            'template_folder': '131G45eK7o9ZiDb4a2yV7l2E1WVQrz16d',
-            'targetfolder': '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe',
-            'chemsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
-            'chem_workbook_index': 0,
-            'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
-            'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 17,
-            'max_reagents': 9,
-            'reagent_alias': 'Reagent',
-            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
-            'required_folders': ['xrd', 'images','cytation_image'],
-            'observation_interface': {'uid_col': 'E',
-                                      'modeluid_col': 'J',
-                                      'participantuid_col': 'K'}
-        },
-    '4-Data-WF3_Alloying':
-        {
-            'remote_directory' : '12hOt8BVeQgsFWVa6gM56kNBMF3NJUi0I',
-            'template_folder': '131G45eK7o9ZiDb4a2yV7l2E1WVQrz16d',
-            'targetfolder': '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe',
-            'chemsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
-            'chem_workbook_index': 0,
-            'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
-            'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 17,
-            'max_reagents': 9,
-            'reagent_alias': 'Reagent',
-            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
-            'required_folders': ['xrd', 'images','cytation_image'],
-            'observation_interface': {'uid_col': 'E',
-                                      'modeluid_col': 'J',
-                                      'participantuid_col': 'K'}
-        },
-    'ECL':
-        {
-            'remote_directory' : '13xmOpwh-uCiSeJn8pSktzMlr7BaPDo7B',
-            'template_folder': '131G45eK7o9ZiDb4a2yV7l2E1WVQrz16d',
-            'targetfolder': '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe',  # target folder for new experiments
-            'chemsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
-            'chem_workbook_index': 0,
-            'reagentsheetid': '1JgRKUH_ie87KAXsC-fRYEw_5SepjOgVt7njjQBETxEg',
-            'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 17,
-            'reagent_alias': 'Reagent',
-            'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
+            'newrun_remote_folder': '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe',
             'required_folders': ['xrd', 'images','cytation_image'],
             'observation_interface': {'uid_col': 'E',
                                       'modeluid_col': 'J',
@@ -140,30 +66,19 @@ lab_vars = {
         },
     'dev':
         {
-            'remote_directory' : '1rPNGq69KR7_8Zhr4aPEV6yLtB6V4vx7k',
-            'template_folder': '1w5tReXSRvC6cm_rQy74-10QLIlG7Eee0',
-            'targetfolder': '19nt2-9Inub8IEYDxOLnplCPDEYt1NPqZ',
-            'chemsheetid': '1uj6A3TH2oMSQwzhPapfmr1t-CbevEGmQjKIyfg9aSgk',
-            'chem_workbook_index': 0,
-            'reagentsheetid': '1uj6A3TH2oMSQwzhPapfmr1t-CbevEGmQjKIyfg9aSgk',
-            'reagent_workbook_index': 1,
-            'reagent_interface_amount_startrow': 17,
-            'reagent_alias': 'Reagent',
-            'max_reagents': 9,
+            'newrun_remote_folder': '19nt2-9Inub8IEYDxOLnplCPDEYt1NPqZ',
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
-            'required_folders': ['cytation_image'],
             'observation_interface': {'uid_col': 'B',
                                       'modeluid_col': 'J',
                                       'participantuid_col': 'K'}
         },
     'MIT_PVLab':
         {
-            'remote_directory' : '1VNsWClt-ppg8ojUztDYssnSgfoe9XRhi',
             'template_folder': '1PVeVpNjnXiAuzm3Oq2q-RiiLBhKPGW53',
-            'targetfolder': '1tUb4GcF_tDanMjvQuPa6vj0n9RNa5IDI',
-            'chemsheetid': '1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI',
+            'newrun_remote_folder': '1tUb4GcF_tDanMjvQuPa6vj0n9RNa5IDI',
+            'chemsheetid': '1hputxEjnjaERKaBC5FjUqsYGewAtyVsUzH-bBImF6yE',
             'chem_workbook_index': 0,
-            'reagentsheetid': '1htERouQUD7WR2oD-8a3KhcBpadl0kWmbipG0EFDnpcI',
+            'reagentsheetid': '1hputxEjnjaERKaBC5FjUqsYGewAtyVsUzH-bBImF6yE',
             'reagent_workbook_index': 1,
             'reagent_interface_amount_startrow': 17,
             'max_reagents': 9,
@@ -175,6 +90,45 @@ lab_vars = {
                                       'participantuid_col': 'I'}
         },
 }
+
+#######################################
+# ESCALATE_report settings
+# Naming variations in the main escalate data tracking files
+valid_input_files = {
+    'preparation_interface': ['ExpDataEntry.json'],  # reagent prep
+    'experiment_specification': ['ExperimentSpecification.xls', 'RobotInput.xls'],  # volume file
+    'observation_interface': ['observation_interface.csv', 'CrystalScoring.csv'],  # results
+    'specification_interface': ['Template', 'SpecificationInterface']  # user input file
+}
+
+# specified targets for data workup, add new google drive folders here
+workup_targets = {
+    '4-Data-Bromides':
+        {
+            'target_data_folder' : '147uGb_15iwpqb082KOYBE2xyT9djEmKv',
+        },
+    '4-Data-Iodides':
+        {
+            'target_data_folder' : '13xmOpwh-uCiSeJn8pSktzMlr7BaPDo7B',
+        },
+    '4-Data-WF3_Iodide':
+        {
+            'target_data_folder' : '11CcFTLw7mu4tnnv8QO1oSE7XQiEP32L',
+        },
+    '4-Data-WF3_Alloying':
+        {
+            'target_data_folder' : '12hOt8BVeQgsFWVa6gM56kNBMF3NJUi0I',
+        },
+    'dev':
+        {
+            'target_data_folder' : '1rPNGq69KR7_8Zhr4aPEV6yLtB6V4vx7k',
+        },
+    'MIT_PVLab':
+        { 
+            'target_data_folder' : '1VNsWClt-ppg8ojUztDYssnSgfoe9XRhi',
+        }
+}
+
 
 #######################################
 # Wolfram Kernel Management
@@ -205,22 +159,3 @@ elif system == "Darwin" or system == 'Windows':
 # Other
 else:
     raise OSError("Your system is likely not supported if it's not Linux, MAC, or Windows")
-
-######################################
-# Sampler Selection
-
-
-# 'wolfram' is currently experimental and unsupported
-# must be 'default' or 'wolfram'
-sampler = 'wolfram'
-
-
-######################################
-# ESCALATE_report settings
-
-valid_input_files = {
-    'preparation_interface': ['ExpDataEntry.json'],  # reagent prep
-    'experiment_specification': ['ExperimentSpecification.xls', 'RobotInput.xls'],  # volume file
-    'observation_interface': ['observation_interface.csv', 'CrystalScoring.csv'],  # results
-    'specification_interface': ['Template', 'SpecificationInterface']  # user input file
-}

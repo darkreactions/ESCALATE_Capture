@@ -12,8 +12,10 @@ from capture.generate import qrandom
 from capture.generate import statespace
 from capture.prepare import stateset
 from capture.prepare import experiment_interface as expint
+import capture.devconfig as config
 from utils.data_handling import abstract_reagent_colnames
 from utils import globals
+from utils.globals import lab_safeget
 
 modlog = logging.getLogger('capture.generate.generator')
 
@@ -28,7 +30,7 @@ def generate_cp_files(vardict, chemdf, rxndict, edict, rdict, climits):
                                                                            rxndict,
                                                                            edict,
                                                                            rdict,
-                                                                           vardict['volspacing']) #this should be replaced with devconfig.volspacing
+                                                                           config.volspacing) 
 
     # TODO: Fix plotting
     # if rxndict['plotter_on'] == 1:
@@ -49,7 +51,7 @@ def stateset_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, volspac
 
     # Clean up dataframe for robot file -> create xls --> upload
     erdfrows = erdf.shape[0]
-    erdf = expint.cleanvolarray(erdf, vardict['lab_vars'][globals.get_lab()]['max_reagents'])
+    erdf = expint.cleanvolarray(erdf, lab_safeget(config.lab_vars, globals.get_lab(),'max_reagents'))
     abstract_reagent_colnames(erdf)
 
     ermmolcsv = 'localfiles/%s_mmolbreakout.csv' % rxndict['RunID']
@@ -120,7 +122,7 @@ def quasirandom_generation_pipeline(vardict, chemdf, rxndict, edict, rdict, old_
                                                                            old_reagents,
                                                                            climits)
     # Clean up dataframe for robot file -> create xls --> upload
-    erdf = expint.cleanvolarray(erdf, maxr=vardict['lab_vars'][rxndict['lab']]['max_reagents'])
+    erdf = expint.cleanvolarray(erdf, maxr=lab_safeget(config.lab_vars, globals.get_lab(),'max_reagents'))
 
     # Export additional information files for later use / storage 
     ermmolcsv = ('localfiles/%s_mmolbreakout.csv' %rxndict['RunID'])
@@ -151,17 +153,9 @@ def generate_ESCALATE_run(vardict, chemdf, rxndict, edict, rdict, old_reagents, 
     #     else:
     #         modlog.warning("Plot has been enabled, but no workflow specific plot has been programmed.  Not plot will be shown")
 
-
     # TODO this is brittle
-    # Generate a different robot file depending on the user specified lab
-
-    if rxndict['lab'] == 'LBL' or rxndict['lab'] == "HC":
-        robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
-    elif rxndict['lab'] in ['MIT_PVLab', 'dev']:
-        robotfile = expint.generate_experiment_specification_file(rxndict, vardict, erdf)
-    elif rxndict['lab'] == "ECL": 
+    if rxndict['lab'] == "ECL":
         robotfile = expint.ECLrobotfile(rxndict, vardict, rdict, erdf)
     else:
-        modlog.error('No path for lab {}'.format(rxndict['lab']))
-        sys.exit()
+        robotfile = expint.LBLrobotfile(rxndict, vardict, erdf)
     return erdf, robotfile, secfilelist, model_info_df

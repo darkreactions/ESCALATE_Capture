@@ -4,6 +4,7 @@ import re
 from utils.data_handling import get_explicit_experiments, flatten
 import capture.devconfig as config
 from utils import globals
+from utils.globals import lab_safeget
 
 modlog = logging.getLogger(__name__)
 
@@ -168,7 +169,7 @@ def validate_solvent_positions(rdict, solventlist, reagent_alias, chemdf):
     return
 
 def postbuildvalidation(rxndict, vardict, rdict, edict, chemdf):
-    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
+    reagent_alias = lab_safeget(config.lab_vars, globals.get_lab(), 'reagent_alias')
 
     modlog = logging.getLogger('capture.postbuildvalidation')
 #        modlog.error("Fatal error. Reagents and chemicals are over constrained. Recheck user options!")
@@ -181,7 +182,7 @@ def prebuildvalidation(rxndict, vardict):
     takes the rxndict as input and performs validation on the input to ensure the proper structure
     -- currently underdeveloped
     '''
-    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
+    reagent_alias = lab_safeget(config.lab_vars, globals.get_lab(), 'reagent_alias')
     modlog = logging.getLogger('capture.prebuildvalidation')
     validate_experiment_form_and_number(rxndict)
     expcount(rxndict)
@@ -196,6 +197,10 @@ def prebuildvalidation(rxndict, vardict):
             raise ValueError('Multistock sampling is activated but sampler is set to "{}"'.format(config.sampler),
                              'Sampler must be "wolfram" to use multistock sampling')
     modlog.info('User entry is configured correctly.  Proceeding with run')
+
+    if not rxndict['lab'] in config.lab_vars.keys():
+        modlog.error('User selected a lab that was not supported. Closing run')
+        sys.exit()
 
 def reagenttesting(volmax, volmin):
     ## Need a chunck of code which elegantly errors if the user sets too many constraints on the chemicals in the experiment

@@ -116,8 +116,7 @@ Which maintain **TODO: Ian flesh out this section**
 
 
 - `Vardict`
-    - Mostly the software engineering related information:  
-    i.e. variables defined at the CLI and in the devconfig file. 
+    - variables defined at the CLI
 
 The two above dicts also contain meta-data information specific to each run of the code so that the batches 
 may be uniquely identified

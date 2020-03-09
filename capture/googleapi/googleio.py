@@ -18,6 +18,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from capture.googleapi import googleio
 import capture.devconfig as config
 from utils import globals
+from utils.globals import lab_safeget
 
 modlog = logging.getLogger('initialize.googleio')
 
@@ -77,7 +78,7 @@ def copy_drive_templates(opdir, RunID, includedfiles):
     :return: a referenced dictionary of files (title, Gdrive ID)
     """
     drive = get_drive_auth()
-    template_folder = config.lab_vars[globals.get_lab()]['template_folder']
+    template_folder = lab_safeget(config.lab_vars, globals.get_lab(), 'template_folder')
     file_template_list = drive.ListFile({'q': "'%s' in parents and trashed=false" % template_folder}).GetList()
     for templatefile in file_template_list:
             basename = templatefile['title']
@@ -119,8 +120,9 @@ def upload_files_to_gdrive(opdir, secdir, secfilelist, filelist, runID, eclogfil
         outfile['title'] = secfile.split('/')[1]
         outfile.Upload()
 
-    if config.lab_vars[globals.get_lab()]['required_folders']:
-        for folder in config.lab_vars[globals.get_lab()]['required_folders']:
+    requested_folders = lab_safeget(config.lab_vars, globals.get_lab(), 'required_folders')
+    if requested_folders:
+        for folder in requested_folders:
             create_drive_folder(folder, opdir)
 
     logfile = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": opdir}]})

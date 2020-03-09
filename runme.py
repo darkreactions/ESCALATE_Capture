@@ -92,12 +92,8 @@ if __name__ == "__main__":
     # vardict will hold variables configured by developers
     vardict = {
         'exefilename': args.Variables,
-        'RoboVersion': devconfig.RoboVersion,
         'challengeproblem': challengeproblem,
         'debug': args.debug,
-        'volspacing': devconfig.volspacing,
-        'maxreagentchemicals': devconfig.maxreagentchemicals,
-        'lab_vars': devconfig.lab_vars,
         'lab': rxndict['lab']
     }
     if not os.path.exists('./localfiles'):

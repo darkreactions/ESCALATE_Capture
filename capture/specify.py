@@ -21,6 +21,7 @@ from capture.templates import expbuild
 from capture.googleapi import googleio
 import capture.devconfig as config
 from utils import globals
+from utils.globals import lab_safeget
 
 # create logger
 modlog = logging.getLogger('capture.specify')
@@ -39,13 +40,13 @@ def datapipeline(rxndict, vardict):
 
     modlog = logging.getLogger('capture.specify.datapipeline')
     inputvalidation.prebuildvalidation(rxndict, vardict)
-    chemdf = chemical.build_chemdf(config.lab_vars[globals.get_lab()]['chemsheetid'],
-                                   config.lab_vars[globals.get_lab()]['chem_workbook_index'],
+
+    chemdf = chemical.build_chemdf(lab_safeget(config.lab_vars, globals.get_lab(), 'chemsheetid'),
+                                   lab_safeget(config.lab_vars, globals.get_lab(), 'chem_workbook_index'),
                                    vardict['debug'])
 
-    # TODO: reviatalize the reagentdf sans ECL
-    reagentdf = reagent.build_reagentdf(config.lab_vars[globals.get_lab()]['reagentsheetid'],
-                                        config.lab_vars[globals.get_lab()]['reagent_workbook_index'],
+    reagentdf = reagent.build_reagentdf(lab_safeget(config.lab_vars, globals.get_lab(),'reagentsheetid'),
+                                        lab_safeget(config.lab_vars, globals.get_lab(),'reagent_workbook_index'),
                                         vardict['debug'])
 
     vardict['solventlist'] = chemdf.index[chemdf['Chemical Category'] == 'solvent'].values.tolist()
@@ -60,7 +61,7 @@ def datapipeline(rxndict, vardict):
     # dictionary of experiments
     edict = exppartition(rxndict)
 
-    drive_target_folder = config.lab_vars[globals.get_lab()]['targetfolder']
+    drive_target_folder = lab_safeget(config.lab_vars, globals.get_lab(), 'newrun_remote_folder')
 
     inputvalidation.postbuildvalidation(rxndict, vardict, rdict, edict, chemdf)
     #generate
@@ -97,13 +98,9 @@ def datapipeline(rxndict, vardict):
             modlog.info('Starting file preparation for upload')
             # Lab specific handling - different labs require different files for tracking
 
-            if not rxndict['lab'] in config.SUPPORTED_LABS:
-                modlog.error('User selected a lab that was not supported. Closing run')
-                sys.exit()
-
             primary_dir, secondary_dir, gdrive_uid_dict = googleio.create_drive_directories(rxndict,
                                                                                             drive_target_folder,
-                                                                                            vardict['lab_vars'][globals.get_lab()]['required_files'])
+                                                                                            lab_safeget(config.lab_vars, globals.get_lab(),'required_files'))
             if rxndict['lab'] != 'ECL':
 
                 google_drive_client = googleio.get_gdrive_client()

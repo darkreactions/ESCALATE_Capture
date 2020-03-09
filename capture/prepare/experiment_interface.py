@@ -5,6 +5,7 @@ import logging
 import capture.devconfig as config
 from utils import globals
 from utils.data_handling import abstract_reagent_colnames, build_experiment_names_df
+from utils.globals import lab_safeget
 
 modlog = logging.getLogger('capture.prepare.experiment_model_out')
 
@@ -179,12 +180,26 @@ def LBLrobotfile(rxndict, vardict, erdf):
 
     :param erdf: should contain the experimental reaction data frame which consists of the volumes of each
     reagent in each experiment to be performed.
+
+    ALSO CONTAINS:
+    New Development code .... needs debugging 
+    Write to excel file for MIT Human and return filename
+
+    todo:
+        * write this file for ALL experiments
+        * robot just reads this general representation and writes to specific format
+            * e.g. Nimbus gets its own format
+        * This solves report issue
+            * report looks for specification file, and if it cant find it looks for RobotInput.xls
+
+
+    :param erdf: should contain the experimental reaction data frame which consists of the volumes of each
+    reagent in each experiment to be performed.
     """
-    vol_ar = volarray(erdf, vardict['lab_vars'][vardict['lab']]['max_reagents'])
+    vol_ar = volarray(erdf, lab_safeget(config.lab_vars, globals.get_lab(), 'max_reagents'))
 
     # If the additional actions were not specified, just leave the cells blank.
     # TODO: CLEAN UP THE ABOVE AFTER THE IMMEDIATE MIT PUSH.
-    # TODO: Merge with the MIT / general action specifciation, move named actions to dictionary, etc
     userAction0 = rxndict.get('Additional_action_1_description', 0)
     userAction1 = rxndict.get('Additional_action_2_description', '')
     userActionValue0 = rxndict.get('Additional_action_1_value', 0)
@@ -196,12 +211,14 @@ def LBLrobotfile(rxndict, vardict, erdf):
         userAction1 = ""
         userActionValue1 = ''
 
+    reagent_alias = lab_safeget(config.lab_vars, globals.get_lab(), 'reagent_alias')
     rxn_conditions = pd.DataFrame({
-        'Reagents': ['Reagent{}'.format(i+1) for i in range(len(vol_ar))],
-        'Reagent identity': [str(i+1) for i in range(len(vol_ar))],
+        reagent_alias + 's': [reagent_alias + str(i+1) for i in range(len(vol_ar))],
+        reagent_alias + ' identity': [str(i+1) for i in range(len(vol_ar))],
         'Liquid Class': vol_ar,
-        'Reagent Temperature': [rxndict['reagents_prerxn_temperature']] * len(vol_ar)
+        reagent_alias + ' Temperature': [rxndict['reagents_prerxn_temperature']] * len(vol_ar)
     })
+
     robotfiles = []
 
     if rxndict['ExpWorkflowVer'] >= 3 and rxndict['ExpWorkflowVer'] < 4:
@@ -272,118 +289,72 @@ def LBLrobotfile(rxndict, vardict, erdf):
         robotfiles.append(robotfile2)
 
     else:
-        rxn_parameters = pd.DataFrame({
-                'Reaction Parameters': ['Temperature (C):', 
-                                        'Stir Rate (rpm):',
-                                        'Mixing time1 (s):',
-                                        'Mixing time2 (s):',
-                                        'Reaction time (s):',
-                                        'Preheat Temperature (C):',
+        if globals.get_lab() == 'MIT_PVLab':
+            rxn_parameters = pd.DataFrame({
+                'Reaction Parameters': ['Spincoating Temperature ( C )',
+                                        'Spincoating Speed (rpm):',
+                                        'Spincoating Duration (s)',
+                                        'Spincoating Duration 2 (s)',
+                                        'Annealing Temperature ( C )',
+                                        'Annealing Duration (s)',
                                         userAction0,
-                                        userAction1
-                                        ],
-                'Parameter Values': [rxndict['temperature2_nominal'],
+                                        userAction1,
+                                        ""],
+
+                'Parameter Values': [rxndict['temperature1_nominal'],
                                      rxndict['stirrate'],
-                                     rxndict['duratation_stir1'], 
+                                     rxndict['duratation_stir1'],
                                      rxndict['duratation_stir2'],
-                                     rxndict['duration_reaction'], 
-                                     rxndict['temperature1_nominal'],
+                                     rxndict['temperature2_nominal'],
+                                     rxndict['duration_reaction'],
                                      userActionValue0,
-                                     userActionValue1
-                                     ],
-        })
-        df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount'])
-        outframe = pd.concat([df_Tray.iloc[:, 0], erdf, df_Tray.iloc[:, 1], rxn_parameters, rxn_conditions],
-                             sort=False, axis=1)
+                                     userActionValue1,
+                                     ''],
+            })
+            experiment_names = build_experiment_names_df(rxndict, vardict)
+            df_Tray = pd.DataFrame({
+                'Experiment Index': range(1, int(rxndict['wellcount']) + 1),
+                'Labware ID': rxndict['plate_container']
+            })
+            outframe = pd.concat([df_Tray.iloc[:, 0], experiment_names, erdf, df_Tray.iloc[:, 1], rxn_parameters, rxn_conditions],
+                                 sort=False, axis=1)
+        else:
+            rxn_parameters = pd.DataFrame({
+                    'Reaction Parameters': ['Temperature (C):', 
+                                            'Stir Rate (rpm):',
+                                            'Mixing time1 (s):',
+                                            'Mixing time2 (s):',
+                                            'Reaction time (s):',
+                                            'Preheat Temperature (C):',
+                                            userAction0,
+                                            userAction1
+                                            ],
+                    'Parameter Values': [rxndict['temperature2_nominal'],
+                                         rxndict['stirrate'],
+                                         rxndict['duratation_stir1'], 
+                                         rxndict['duratation_stir2'],
+                                         rxndict['duration_reaction'], 
+                                         rxndict['temperature1_nominal'],
+                                         userActionValue0,
+                                         userActionValue1
+                                         ],
+            })
+            df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount'])
+            outframe = pd.concat([df_Tray.iloc[:, 0], erdf, df_Tray.iloc[:, 1], rxn_parameters, rxn_conditions],
+                                 sort=False, axis=1)
 
         if globals.get_lab() == 'LBL':
-            robotfile = ('localfiles/%s_RobotInput.xls' % rxndict['RunID'])
+            volume_file = ('localfiles/%s_RobotInput.xls' % rxndict['RunID'])
         else:
-            robotfile = ('localfiles/%s_ExperimentSpecification.xls' %rxndict['RunID'])
+            volume_file = ('localfiles/%s_ExperimentSpecification.xls' %rxndict['RunID'])
             
-        robotfiles.append(robotfile)
-        outframe.to_excel(robotfile, sheet_name='NIMBUS_reaction', index=False)
+        outframe = abstract_reagent_colnames(outframe, inplace=False)
+
+        robotfiles.append(volume_file)
+
+        outframe.to_excel(volume_file, sheet_name='NIMBUS_reaction', index=False)
 
     return robotfiles
-
-def generate_experiment_specification_file(rxndict, vardict, erdf):
-    """New Development code .... needs debugging 
-    Write to excel file for MIT Human and return filename
-
-    todo:
-        * write this file for ALL experiments
-        * robot just reads this general representation and writes to specific format
-            * e.g. Nimbus gets its own format
-        * This solves report issue
-            * report looks for specification file, and if it cant find it looks for RobotInput.xls
-
-
-    :param erdf: should contain the experimental reaction data frame which consists of the volumes of each
-    reagent in each experiment to be performed.
-    """
-    vol_ar = volarray(erdf, vardict['lab_vars'][vardict['lab']]['max_reagents'])
-
-    # THIS IS (STILL) VERY BAD PRACTICE.
-    userAction0 = rxndict.get('Additional_action_1_description', 0)
-    userAction1 = rxndict.get('Additional_action_2_description', '')
-    userActionValue0 = rxndict.get('Additional_action_1_value', 0)
-    userActionValue1 = rxndict.get('Additional_action_2_value', '')
-    if userAction0 == 0:
-        userAction0 = ""
-        userActionValue0 = ''
-    if userAction1 == 0:
-        userAction1 = ""
-        userActionValue1 = ''
-
-    # If the additional actions were not specified, just leave the cells blank.
-    # todo CLEAN UP THE ABOVE AFTER THE IMMEDIATE MIT PUSH.
-    
-    rxn_parameters = pd.DataFrame({
-        'Reaction Parameters': ['Spincoating Temperature ( C )',
-                                'Spincoating Speed (rpm):',
-                                'Spincoating Duration (s)',
-                                'Spincoating Duration 2 (s)',
-                                'Annealing Temperature ( C )',
-                                'Annealing Duration (s)',
-                                userAction0,
-                                userAction1,
-                                ""],
-
-        'Parameter Values': [rxndict['temperature1_nominal'],
-                             rxndict['stirrate'],
-                             rxndict['duratation_stir1'],
-                             rxndict['duratation_stir2'],
-                             rxndict['temperature2_nominal'],
-                             rxndict['duration_reaction'],
-                             userActionValue0,
-                             userActionValue1,
-                             ''],
-    })
-
-    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
-    rxn_conditions = pd.DataFrame({
-        reagent_alias + 's': [reagent_alias + str(i) for i in range(1, 9)],
-        reagent_alias + ' identity': [str(i) for i in range(1, 9)],
-        'Liquid Class': vol_ar,
-        reagent_alias + ' Temperature': [rxndict['reagents_prerxn_temperature']] * len(vol_ar)
-    })
-
-    # df_Tray = MakeWellList(rxndict['plate_container'], rxndict['wellcount'])
-    df_Tray = pd.DataFrame({
-        'Experiment Index': range(1, int(rxndict['wellcount']) + 1),
-        'Labware ID': rxndict['plate_container']
-    })
-
-    experiment_names = build_experiment_names_df(rxndict, vardict)
-    outframe = pd.concat([df_Tray.iloc[:, 0], experiment_names, erdf, df_Tray.iloc[:, 1], rxn_parameters, rxn_conditions],
-                         sort=False, axis=1)
-    volume_file = ("localfiles/%s_ExperimentSpecification.xls" % rxndict['RunID'])
-
-    outframe = abstract_reagent_colnames(outframe, inplace=False)
-    outframe.to_excel(volume_file, sheet_name='experiment_volume_interface', index=False)
-
-    return [volume_file]
-
 
 def reagent_id_list(rxndict):
     reagentidlist=[]

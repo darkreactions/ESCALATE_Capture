@@ -6,9 +6,9 @@ import logging
 import pandas as pd
 
 import capture.devconfig as config
-from capture.devconfig import maxreagentchemicals
 from utils.data_handling import update_sheet_column
 from utils import globals
+from utils.globals import lab_safeget
 
 modlog = logging.getLogger('capture.prepare.interface')
 
@@ -18,9 +18,9 @@ def _get_reagent_header_cells(column: str):
 
     :param column: (str) in {A, B, ..., Z, AA, AB, ...}
     """
-    startrow = config.lab_vars[globals.get_lab()]['reagent_interface_amount_startrow']
-    reagent_interface_step = config.maxreagentchemicals + 1
-    num_reagents = config.lab_vars[globals.get_lab()]['max_reagents']
+    startrow = lab_safeget(config.lab_vars, globals.get_lab(), 'reagent_interface_amount_startrow')
+    reagent_interface_step = int(lab_safeget(config.lab_vars, globals.get_lab(), 'maxreagentchemicals')) + 1
+    num_reagents = lab_safeget(config.lab_vars, globals.get_lab(), 'max_reagents')
     stoprow = startrow + reagent_interface_step * num_reagents
     result = [column + str(i) for i in range(startrow, stoprow, reagent_interface_step)]
     return result
@@ -77,13 +77,6 @@ def build_nominals_df(rdict,
             else:
                 #calculate reagent amounts from formula
                 reagentnum = str(reagentname.split('t')[1])
-#                print(rdict[reagentnum].concs['conc_item%s'%(itemcount)])
-#                modlog.info(('Formula target was', chemabbr, reagentname, \
-#                    rdict[reagentnum].concs['conc_item%s' %(itemcount)]))
-#                modlog.info(('row index =', index, 'calc value = ', target_final_volume[reagentname]/1000/1000 * \
-#                    rdict[reagentnum].concs['conc_item%s' %(itemcount)] * \
-#                    float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])
-#                    ))
                 nominalamount = (target_final_volume[reagentname]/1000/1000 * \
                     rdict[reagentnum].concs['conc_item%s' %(itemcount)] * \
                     float(chemdf.loc["%s" %chemabbr, "Molecular Weight (g/mol)"])
@@ -234,10 +227,10 @@ def build_reagent_spec_df(rxndict, vardict, erdf, rdict, chemdf):
     :return:
     """
     modlog.info('Starting reagent interface upload')
-    chemical_names_df = build_chemical_names_df(rdict, vardict['maxreagentchemicals'])
+    chemical_names_df = build_chemical_names_df(rdict, lab_safeget(config.lab_vars, globals.get_lab(), 'maxreagentchemicals'))
     reagent_target_volumes = get_reagent_target_volumes(erdf, rxndict['reagent_dead_volume'] * 1000)
     nominals_df = build_nominals_v1(rdict, chemical_names_df, reagent_target_volumes,
-                                    vardict['solventlist'], vardict['maxreagentchemicals'], chemdf)
+                                    vardict['solventlist'], lab_safeget(config.lab_vars, globals.get_lab(), 'maxreagentchemicals'), chemdf)
     reagent_spec_df = pd.concat([chemical_names_df, nominals_df], axis=1)
     return reagent_spec_df
 
@@ -262,7 +255,7 @@ def upload_aliased_cells(sheet):
     # Reagent<i> cells at bottom of sheet (all in col A, regularly spaced):
     aliased_cells.extend(_get_reagent_header_cells('A'))
 
-    reagent_alias = config.lab_vars[globals.get_lab()]['reagent_alias']
+    reagent_alias = lab_safeget(config.lab_vars, globals.get_lab(), 'reagent_alias')
     for cell in aliased_cells:
         current_value = sheet.acell(cell).value
         new_value = current_value.replace(cell_alias_pat, reagent_alias)
@@ -277,7 +270,7 @@ def upload_run_information(rxndict, vardict, sheet):
     sheet.update_acell('B4', rxndict['lab'])
     sheet.update_acell('B6', rxndict['RunID'])
     sheet.update_acell('B7', rxndict['ExpWorkflowVer'])
-    sheet.update_acell('B8', vardict['RoboVersion'])
+    sheet.update_acell('B8', config.RoboVersion)
     sheet.update_acell('B9', rxndict['challengeproblem'])
 
     # Notes section - blank values as default
@@ -297,8 +290,8 @@ def upload_reagent_specifications(finalexportdf, sheet):
     """
 
     # get lab-specific config variables
-    reagent_interface_amount_startrow = config.lab_vars[globals.get_lab()]['reagent_interface_amount_startrow']
-    max_reagents = config.lab_vars[globals.get_lab()]['max_reagents']
+    reagent_interface_amount_startrow = lab_safeget(config.lab_vars, globals.get_lab(), 'reagent_interface_amount_startrow')
+    max_reagents = lab_safeget(config.lab_vars, globals.get_lab(), 'max_reagents')
 
     update_sheet_column(sheet, finalexportdf['chemabbr'],
                         col_index='B', start_row=reagent_interface_amount_startrow)
@@ -316,6 +309,7 @@ def upload_reagent_specifications(finalexportdf, sheet):
 
     # add nulls to actual amount column for unspecified reagents
     null_start = reagent_interface_amount_startrow + len(finalexportdf)
+    maxreagentchemicals = lab_safeget(config.lab_vars, globals.get_lab(), 'maxreagentchemicals')
     num_nulls = (max_reagents - len(finalexportdf.reagentnames.unique())) * (maxreagentchemicals + 1)
     nulls = ['null'] * num_nulls
    # update_sheet_column(sheet, nulls, col_index='D', start_row=null_start)
@@ -344,7 +338,7 @@ def upload_reagent_prep_info(rdict, sheetobject):
 
     # Upload prerxntemps
     prerxn_temp_cells = _get_reagent_header_cells(column='H')
-    num_reagents = config.lab_vars[globals.get_lab()]['max_reagents'] + 1
+    num_reagents = int(lab_safeget(config.lab_vars, globals.get_lab(), 'max_reagents')) + 1
     for i in range(1, num_reagents):
         try:
             payload = rdict[str(i)].prerxntemp

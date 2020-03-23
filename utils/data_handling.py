@@ -1,12 +1,15 @@
 """Useful stuff that has no proper home
 """
 import pandas as pd
+from pandas.core.indexing import IndexingError
+import logging
 import re
 
 import capture.devconfig as config
 from utils import globals
 from utils.globals import lab_safeget
 
+modlog = logging.getLogger(__name__)
 
 def get_explicit_experiments(rxnvarfile, only_volumes=True):
     """Extract reagent volumes for the manually specified experiments, if there are any.
@@ -19,7 +22,12 @@ def get_explicit_experiments(rxnvarfile, only_volumes=True):
     # remove empty rows:
     explicit_experiments = explicit_experiments[~explicit_experiments['Manual Well Number'].isna()]
     # remove unused reagents:
-    explicit_experiments = explicit_experiments.ix[:, explicit_experiments.sum() != 0]
+    try:
+        explicit_experiments = explicit_experiments.ix[:, explicit_experiments.sum() != 0]
+    except IndexingError:
+        modlog.error('Manual runs not fully specified. Please be sure to fully enumerate all desired runs and fill empties with "0"')
+        import sys
+        sys.exit()
 
     if only_volumes:
         explicit_experiments = explicit_experiments.filter(regex='Reagent\d \(ul\)').astype(int)

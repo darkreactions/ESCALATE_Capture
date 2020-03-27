@@ -7,7 +7,7 @@ cwd = os.getcwd()
 #######################################
 # Version Control
 RoboVersion = 2.59
-ReportVersion = 0.84
+ReportVersion = 0.85
 ######################################
 # Sampler Selection
 sampler = 'wolfram' # options are 'default' or 'wolfram'
@@ -64,6 +64,14 @@ lab_vars = {
                                       'modeluid_col': 'J',
                                       'participantuid_col': 'K'}
         },
+    'ECL':
+        {
+            'newrun_remote_folder': '11vIE3oGU77y38VRSu-OQQw2aWaNfmOHe',
+            'required_folders': ['images'],
+            'observation_interface': {'uid_col': 'E',
+                                      'modeluid_col': 'J',
+                                      'participantuid_col': 'K'}
+        },
     'dev':
         {
             'newrun_remote_folder': '19nt2-9Inub8IEYDxOLnplCPDEYt1NPqZ',
@@ -101,7 +109,12 @@ valid_input_files = {
     'specification_interface': ['Template', 'SpecificationInterface']  # user input file
 }
 
-# specified targets for data workup, add new google drive folders here
+''' specified targets for data workup, 
+    Add new google drive folders here the target data folder must be structured correctly,
+this isn't magic just plumbing. An example of the correct structure can be found here:
+https://drive.google.com/open?id=1rPNGq69KR7_8Zhr4aPEV6yLtB6V4vx7k
+
+'''
 workup_targets = {
     '4-Data-Bromides':
         {
@@ -113,7 +126,7 @@ workup_targets = {
         },
     '4-Data-WF3_Iodide':
         {
-            'target_data_folder' : '11CcFTLw7mu4tnnv8QO1oSE7XQiEP32L',
+            'target_data_folder' : '11CcFTLw7mu4tnnv8QO1opSE7XQiEP32L',
         },
     '4-Data-WF3_Alloying':
         {

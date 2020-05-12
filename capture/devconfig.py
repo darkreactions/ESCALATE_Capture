@@ -3,11 +3,9 @@ import os
 import sys
 
 cwd = os.getcwd()
-
 #######################################
 # Version Control
 RoboVersion = 2.59
-ReportVersion = 0.85
 ######################################
 # Sampler Selection
 sampler = 'wolfram' # options are 'default' or 'wolfram'
@@ -94,8 +92,8 @@ lab_vars = {
             'required_files': ['observation_interface', 'preparation_interface', 'metadata.json'],
             'required_folders': [],
             'observation_interface': {'uid_col': 'B',
-                                      'modeluid_col': 'H',
-                                      'participantuid_col': 'I'}
+                                      'modeluid_col': 'I',
+                                      'participantuid_col': 'J'}
         },
 }
 
@@ -115,6 +113,9 @@ this isn't magic just plumbing. An example of the correct structure can be found
 https://drive.google.com/open?id=1rPNGq69KR7_8Zhr4aPEV6yLtB6V4vx7k
 
 '''
+#TODO: assign desired calculations to each dataset, add a safe/generalizable default 
+# .   The dict of desired calculations should only toggle on options, not specify
+# .   The default should not include 'target_data_folder", these should always be assigned
 workup_targets = {
     '4-Data-Bromides':
         {
@@ -141,7 +142,6 @@ workup_targets = {
             'target_data_folder' : '1VNsWClt-ppg8ojUztDYssnSgfoe9XRhi',
         }
 }
-
 
 #######################################
 # Wolfram Kernel Management
@@ -172,3 +172,8 @@ elif system == "Darwin" or system == 'Windows':
 # Other
 else:
     raise OSError("Your system is likely not supported if it's not Linux, MAC, or Windows")
+
+###################################
+#Chemdescriptor management
+os.environ['CXCALC_PATH'] = '/Applications/JChemSuite/bin/'
+os.environ['STANDARDIZE_PATH'] = '/Applications/JChemSuite/bin/'

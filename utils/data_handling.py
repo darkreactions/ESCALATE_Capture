@@ -23,7 +23,7 @@ def get_explicit_experiments(rxnvarfile, only_volumes=True):
     explicit_experiments = explicit_experiments[~explicit_experiments['Manual Well Number'].isna()]
     # remove unused reagents:
     try:
-        explicit_experiments = explicit_experiments.ix[:, explicit_experiments.sum() != 0]
+        explicit_experiments = explicit_experiments.loc[:, explicit_experiments.sum() != 0]
     except IndexingError:
         modlog.error('Manual runs not fully specified. Please be sure to fully enumerate all desired runs and fill empties with "0"')
         import sys

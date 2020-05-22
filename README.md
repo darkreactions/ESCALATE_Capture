@@ -34,6 +34,9 @@ Installation on Windows:
 1. Download and install anaconda for windows here: https://docs.anaconda.com/anaconda/install/windows/
 2. Download and unzip the zip file (or use git clone) of the ESCALATE capture code https://github.com/darkreactions/ESCALATE_Capture/archive/master.zip
 3. download and install wolfram engine https://www.wolfram.com/engine/ (Be sure to activate!!! https://support.wolfram.com/46069)
+
+   * Wolfram occasionally updates the engine.  Default is set to detect version 12.1.  If you receive a 'wolfram client' not found error, please check the linux_path in ./capture/devconfig.py 
+
 4. Open a miniconda window and navigate to the unzipped ESCALATE_Capture-master folder
 5. Create new python 3.7 environment in conda: `conda create -n myenv python=3.7`
 6. Activate the new environment: `conda activate myenv`

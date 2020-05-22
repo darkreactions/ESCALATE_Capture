@@ -149,17 +149,18 @@ workup_targets = {
 wolfram_kernel_path = None # ensure the value can be imported on all computers.
 
 system = platform.system()
+linux_path = '/usr/local/Wolfram/WolframEngine/12.1/Executables/WolframKernel'
 if system == "Linux":
     wolfram_kernel_path = None
     from pathlib import Path
     # try first path location
-    wolfram_kernel = Path('/usr/local/Wolfram/WolframEngine/12.0/Executables/WolframKernel')
+    wolfram_kernel = Path(linux_path)
     if wolfram_kernel.is_file():
-        wolfram_kernel_path = "/usr/local/Wolfram/WolframEngine/12.0/Executables/WolframKernel"
+        wolfram_kernel_path = linux_path
     # try second path location
-    wolfram_kernel_2 = Path('/usr/local/Wolfram/Mathematica/12.0/Executables/WolframKernel')
+    wolfram_kernel_2 = Path(linux_path)
     if wolfram_kernel_2.is_file():
-        wolfram_kernel_path = '/usr/local/Wolfram/Mathematica/12.0/Executables/WolframKernel'
+        wolfram_kernel_path = linux_path
     if wolfram_kernel_path is None:
         print('WolframKernel not successfully found, please correct devconfig')
         import sys

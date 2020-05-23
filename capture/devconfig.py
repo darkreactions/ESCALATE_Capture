@@ -1,11 +1,12 @@
 import platform
 import os
 import sys
+from pathlib import Path
 
 cwd = os.getcwd()
 #######################################
 # Version Control
-RoboVersion = 2.59
+RoboVersion = 2.60
 ######################################
 # Sampler Selection
 sampler = 'wolfram' # options are 'default' or 'wolfram'
@@ -144,37 +145,55 @@ workup_targets = {
 }
 
 #######################################
-# Wolfram Kernel Management
+######### KERNAL MANAGEMENT ###########
+#######################################
+
+### WOLFRAM KERNEL MANAGEMENT ###
+# first check that system is supported: do one thing at a time
+system = platform.system()
+if system not in ['Linux', 'Darwin', 'Windows']:
+    # Dont kill, just warn. If it dies, it dies. If it doesn't: cool!
+    print("Warning: OS not officially supported") 
+
 
 wolfram_kernel_path = None # ensure the value can be imported on all computers.
 
-system = platform.system()
+# we only need to do this check if the user wants wolfram in the first place
 linux_path = '/usr/local/Wolfram/WolframEngine/12.1/Executables/WolframKernel'
-if system == "Linux":
-    wolfram_kernel_path = None
-    from pathlib import Path
-    # try first path location
-    wolfram_kernel = Path(linux_path)
-    if wolfram_kernel.is_file():
-        wolfram_kernel_path = linux_path
-    # try second path location
-    wolfram_kernel_2 = Path(linux_path)
-    if wolfram_kernel_2.is_file():
-        wolfram_kernel_path = linux_path
-    if wolfram_kernel_path is None:
-        print('WolframKernel not successfully found, please correct devconfig')
-        import sys
-        sys.exit()
-
+if sampler == 'wolfram': 
+    if system == "Linux":
+        wolfram_kernel_path = None
+        # try first path location
+        wolfram_kernel = Path(linux_path)
+        if wolfram_kernel.is_file():
+            wolfram_kernel_path = linux_path
+        # try second path location
+        wolfram_kernel_2 = Path(linux_path)
+        if wolfram_kernel_2.is_file():
+            wolfram_kernel_path = linux_path
+        if wolfram_kernel_path is None:
+            # is this allowed? maybe can do in a cleaner way but nice to automate this instead of just killing
+            print('Warning: WolframKernel not successfully found, falling back on default')
+            sampler = 'default' 
 # Mac or Windows
 elif system == "Darwin" or system == 'Windows':
     wolfram_kernel_path = None
+### END WOLFRAM ###
 
-# Other
-else:
-    raise OSError("Your system is likely not supported if it's not Linux, MAC, or Windows")
+### CHEMDESCRIPTOR KERNALS ### 
+# These should point to the JChemSuite/bin!
+CXCALC_PATH = '/Applications/JChemSuite/bin/'
 
-###################################
-#Chemdescriptor management
-os.environ['CXCALC_PATH'] = '/Applications/JChemSuite/bin/'
-os.environ['STANDARDIZE_PATH'] = '/Applications/JChemSuite/bin/'
+CALC_POSSIBLE = False
+STANDARDIZE_POSSIBLE = False
+
+cxcalc_path = Path(CXCALC_PATH)
+if cxcalc_path.joinpath('cxcalc').is_file():
+    CALC_POSSIBLE = True
+if cxcalc_path.joinpath('standardize').is_file():
+    STANDARDIZE_POSSIBLE = True
+
+os.environ['CXCALC_PATH'] = CXCALC_PATH
+os.environ['STANDARDIZE_PATH'] = CXCALC_PATH
+
+### END CHEMDESCRIPTOR ###

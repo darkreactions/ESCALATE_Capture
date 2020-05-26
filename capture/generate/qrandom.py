@@ -367,8 +367,16 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
                                     float(maxconc),
                                     float(volmax))
     ws.terminate()
-    portion_df = pd.DataFrame.from_dict(experiments)
-
+    #TODO: the randomly sample returns bogus entires (doesn't error) if the run is not properly constructure
+    # Validation should be done prior to feeding into mathematica
+    try:
+        portion_df = pd.DataFrame.from_dict(experiments)
+    except ValueError:
+        modlog.error(f'The .xlsx specification cannot be used to generate samples!') 
+        modlog.error(f'Please ensure the run is correctly specified. See FAQs for suggestions.')
+        print(f'User information and FAQs can be found at: https://docs.google.com/document/d/1RQJvAlDVIfu19Tea23dLUSymLabGfwJtDnZwANtU05s/edit#bookmark=id.8sg0qwagd7yw')
+        import sys
+        sys.exit()
     # todo How long can this reagent 6/7 hotfix remain like this?
     if rxndict['ExpWorkflowVer'] <= 1.1:
         if rxndict['lab'] == 'LBL':

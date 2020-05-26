@@ -1,8 +1,8 @@
 **Authors: Ian Pendleton, Michael Tynes, Aaron Dharna**
 
-**Science Contacts** jschrier .at. fordham.edu
+**Science Contact:** jschrier .at. fordham.edu, ian .at. pendletonian.com
 
-**Developer Contacts**: vshekar .at. haverford.edu, ian .at. pendletonian.com
+**Technical Debugging:** vshekar .at. haverford.edu, gcattabrig .at. haverford.edu,
 
 **Alternative Debugging:** mtynes .at. fordham.edu, adharna .at. fordham.edu
 

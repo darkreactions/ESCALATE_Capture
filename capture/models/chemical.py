@@ -16,7 +16,7 @@ class perovskitechemical:
 def build_chemdf(chemsheetid, chemsheetworkbook, debug_bool):
     """Get the chemical sheet from the chemical inventory
 
-    :param chemsheetid:       todo this is a workbook (and unused)
+    :param chemsheetid:       todo this is a workbook (and unnused)
     :param chemsheetworkbook: todo this is a sheet    (Rest in peace Ian Pendletoon)
     :return:
     """

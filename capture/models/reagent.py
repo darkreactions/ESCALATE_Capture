@@ -14,7 +14,7 @@ modlog = logging.getLogger('capture.reagentmodels')
 def build_reagentdf(reagsheetid, reagsheetworkbook, debug_bool):
     """Read the reagents workbook from Google Drive and return a pandas DataFrame
 
-    :param reagsheetid:        TODO this is a workbook (and unused)
+    :param reagsheetid:        TODO this is a workbook (and unnused)
     :param reagsheetworkbook:  TODO this is a sheet
     :param debug_bool: CLI debug boolean
     :return reagdf: pandas DF representation of the reagent worksheet

@@ -67,9 +67,9 @@ Installation on Windows:
 
 ### Authentication Setup
 
-1. Download the [securekey files](https://www.youtube.com/watch?v=oHg5SJYRHA0) and move them into the root folder (`./`, aka. current working directory, aka. `ESCALATE_Capture-master/` if downloaded from git). Do not distribute these keys! (Contact a dev for access, or [setup your own](https://github.com/darkreactions/ESCALATE_Capture/wiki/Developers:--ONBOARDING-LABS:--Capture-and-Report))
+1. Download the [securekey files](https://www.youtube.com/watch?v=oHg5SJYRHA0) and move them into the root folder (`./`, aka. current working directory, aka. `ESCALATE_Capture-master/` if downloaded from git). Do not distribute these keys! (Contact a dev for access, or [setup your own](https://github.com/darkreactions/ESCALATE_Capture/wiki/ONBOARDING-LABS))
 
-   Note: [Navigate to the wiki for more information on setting up a new lab or generating additional authentication keys](https://github.com/darkreactions/ESCALATE_Capture/wiki/Developers:--ONBOARDING-LABS:--Capture-and-Report)
+   Note: [Navigate to the wiki for more information on setting up a new lab or generating additional authentication keys](https://github.com/darkreactions/ESCALATE_Capture/wiki/ONBOARDING-LABS)
 
 2. Ensure that the files 'client_secrets.json' and 'creds.json' are both present in the root folder (`./`, aka. current working directory, aka. `ESCALATE_Capture-master/` if downloaded from git).  The correct folder for these keys is the one which contains the runme.py script.
 

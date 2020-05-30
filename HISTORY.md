@@ -5,6 +5,7 @@ RELEASE HISTORY
 -----------------
   * Devconfig updates to match REPORT
   * Documentation updating, USER docs updating
+  * Small bug fixes and error reporting
 
 2.58 (2020-03-08)
 -----------------------------

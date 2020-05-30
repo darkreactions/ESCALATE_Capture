@@ -1,6 +1,12 @@
 RELEASE HISTORY
 ===============
 
+2.60 (2020-05-22)
+-----------------
+  * Devconfig updates to match REPORT
+  * Documentation updating, USER docs updating
+  * Small bug fixes and error reporting
+
 2.58 (2020-03-08)
 -----------------------------
   * Cleaned the devconfig workflow and organization

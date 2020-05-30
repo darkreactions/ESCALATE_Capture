@@ -21,7 +21,7 @@ def get_explicit_experiments(rxnvarfile, only_volumes=True):
     explicit_experiments = pd.read_excel(io=rxnvarfile, sheet_name='ManualExps')
     # remove empty rows:
     explicit_experiments = explicit_experiments[~explicit_experiments['Manual Well Number'].isna()]
-    # remove unused reagents:
+    # remove unnused reagents:
     try:
         explicit_experiments = explicit_experiments.loc[:, explicit_experiments.sum() != 0]
     except IndexingError:

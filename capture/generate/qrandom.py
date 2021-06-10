@@ -377,9 +377,9 @@ def wolfram_sampling(expoverview, rdict, old_reagents, vollimits, rxndict, vardi
         print(f'User information and FAQs can be found at: https://docs.google.com/document/d/1RQJvAlDVIfu19Tea23dLUSymLabGfwJtDnZwANtU05s/edit#bookmark=id.8sg0qwagd7yw')
         import sys
         sys.exit()
-    # todo How long can this reagent 6/7 hotfix remain like this?
+    # todo How long can this reagent 6/7 hotfix remain like this? Answer: Forever
     if rxndict['ExpWorkflowVer'] <= 1.1:
-        if rxndict['lab'] == 'LBL':
+        if rxndict['lab'] in  ['LBL', 'HC']:
             portion_df['Reagent6 (ul)'] = np.floor(portion_df['Reagent7 (ul)'] / 2).astype(int)
             portion_df['Reagent7 (ul)'] = np.ceil(portion_df['Reagent7 (ul)'] / 2).astype(int)
             rdict['6'] = rdict['7']
